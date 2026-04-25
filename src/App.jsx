@@ -513,6 +513,248 @@ function App() {
           </>
         )}
 
+        {activePage === "charts" && (
+          <section className="charts-page">
+            <h2>Charts & Statistics</h2>
+            <p>Explore the Pokémon dataset through visualizations.</p>
+            
+            {!loading && !error && pokemon.length > 0 && (
+              <div className="charts-container">
+                {/* Type Distribution Chart */}
+                <div className="chart-card">
+                  <h3>Pokémon by Type</h3>
+                  <div className="bar-chart">
+                    {(() => {
+                      const typeCounts = {};
+                      pokemon.forEach(p => {
+                        const t = p["Type 1"];
+                        typeCounts[t] = (typeCounts[t] || 0) + 1;
+                      });
+                      const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
+                      const maxCount = sortedTypes[0]?.[1] || 1;
+                      return sortedTypes.map(([type, count]) => (
+                        <div key={type} className="bar-row">
+                          <span className="bar-label">{type}</span>
+                          <div className="bar-container">
+                            <div className="bar" style={{width: `${(count / maxCount) * 100}%`}}></div>
+                          </div>
+                          <span className="bar-value">{count}</span>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                </div>
+
+                {/* Generation Distribution Chart */}
+                <div className="chart-card">
+                  <h3>Pokémon by Generation</h3>
+                  <div className="bar-chart">
+                    {(() => {
+                      const genCounts = {};
+                      pokemon.forEach(p => {
+                        const g = p["Generation"];
+                        if (g) genCounts[g] = (genCounts[g] || 0) + 1;
+                      });
+                      const sortedGens = Object.entries(genCounts).sort((a, b) => Number(a[0]) - Number(b[0]));
+                      const maxCount = sortedGens[0]?.[1] || 1;
+                      return sortedGens.map(([gen, count]) => (
+                        <div key={gen} className="bar-row">
+                          <span className="bar-label">Gen {gen}</span>
+                          <div className="bar-container">
+                            <div className="bar gen-bar" style={{width: `${(count / maxCount) * 100}%`}}></div>
+                          </div>
+                          <span className="bar-value">{count}</span>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                </div>
+
+                {/* Stats Average Chart */}
+                <div className="chart-card">
+                  <h3>Average Stats</h3>
+                  <div className="bar-chart">
+                    {(() => {
+                      const stats = ["HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed"];
+                      const avgStats = stats.map(stat => {
+                        const sum = pokemon.reduce((acc, p) => acc + (Number(p[stat]) || 0), 0);
+                        return (sum / pokemon.length).toFixed(1);
+                      });
+                      const maxAvg = Math.max(...avgStats);
+                      return stats.map((stat, i) => (
+                        <div key={stat} className="bar-row">
+                          <span className="bar-label">{stat}</span>
+                          <div className="bar-container">
+                            <div className="bar stat-bar" style={{width: `${(avgStats[i] / maxAvg) * 100}%`}}></div>
+                          </div>
+                          <span className="bar-value">{avgStats[i]}</span>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                </div>
+
+                {/* Legendary vs Non-Legendary */}
+                <div className="chart-card">
+                  <h3>Legendary vs Non-Legendary</h3>
+                  <div className="pie-chart-container">
+                    {(() => {
+                      const legendary = pokemon.filter(p => p["Legendary"] === "True").length;
+                      const nonLegendary = pokemon.length - legendary;
+                      const total = pokemon.length || 1;
+                      const legPct = ((legendary / total) * 100).toFixed(1);
+                      const nonLegPct = ((nonLegendary / total) * 100).toFixed(1);
+                      return (
+                        <div className="pie-info">
+                          <div className="pie-legend">
+                            <div className="pie-item">
+                              <span className="pie-color" style={{background: '#fbbf24'}}></span>
+                              <span>Legendary: {legendary} ({legPct}%)</span>
+                            </div>
+                            <div className="pie-item">
+                              <span className="pie-color" style={{background: '#6366f1'}}></span>
+                              <span>Non-Legendary: {nonLegendary} ({nonLegPct}%)</span>
+                            </div>
+                          </div>
+                          <div className="simple-bar-horizontal">
+                            <div className="bar-segment legend" style={{width: `${legPct}%`}}></div>
+                            <div className="bar-segment non-legend" style={{width: `${nonLegPct}%`}}></div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* Top 10 by Total Stats */}
+                <div className="chart-card">
+                  <h3>Top 10 Pokémon by Total Stats</h3>
+                  <div className="bar-chart">
+                    {(() => {
+                      const top10 = [...pokemon].sort((a, b) => Number(b.Total) - Number(a.Total)).slice(0, 10);
+                      const maxTotal = Number(top10[0]?.Total) || 1;
+                      return top10.map((p, i) => (
+                        <div key={p.Name} className="bar-row">
+                          <span className="bar-label">{i + 1}. {p.Name}</span>
+                          <div className="bar-container">
+                            <div className="bar top-bar" style={{width: `${(Number(p.Total) / maxTotal) * 100}%`}}></div>
+                          </div>
+                          <span className="bar-value">{p.Total}</span>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {activePage === "compare" && (
+          <section className="compare-page">
+            <h2>Compare Pokémon</h2>
+            <p>Select two Pokémon to see who wins in a battle!</p>
+            
+            {!loading && !error && pokemon.length > 0 && (
+              <div className="compare-container">
+                <div className="compare-selectors">
+                  <div className="compare-selector">
+                    <label className="input-label">Choose Pokémon 1</label>
+                    <select 
+                      className="filter-select"
+                      value={pokemonToCompare[0]?.Name || ""}
+                      onChange={(e) => {
+                        const selected = pokemon.find(p => p.Name === e.target.value);
+                        setPokemonToCompare(prev => selected ? [selected, prev[1]] : [null, prev[1]]);
+                      }}
+                    >
+                      <option value="">Select a Pokémon</option>
+                      {pokemon.map(p => (
+                        <option key={p.Name} value={p.Name}>{p.Name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="compare-vs">VS</div>
+                  <div className="compare-selector">
+                    <label className="input-label">Choose Pokémon 2</label>
+                    <select 
+                      className="filter-select"
+                      value={pokemonToCompare[1]?.Name || ""}
+                      onChange={(e) => {
+                        const selected = pokemon.find(p => p.Name === e.target.value);
+                        setPokemonToCompare(prev => [prev[0], selected]);
+                      }}
+                    >
+                      <option value="">Select a Pokémon</option>
+                      {pokemon.map(p => (
+                        <option key={p.Name} value={p.Name}>{p.Name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {pokemonToCompare[0] && pokemonToCompare[1] && (
+                  <div className="compare-result">
+                    <div className="compare-pokemon-card">
+                      {getPokemonImageUrl(pokemonToCompare[0]) && (
+                        <img 
+                          src={getPokemonImageUrl(pokemonToCompare[0])} 
+                          alt={pokemonToCompare[0].Name}
+                          className="compare-pokemon-img"
+                        />
+                      )}
+                      <h3>{pokemonToCompare[0].Name}</h3>
+                      <p>{pokemonToCompare[0]["Type 1"]}{pokemonToCompare[0]["Type 2"] ? ` / ${pokemonToCompare[0]["Type 2"]}` : ""}</p>
+                      <div className="compare-stats">
+                        {["HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed", "Total"].map(stat => (
+                          <div key={stat} className="compare-stat-row">
+                            <span>{stat}:</span>
+                            <span>{pokemonToCompare[0][stat]}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="compare-winner">
+                      {(() => {
+                        const p1Total = Number(pokemonToCompare[0].Total);
+                        const p2Total = Number(pokemonToCompare[1].Total);
+                        if (p1Total > p2Total) {
+                          return <div className="winner-badge">{pokemonToCompare[0].Name} Wins! 🏆</div>;
+                        } else if (p2Total > p1Total) {
+                          return <div className="winner-badge">{pokemonToCompare[1].Name} Wins! 🏆</div>;
+                        } else {
+                          return <div className="winner-badge">It's a Tie! 🤝</div>;
+                        }
+                      })()}
+                    </div>
+                    
+                    <div className="compare-pokemon-card">
+                      {getPokemonImageUrl(pokemonToCompare[1]) && (
+                        <img 
+                          src={getPokemonImageUrl(pokemonToCompare[1])} 
+                          alt={pokemonToCompare[1].Name}
+                          className="compare-pokemon-img"
+                        />
+                      )}
+                      <h3>{pokemonToCompare[1].Name}</h3>
+                      <p>{pokemonToCompare[1]["Type 1"]}{pokemonToCompare[1]["Type 2"] ? ` / ${pokemonToCompare[1]["Type 2"]}` : ""}</p>
+                      <div className="compare-stats">
+                        {["HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed", "Total"].map(stat => (
+                          <div key={stat} className="compare-stat-row">
+                            <span>{stat}:</span>
+                            <span>{pokemonToCompare[1][stat]}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+        )}
+
         {activePage === "spirit" && (
           <section className="spirit-quiz">
             <h2>Discover your spirit Pokémon</h2>
@@ -648,7 +890,7 @@ function App() {
         {loading && <div className="status">Loading dataset…</div>}
         {error && <div className="status status-error">{error}</div>}
 
-        {!loading && !error && (
+        {activePage === "exploration" && !loading && !error && (
           <>
             <section>
               <h2>Dataset overview</h2>
