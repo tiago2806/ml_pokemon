@@ -40,9 +40,46 @@ function App() {
   const [lookupLoading, setLookupLoading] = useState(false);
   const [lookupError, setLookupError] = useState(null);
 
+  // Filter states
+  const [filterType, setFilterType] = useState("");
+  const [filterGeneration, setFilterGeneration] = useState("");
+  const [filterLegendary, setFilterLegendary] = useState("");
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0);
+  const ITEMS_PER_PAGE = 11;
+  
+  // Selected Pokemon for details view
+  const [selectedPokemon, setSelectedPokemon] = useState(null);
+  
+  // Comparison state
+  const [compareMode, setCompareMode] = useState(false);
+  const [pokemonToCompare, setPokemonToCompare] = useState([]);
+
+  // Get unique types from dataset
+  const allTypes = useMemo(() => {
+    const types = new Set();
+    pokemon.forEach(p => {
+      if (p["Type 1"]) types.add(p["Type 1"]);
+      if (p["Type 2"]) types.add(p["Type 2"]);
+    });
+    return Array.from(types).sort();
+  }, [pokemon]);
+
+  // Get unique generations
+  const allGenerations = useMemo(() => {
+    const gens = new Set();
+    pokemon.forEach(p => {
+      if (p["Generation"]) gens.add(p["Generation"]);
+    });
+    return Array.from(gens).sort((a, b) => Number(a) - Number(b));
+  }, [pokemon]);
+
   const menuItems = [
-    { id: "exploration", label: "Data exploration" },
-    { id: "spirit", label: "Discover your spirit Pokémon" },
+    { id: "exploration", label: "Dataset & Filters" },
+    { id: "charts", label: "Charts & Stats" },
+    { id: "compare", label: "Compare Pokémon" },
+    { id: "spirit", label: "Spirit Pokémon" },
   ];
 
   // Estado para o quiz
@@ -146,11 +183,37 @@ function App() {
   }, []);
 
   const datasetHead = useMemo(() => pokemon.slice(0, 5), [pokemon]);
+  
+  // Filtered dataset based on filters
+  const filteredPokemon = useMemo(() => {
+    return pokemon.filter(p => {
+      if (filterType && p["Type 1"] !== filterType && p["Type 2"] !== filterType) return false;
+      if (filterGeneration && p["Generation"] !== filterGeneration) return false;
+      if (filterLegendary === "true" && p["Legendary"] !== "True") return false;
+      if (filterLegendary === "false" && p["Legendary"] === "True") return false;
+      return true;
+    });
+  }, [pokemon, filterType, filterGeneration, filterLegendary]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(0);
+    setSelectedPokemon(null);
+  }, [filterType, filterGeneration, filterLegendary]);
+
+  // Paginated results
+  const paginatedPokemon = useMemo(() => {
+    const start = currentPage * ITEMS_PER_PAGE;
+    return filteredPokemon.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredPokemon, currentPage]);
+
+  const totalPages = Math.ceil(filteredPokemon.length / ITEMS_PER_PAGE);
+
   const searchResult = useMemo(() => {
     const query = searchName.trim().toLowerCase();
     if (!query) return null;
-    return pokemon.find((row) => row.Name.toLowerCase() === query) || null;
-  }, [pokemon, searchName]);
+    return filteredPokemon.find((row) => row.Name.toLowerCase() === query) || null;
+  }, [filteredPokemon, searchName]);
 
   const searchImageUrl = searchResult ? getPokemonImageUrl(searchResult) : null;
 
@@ -224,7 +287,7 @@ function App() {
         {activePage === "exploration" && (
           <>
             <section className="page-header">
-              <h2>Initial overview</h2>
+              <h2>Dataset & Filters</h2>
               <p>This page shows a quick dataset overview and lets you look up a Pokémon by name.</p>
             </section>
 
@@ -243,14 +306,57 @@ function App() {
                   </ul>
                 </div>
                 <div className="sidebar-panel">
-                  <div className="objective-card">
-                    <h3>Objective</h3>
-                    <p>Objective:</p>
-                  </div>
                   <div className="dashboard-card">
                     <h3>Pokémon lookup</h3>
+                    
+                    {/* Filters */}
+                    <div className="filters-row">
+                      <label className="input-label">
+                        Type
+                        <select 
+                          value={filterType} 
+                          onChange={(e) => setFilterType(e.target.value)}
+                          className="filter-select"
+                        >
+                          <option value="">All</option>
+                          {allTypes.map(t => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="input-label">
+                        Generation
+                        <select 
+                          value={filterGeneration} 
+                          onChange={(e) => setFilterGeneration(e.target.value)}
+                          className="filter-select"
+                        >
+                          <option value="">All</option>
+                          {allGenerations.map(g => (
+                            <option key={g} value={g}>Gen {g}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="input-label">
+                        Legendary
+                        <select 
+                          value={filterLegendary} 
+                          onChange={(e) => setFilterLegendary(e.target.value)}
+                          className="filter-select"
+                        >
+                          <option value="">All</option>
+                          <option value="true">Yes</option>
+                          <option value="false">No</option>
+                        </select>
+                      </label>
+                    </div>
+                    
+                    <div className="filter-results">
+                      Showing {filteredPokemon.length} of {pokemon.length} Pokémon
+                    </div>
+                    
                     <label htmlFor="pokemon-search" className="input-label">
-                      Enter a Pokémon name
+                      Search by name
                     </label>
                     <input
                       id="pokemon-search"
@@ -314,6 +420,89 @@ function App() {
                               ))}
                             </div>
                           </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Filtered Pokemon Grid with Pagination */}
+                    {filteredPokemon.length > 0 && !searchName && (
+                      <div className="filtered-grid">
+                        <h4>Pokémon Results</h4>
+                        <div className="pokemon-grid">
+                          {paginatedPokemon.map((p) => {
+                            const imgUrl = getPokemonImageUrl(p);
+                            return (
+                              <div 
+                                key={p.Name} 
+                                className="pokemon-grid-item"
+                                onClick={() => setSelectedPokemon(p)}
+                              >
+                                {imgUrl && (
+                                  <img src={imgUrl} alt={p.Name} className="grid-pokemon-img" />
+                                )}
+                                <span className="grid-pokemon-name">{p.Name}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        
+                        {/* Pagination Controls */}
+                        {totalPages > 1 && (
+                          <div className="pagination">
+                            <button 
+                              className="page-btn"
+                              onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+                              disabled={currentPage === 0}
+                            >
+                              ← Prev
+                            </button>
+                            <span className="page-info">{currentPage + 1} / {totalPages}</span>
+                            <button 
+                              className="page-btn"
+                              onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
+                              disabled={currentPage >= totalPages - 1}
+                            >
+                              Next →
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Selected Pokemon Details with Back Button */}
+                    {selectedPokemon && (
+                      <div className="selected-pokemon">
+                        <button className="back-btn" onClick={() => setSelectedPokemon(null)}>
+                          ← Back to results
+                        </button>
+                        {(() => {
+                          const imgUrl = getPokemonImageUrl(selectedPokemon);
+                          return (
+                            <div className="pokemon-card">
+                              {imgUrl && (
+                                <img className="pokemon-image" src={imgUrl} alt={selectedPokemon.Name} />
+                              )}
+                              <div className="pokemon-detail-copy">
+                                <h4>{selectedPokemon.Name}</h4>
+                                <p>{selectedPokemon["Type 1"]}{selectedPokemon["Type 2"] ? ` / ${selectedPokemon["Type 2"]}` : ""}</p>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                        <div className="detail-row">
+                          <span>HP: {selectedPokemon.HP}</span>
+                          <span>Attack: {selectedPokemon.Attack}</span>
+                        </div>
+                        <div className="detail-row">
+                          <span>Defense: {selectedPokemon.Defense}</span>
+                          <span>Speed: {selectedPokemon.Speed}</span>
+                        </div>
+                        <div className="detail-row">
+                          <span>Total: {selectedPokemon.Total}</span>
+                          <span>Gen: {selectedPokemon.Generation}</span>
+                        </div>
+                        {selectedPokemon["Legendary"] === "True" && (
+                          <span className="legendary-badge">Legendary</span>
                         )}
                       </div>
                     )}
@@ -467,6 +656,7 @@ function App() {
                 <table>
                   <thead>
                     <tr>
+                      <th>Image</th>
                       <th>#</th>
                       <th>Name</th>
                       <th>Type 1</th>
@@ -479,19 +669,31 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {datasetHead.map((row, index) => (
-                      <tr key={`${row.Name}-${index}`}>
-                        <td>{row["#"] || index + 1}</td>
-                        <td>{row.Name}</td>
-                        <td>{row["Type 1"]}</td>
-                        <td>{row["Type 2"] || "—"}</td>
-                        <td>{row.Total}</td>
-                        <td>{row.HP}</td>
-                        <td>{row.Attack}</td>
-                        <td>{row.Defense}</td>
-                        <td>{row.Speed}</td>
-                      </tr>
-                    ))}
+                    {datasetHead.map((row, index) => {
+                      const imgUrl = getPokemonImageUrl(row);
+                      return (
+                        <tr key={`${row.Name}-${index}`}>
+                          <td>
+                            {imgUrl && (
+                              <img 
+                                src={imgUrl} 
+                                alt={row.Name} 
+                                style={{width: "40px", height: "40px", objectFit: "contain"}} 
+                              />
+                            )}
+                          </td>
+                          <td>{row["#"] || index + 1}</td>
+                          <td>{row.Name}</td>
+                          <td>{row["Type 1"]}</td>
+                          <td>{row["Type 2"] || "—"}</td>
+                          <td>{row.Total}</td>
+                          <td>{row.HP}</td>
+                          <td>{row.Attack}</td>
+                          <td>{row.Defense}</td>
+                          <td>{row.Speed}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
