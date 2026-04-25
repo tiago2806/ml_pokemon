@@ -29,6 +29,38 @@ function parseEvolutionChain(chain) {
   return names;
 }
 
+// Simplified Type Effectiveness Matrix
+function getTypeMultiplier(attackerType, defenderType) {
+  if (!attackerType || !defenderType) return 1;
+  
+  const advantages = {
+    Water: ["Fire", "Ground", "Rock"],
+    Fire: ["Grass", "Bug", "Ice", "Steel"],
+    Grass: ["Water", "Ground", "Rock"],
+    Electric: ["Water", "Flying"],
+    Psychic: ["Fighting", "Poison"],
+    Fighting: ["Normal", "Rock", "Steel", "Ice", "Dark"],
+    Ground: ["Fire", "Electric", "Poison", "Rock", "Steel"],
+    Rock: ["Fire", "Ice", "Flying", "Bug"],
+    Ice: ["Grass", "Ground", "Flying", "Dragon"],
+    Dragon: ["Dragon"],
+    Fairy: ["Fighting", "Dragon", "Dark"]
+  };
+
+  const disadvantages = {
+    Water: ["Water", "Grass", "Dragon"],
+    Fire: ["Fire", "Water", "Rock", "Dragon"],
+    Grass: ["Fire", "Grass", "Poison", "Flying", "Bug", "Dragon", "Steel"],
+    Electric: ["Electric", "Grass", "Dragon"],
+    Psychic: ["Psychic", "Steel"],
+    Fighting: ["Poison", "Flying", "Psychic", "Bug", "Fairy"]
+  };
+
+  if (advantages[attackerType]?.includes(defenderType)) return 2.0; // Super Effective
+  if (disadvantages[attackerType]?.includes(defenderType)) return 0.5; // Not very effective
+  return 1.0; // Neutral
+}
+
 function App() {
   const [pokemon, setPokemon] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,9 +84,8 @@ function App() {
   // Selected Pokemon for details view
   const [selectedPokemon, setSelectedPokemon] = useState(null);
   
-  // Comparison state
-  const [compareMode, setCompareMode] = useState(false);
-  const [pokemonToCompare, setPokemonToCompare] = useState([]);
+  // Comparison state (Updated for the new Arena)
+  const [pokemonToCompare, setPokemonToCompare] = useState([null, null]);
 
   // Get unique types from dataset
   const allTypes = useMemo(() => {
@@ -78,7 +109,7 @@ function App() {
   const menuItems = [
     { id: "exploration", label: "Dataset & Filters" },
     { id: "charts", label: "Charts & Stats" },
-    { id: "compare", label: "Compare Pokémon" },
+    { id: "compare", label: "Battle Arena" }, // Updated Label
     { id: "spirit", label: "Spirit Pokémon" },
   ];
 
@@ -262,6 +293,17 @@ function App() {
     };
   }, [searchResult]);
 
+  // Handle adding a Pokemon to the battle slots
+  const addToBattle = (p) => {
+    if (!pokemonToCompare[0]) {
+      setPokemonToCompare([p, pokemonToCompare[1]]);
+    } else if (!pokemonToCompare[1]) {
+      setPokemonToCompare([pokemonToCompare[0], p]);
+    } else {
+      setPokemonToCompare([pokemonToCompare[0], p]);
+    }
+  };
+
   return (
     <div className="app-shell">
       <header>
@@ -383,6 +425,9 @@ function App() {
                             <div className="pokemon-detail-copy">
                               <h4>{searchResult.Name}</h4>
                               <p>{searchResult["Type 1"]}{searchResult["Type 2"] ? ` / ${searchResult["Type 2"]}` : ""}</p>
+                              <button className="add-to-battle-btn" onClick={() => addToBattle(searchResult)}>
+                                Add to Battle!
+                              </button>
                             </div>
                           </div>
                         )}
@@ -441,6 +486,9 @@ function App() {
                                   <img src={imgUrl} alt={p.Name} className="grid-pokemon-img" />
                                 )}
                                 <span className="grid-pokemon-name">{p.Name}</span>
+                                <button className="add-to-battle-btn" onClick={(e) => { e.stopPropagation(); addToBattle(p); }}>
+                                  Select
+                                </button>
                               </div>
                             );
                           })}
@@ -513,6 +561,7 @@ function App() {
           </>
         )}
 
+        {/* RESTORED CHARTS PAGE */}
         {activePage === "charts" && (
           <section className="charts-page">
             <h2>Charts & Statistics</h2>
@@ -650,16 +699,17 @@ function App() {
           </section>
         )}
 
+        {/* NEW BATTLE ARENA PAGE */}
         {activePage === "compare" && (
           <section className="compare-page">
-            <h2>Compare Pokémon</h2>
-            <p>Select two Pokémon to see who wins in a battle!</p>
+            <h2>Battle Arena</h2>
+            <p>Select two Pokémon to see who wins in a battle! Type advantages will modify their power.</p>
             
             {!loading && !error && pokemon.length > 0 && (
               <div className="compare-container">
                 <div className="compare-selectors">
                   <div className="compare-selector">
-                    <label className="input-label">Choose Pokémon 1</label>
+                    <label className="input-label">Choose Fighter 1</label>
                     <select 
                       className="filter-select"
                       value={pokemonToCompare[0]?.Name || ""}
@@ -676,7 +726,7 @@ function App() {
                   </div>
                   <div className="compare-vs">VS</div>
                   <div className="compare-selector">
-                    <label className="input-label">Choose Pokémon 2</label>
+                    <label className="input-label">Choose Fighter 2</label>
                     <select 
                       className="filter-select"
                       value={pokemonToCompare[1]?.Name || ""}
@@ -705,6 +755,16 @@ function App() {
                       )}
                       <h3>{pokemonToCompare[0].Name}</h3>
                       <p>{pokemonToCompare[0]["Type 1"]}{pokemonToCompare[0]["Type 2"] ? ` / ${pokemonToCompare[0]["Type 2"]}` : ""}</p>
+                      
+                      {(() => {
+                        const multi = getTypeMultiplier(pokemonToCompare[0]["Type 1"], pokemonToCompare[1]["Type 1"]);
+                        return multi !== 1 ? (
+                          <div className={`battle-multiplier ${multi > 1 ? 'advantage' : ''}`}>
+                            Damage: {multi}x vs {pokemonToCompare[1].Name}
+                          </div>
+                        ) : null;
+                      })()}
+
                       <div className="compare-stats">
                         {["HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed", "Total"].map(stat => (
                           <div key={stat} className="compare-stat-row">
@@ -717,11 +777,18 @@ function App() {
                     
                     <div className="compare-winner">
                       {(() => {
-                        const p1Total = Number(pokemonToCompare[0].Total);
-                        const p2Total = Number(pokemonToCompare[1].Total);
-                        if (p1Total > p2Total) {
+                        const p1Base = Number(pokemonToCompare[0].Total);
+                        const p2Base = Number(pokemonToCompare[1].Total);
+                        
+                        const p1Multi = getTypeMultiplier(pokemonToCompare[0]["Type 1"], pokemonToCompare[1]["Type 1"]);
+                        const p2Multi = getTypeMultiplier(pokemonToCompare[1]["Type 1"], pokemonToCompare[0]["Type 1"]);
+                        
+                        const p1Score = p1Base * p1Multi;
+                        const p2Score = p2Base * p2Multi;
+
+                        if (p1Score > p2Score) {
                           return <div className="winner-badge">{pokemonToCompare[0].Name} Wins! 🏆</div>;
-                        } else if (p2Total > p1Total) {
+                        } else if (p2Score > p1Score) {
                           return <div className="winner-badge">{pokemonToCompare[1].Name} Wins! 🏆</div>;
                         } else {
                           return <div className="winner-badge">It's a Tie! 🤝</div>;
@@ -739,6 +806,16 @@ function App() {
                       )}
                       <h3>{pokemonToCompare[1].Name}</h3>
                       <p>{pokemonToCompare[1]["Type 1"]}{pokemonToCompare[1]["Type 2"] ? ` / ${pokemonToCompare[1]["Type 2"]}` : ""}</p>
+                      
+                      {(() => {
+                        const multi = getTypeMultiplier(pokemonToCompare[1]["Type 1"], pokemonToCompare[0]["Type 1"]);
+                        return multi !== 1 ? (
+                          <div className={`battle-multiplier ${multi > 1 ? 'advantage' : ''}`}>
+                            Damage: {multi}x vs {pokemonToCompare[0].Name}
+                          </div>
+                        ) : null;
+                      })()}
+
                       <div className="compare-stats">
                         {["HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed", "Total"].map(stat => (
                           <div key={stat} className="compare-stat-row">
@@ -755,6 +832,7 @@ function App() {
           </section>
         )}
 
+        {/* RESTORED SPIRIT POKEMON QUIZ */}
         {activePage === "spirit" && (
           <section className="spirit-quiz">
             <h2>Discover your spirit Pokémon</h2>
@@ -943,6 +1021,35 @@ function App() {
           </>
         )}
       </main>
+
+      {/* STICKY WORTEN-STYLE BATTLE BAR */}
+      {(pokemonToCompare[0] || pokemonToCompare[1]) && activePage !== "compare" && (
+        <div className="sticky-battle-bar">
+          <div className="battle-slots">
+            <div className={`battle-slot ${pokemonToCompare[0] ? 'filled' : ''}`}>
+              {pokemonToCompare[0] ? (
+                <><img src={getPokemonImageUrl(pokemonToCompare[0])} className="slot-img" alt=""/> {pokemonToCompare[0].Name}</>
+              ) : "Select Fighter 1..."}
+            </div>
+            <div className="battle-vs">VS</div>
+            <div className={`battle-slot ${pokemonToCompare[1] ? 'filled' : ''}`}>
+              {pokemonToCompare[1] ? (
+                <><img src={getPokemonImageUrl(pokemonToCompare[1])} className="slot-img" alt=""/> {pokemonToCompare[1].Name}</>
+              ) : "Select Fighter 2..."}
+            </div>
+          </div>
+          <div className="sticky-actions">
+            <button 
+              className="battle-btn" 
+              onClick={() => setActivePage("compare")}
+              disabled={!pokemonToCompare[0] || !pokemonToCompare[1]}
+            >
+              Start Battle!
+            </button>
+            <button className="clear-btn" onClick={() => setPokemonToCompare([null, null])}>Clear</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
