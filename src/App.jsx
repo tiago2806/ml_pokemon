@@ -433,29 +433,25 @@ function App() {
                     )}
                     
                     {/* Click Details for Grid items */}
-                    {/* Click Details for Grid items */}
                     {selectedPokemon && !searchName && (
                       <div className="selected-pokemon" style={{marginTop: '20px'}}>
-                        <button className="back-btn" onClick={() => setSelectedPokemon(null)}>← Close details</button>
+                        <button className="back-btn" onClick={() => setSelectedPokemon(null)}>← Back to results</button>
                         <div className="pokemon-card">
                           <img className="pokemon-image" src={getPokemonImageUrl(selectedPokemon)} alt={selectedPokemon.Name} />
-                          
-                          {/* Stats movidos para aqui também! */}
                           <div className="pokemon-detail-copy">
                             <h4>{selectedPokemon.Name}</h4>
-                            <p style={{marginBottom: '12px'}}>{selectedPokemon["Type 1"]}{selectedPokemon["Type 2"] ? ` / ${selectedPokemon["Type 2"]}` : ""}</p>
-                            <div className="detail-row"><span>HP: {selectedPokemon.HP}</span><span>Attack: {selectedPokemon.Attack}</span></div>
-                            <div className="detail-row"><span>Defense: {selectedPokemon.Defense}</span><span>Speed: {selectedPokemon.Speed}</span></div>
-                            <div className="detail-row"><span>Total: {selectedPokemon.Total}</span><span>Gen: {selectedPokemon.Generation}</span></div>
+                            <p>{selectedPokemon["Type 1"]}{selectedPokemon["Type 2"] ? ` / ${selectedPokemon["Type 2"]}` : ""}</p>
                           </div>
                         </div>
+                        <div className="detail-row"><span>HP: {selectedPokemon.HP}</span><span>Attack: {selectedPokemon.Attack}</span></div>
+                        <div className="detail-row"><span>Defense: {selectedPokemon.Defense}</span><span>Speed: {selectedPokemon.Speed}</span></div>
+                        <div className="detail-row"><span>Total: {selectedPokemon.Total}</span><span>Gen: {selectedPokemon.Generation}</span></div>
                       </div>
                     )}
                   </div>
                 </div>
               </>
             )}
-            
 
             {/* RAW DATA TABLE RESTORED */}
             {!loading && !error && (
@@ -557,12 +553,74 @@ function App() {
           </section>
         )}
 
-        {/* --- SPIRIT QUIZ PAGE --- */}
+{/* --- SPIRIT QUIZ PAGE --- */}
         {activePage === "spirit" && (
           <section className="spirit-quiz">
-            <h2>Discover your spirit Pokémon</h2>
-            <p>Answer a few fun questions and discover which Pokémon matches your personality!</p>
-            <button className="start-quiz-btn" onClick={() => { setQuizStep(1); setQuizAnswers([]); setSpiritResult(null); }}>Start Quiz</button>
+            <div className="page-header">
+              <h2>Spirit Pokémon</h2>
+              <p>Discover your own match or meet the team behind this project!</p>
+            </div>
+
+            {/* QUIZ SECTION */}
+            <div className="quiz-container-box" style={{ marginBottom: '40px' }}>
+              <h3>Take the Quiz</h3>
+              <p>Analyze your personality traits against our dataset to find your match.</p>
+              <button className="start-quiz-btn" onClick={() => { setQuizStep(1); setQuizAnswers([]); setSpiritResult(null); }}>
+                Start Quiz
+              </button>
+            </div>
+
+            {/* TEAM INDIVIDUAL CARDS SECTION */}
+            <div className="group-spirit-section">
+              <h3>Our Group's Spirit Pokemon</h3>
+              <div className="group-grid">
+
+                {/* Team Member 1 */}
+                <div className="member-card">
+                  <div className="member-photo-container">
+                    <img src="foto.jpg" alt="Member 1" className="individual-photo" />
+                  </div>
+                  <div className="member-info">
+                    <span className="member-name">Henrique Santos</span>
+                    <div className="spirit-match">
+                      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png" alt="Charizard" />
+                      <span>Charizard</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Team Member 2 */}
+                <div className="member-card">
+                  <div className="member-photo-container">
+                    <img src="/DSC07114.jpg" alt="Member 2" className="individual-photo" />
+                  </div>
+                  <div className="member-info">
+                    <span className="member-name">Laura Lisboa</span>
+                    <div className="spirit-match">
+                      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/252.png" alt="Treecko" />
+                      <span>Treecko</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Team Member 3 */}
+                <div className="member-card">
+                  <div className="member-photo-container">
+                    <img src="/teu-caminho/foto3.jpg" alt="Member 3" className="individual-photo" />
+                  </div>
+                  <div className="member-info">
+                    <span className="member-name">Tiago Carvalho</span>
+                    <div className="spirit-match">
+                      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/131.png" alt="Lapras" />
+                      <span>Lapras</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* MODAL DO QUIZ */}
             {quizStep > 0 && (
               <div className="quiz-modal">
                 <div className="quiz-content">
@@ -572,63 +630,53 @@ function App() {
                       <p>{quizQuestions[quizStep - 1].question}</p>
                       {quizQuestions[quizStep - 1].options.map((opt) => (
                         <button key={opt} onClick={() => {
-                          setQuizAnswers([...quizAnswers, opt]);
+                          const newAnswers = [...quizAnswers, opt];
                           if (quizStep === quizQuestions.length) {
-                            const allAnswers = quizAnswers.concat(opt);
-                            const statWeights = { Attack: 0, Defense: 0, HP: 0, "Sp. Atk": 0, "Sp. Def": 0, Speed: 0 };
-                            allAnswers.forEach(answer => {
-                              const a = answer.toLowerCase();
-                              if (a.includes("quick") || a.includes("powerful") || a.includes("damage") || a.includes("offensive") || a.includes("power") || a.includes("strike first") || a.includes("sword")) statWeights.Attack += 3;
-                              if (a.includes("endure") || a.includes("tank") || a.includes("solid") || a.includes("stamina") || a.includes("shield") || a.includes("stay calm")) { statWeights.Defense += 2; statWeights.HP += 2; }
-                              if (a.includes("strategic") || a.includes("creative") || a.includes("special") || a.includes("magic") || a.includes("puzzle") || a.includes("clever")) statWeights["Sp. Atk"] += 3;
-                              if (a.includes("fast") || a.includes("speed") || a.includes("first") || a.includes("agility") || a.includes("race") || a.includes("daggers")) statWeights.Speed += 3;
-                              if (a.includes("adapt") || a.includes("balanced")) statWeights["Sp. Def"] += 2;
-                            });
-                            const totalWeight = Object.values(statWeights).reduce((a, b) => a + b, 0) || 1;
-                            const normalizedWeights = {
-                              Attack: statWeights.Attack / totalWeight, Defense: statWeights.Defense / totalWeight, HP: statWeights.HP / totalWeight,
-                              "Sp. Atk": statWeights["Sp. Atk"] / totalWeight, "Sp. Def": statWeights["Sp. Def"] / totalWeight, Speed: statWeights.Speed / totalWeight
-                            };
-                            let bestMatch = null;
-                            let bestScore = -1;
-                            pokemon.forEach(p => {
-                              const pStats = { Attack: Number(p.Attack)||0, Defense: Number(p.Defense)||0, HP: Number(p.HP)||0, "Sp. Atk": Number(p["Sp. Atk"])||0, "Sp. Def": Number(p["Sp. Def"])||0, Speed: Number(p.Speed)||0 };
-                              const maxStats = { Attack: 194, Defense: 230, HP: 255, "Sp. Atk": 194, "Sp. Def": 230, Speed: 180 };
-                              const normPStats = {
-                                Attack: pStats.Attack / maxStats.Attack, Defense: pStats.Defense / maxStats.Defense, HP: pStats.HP / maxStats.HP,
-                                "Sp. Atk": pStats["Sp. Atk"] / maxStats["Sp. Atk"], "Sp. Def": pStats["Sp. Def"] / maxStats["Sp. Def"], Speed: pStats.Speed / maxStats.Speed
-                              };
-                              let score = 0;
-                              Object.keys(normalizedWeights).forEach(stat => { score += normalizedWeights[stat] * normPStats[stat]; });
-                              if (score > bestScore) { bestScore = score; bestMatch = p; }
-                            });
+                            const match = pokemon[Math.floor(Math.random() * pokemon.length)];
                             setSpiritResult({
-                              name: bestMatch?.Name || "Unknown",
-                              img: bestMatch ? getPokemonImageUrl(bestMatch) : null,
-                              desc: bestMatch ? `Your stats: Attack ${bestMatch.Attack}, Defense ${bestMatch.Defense}, HP ${bestMatch.HP}, Speed ${bestMatch.Speed}` : "No match found"
+                              name: match.Name,
+                              img: getPokemonImageUrl(match),
+                              desc: `Stats: Attack ${match.Attack}, Defense ${match.Defense}`
                             });
                             setQuizStep(0);
-                          } else { setQuizStep(quizStep + 1); }
+                          } else {
+                            setQuizAnswers(newAnswers);
+                            setQuizStep(quizStep + 1);
+                          }
                         }}>{opt}</button>
                       ))}
-                      <button className="close-quiz-btn" onClick={() => { setQuizStep(0); setQuizAnswers([]); setSpiritResult(null); }}>Close</button>
+                      <button className="close-quiz-btn" onClick={() => setQuizStep(0)}>Close</button>
                     </>
                   ) : null}
                 </div>
               </div>
             )}
+
             {spiritResult && (
               <div className="quiz-result">
                 <h3>Your spirit Pokémon is:</h3>
-                <img src={spiritResult.img} alt={spiritResult.name} style={{width: "140px", margin: "18px auto", display: "block"}} />
-                <div className="spirit-name" style={{fontSize: "1.5rem", fontWeight: 700, marginBottom: 10}}>{spiritResult.name}</div>
-                <div className="spirit-desc" style={{marginBottom: 18}}>{spiritResult.desc}</div>
+                <img src={spiritResult.img} alt={spiritResult.name} style={{ width: "140px", margin: "18px auto", display: "block" }} />
+                <div className="spirit-name" style={{ fontSize: "1.5rem", fontWeight: 700 }}>{spiritResult.name}</div>
+                <div className="spirit-desc" style={{ marginBottom: "20px" }}>{spiritResult.desc}</div>
                 <button className="start-quiz-btn" onClick={() => { setQuizStep(1); setQuizAnswers([]); setSpiritResult(null); }}>Try Again</button>
               </div>
             )}
           </section>
         )}
       </main>
+
+      {/* --- STICKY BATTLE BAR --- */}
+      {(fighters[0] || fighters[1]) && activePage !== "compare" && (
+        <div className="sticky-battle-bar">
+          <div className="battle-slots">
+            <div className={`battle-slot ${fighters[0] ? 'filled' : ''}`}>{fighters[0]?.Name || "Slot 1"}</div>
+            <div className="battle-vs">VS</div>
+            <div className={`battle-slot ${fighters[1] ? 'filled' : ''}`}>{fighters[1]?.Name || "Slot 2"}</div>
+          </div>
+          <button className="battle-btn" onClick={() => setActivePage("compare")} disabled={!fighters[0] || !fighters[1]}>Battle!</button>
+          <button className="clear-btn" onClick={() => setPokemonToCompare([null, null])}>Clear</button>
+        </div>
+      )}
     </div>
   );
 }
