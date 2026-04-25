@@ -50,78 +50,78 @@ function App() {
   const [quizAnswers, setQuizAnswers] = useState([]);
   const [spiritResult, setSpiritResult] = useState(null);
 
-  // Perguntas do quiz em inglês
+  // Perguntas do quiz - baseadas em stats (Attack, Defense, HP, Speed)
   const quizQuestions = [
     {
-      question: "Your best friend cheated on their partner. What do you do?",
+      question: "How do you prefer to win battles?",
       options: [
-        "Keep the secret",
-        "Tell the truth",
-        "Give advice but stay out",
-        "Pretend you don't know"
+        "Quick and powerful strikes",  // High Attack
+        "Enduring and tanking hits",   // High Defense/HP
+        "Strategic and calculated",     // High Sp. Atk / Sp. Def
+        "Fast and slippery"            // High Speed
       ]
     },
     {
-      question: "What's your favorite weather?",
+      question: "What's your approach to challenges?",
       options: [
-        "Sunny",
-        "Rainy",
-        "Windy",
-        "Snowy"
+        "Go all out with maximum force",  // Attack
+        "Stay solid and wait for the right moment", // Defense
+        "Adapt and find creative solutions", // Sp. Atk
+        "Be the first to act"              // Speed
       ]
     },
     {
-      question: "You find a wallet on the street. Do you keep it?",
+      question: "In a fight, you rather:",
       options: [
-        "Yes, finders keepers!",
-        "No, return it!",
-        "Take the money, return the wallet",
-        "Leave it there"
+        "Deal massive damage",            // Attack
+        "Take hits and survive",          // HP/Defense
+        "Use special abilities",           // Sp. Atk
+        "Strike before they can react"    // Speed
       ]
     },
     {
-      question: "What's your favorite color?",
+      question: "Your ideal weekend activity:",
       options: [
-        "Blue",
-        "Red",
-        "Green",
-        "Yellow"
+        "Competitive sports",              // Attack
+        "Hiking and endurance activities", // HP/Defense
+        "Puzzle solving or games",        // Sp. Atk
+        "Racing or anything fast"         // Speed
       ]
     },
     {
-      question: "Are you more of a leader or a follower?",
+      question: "When playing games, you prefer:",
       options: [
-        "Leader",
-        "Follower",
-        "Depends on the situation",
-        "I do my own thing"
+        "Offensive builds",               // Attack
+        "Defensive/tank builds",          // Defense
+        "Balanced or magical builds",     // Sp. Atk
+        "Speed builds"                    // Speed
       ]
     },
     {
-      question: "What's your ideal weekend?",
+      question: "What's your strength?",
       options: [
-        "Adventure outdoors",
-        "Relax at home",
-        "Hang out with friends",
-        "Try something new"
+        "Power",                          // Attack
+        "Stamina",                        // HP
+        "Intelligence",                  // Sp. Atk
+        "Agility"                        // Speed
       ]
     },
     {
-      question: "If you had a superpower, what would it be?",
+      question: "How do you handle pressure?",
       options: [
-        "Invisibility",
-        "Super strength",
-        "Flying",
-        "Talking to animals"
+        "Strike first and end it fast",  // Attack
+        "Stay calm and endure",           // Defense/HP
+        "Think of a clever way out",     // Sp. Def
+        "Act fast before it overwhelms"   // Speed
       ]
     },
     {
-      question: "What's your favorite snack?",
+      question: "Pick your weapon:",
       options: [
-        "Cookies",
-        "Fruit",
-        "Chips",
-        "Chocolate"
+        "Heavy sword (high damage)",      // Attack
+        "Shield (high defense)",          // Defense
+        "Magic wand (special attacks)",   // Sp. Atk
+        "Daggers (fast attacks)"         // Speed
       ]
     }
   ];
@@ -343,53 +343,93 @@ function App() {
                         <button key={opt} onClick={() => {
                           setQuizAnswers([...quizAnswers, opt]);
                           if (quizStep === quizQuestions.length) {
-                            // Quiz acabou, calcular resultado
-                            // Mapeamento simples de respostas para Pokémon
-                            // (pode ser melhorado depois)
-                            const answerKey = quizAnswers.concat(opt).join("|").toLowerCase();
-                            // Exemplo de regras simples
-                            let result = {
-                              name: "Pikachu",
-                              img: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png",
-                              desc: "You are energetic, friendly, and always ready to help your friends!"
+                            // Quiz acabou, calcular resultado usando o dataset
+                            const allAnswers = quizAnswers.concat(opt);
+                            
+                            // Mapear respostas para stats (Attack, Defense, HP, Sp. Atk, Sp. Def, Speed)
+                            const statWeights = { Attack: 0, Defense: 0, HP: 0, "Sp. Atk": 0, "Sp. Def": 0, Speed: 0 };
+                            
+                            allAnswers.forEach(answer => {
+                              const a = answer.toLowerCase();
+                              // Quick strikes / maximum force / damage → Attack
+                              if (a.includes("quick") || a.includes("powerful") || a.includes("damage") || a.includes("offensive") || a.includes("power") || a.includes("strike first") || a.includes("sword")) {
+                                statWeights.Attack += 3;
+                              }
+                              // Endure / tank / shield / stamina / defense → Defense/HP
+                              if (a.includes("endure") || a.includes("tank") || a.includes("solid") || a.includes("stamina") || a.includes("shield") || a.includes("stay calm")) {
+                                statWeights.Defense += 2;
+                                statWeights.HP += 2;
+                              }
+                              // Strategic / special abilities / magic / clever → Sp. Atk
+                              if (a.includes("strategic") || a.includes("creative") || a.includes("special") || a.includes("magic") || a.includes("puzzle") || a.includes("clever")) {
+                                statWeights["Sp. Atk"] += 3;
+                              }
+                              // Speed / fast / first to act / agility → Speed
+                              if (a.includes("fast") || a.includes("speed") || a.includes("first") || a.includes("agility") || a.includes("race") || a.includes("daggers")) {
+                                statWeights.Speed += 3;
+                              }
+                              // Balanced / adapt → Sp. Def
+                              if (a.includes("adapt") || a.includes("balanced")) {
+                                statWeights["Sp. Def"] += 2;
+                              }
+                            });
+                            
+                            // Normalizar os pesos
+                            const totalWeight = Object.values(statWeights).reduce((a, b) => a + b, 0) || 1;
+                            const normalizedWeights = {
+                              Attack: statWeights.Attack / totalWeight,
+                              Defense: statWeights.Defense / totalWeight,
+                              HP: statWeights.HP / totalWeight,
+                              "Sp. Atk": statWeights["Sp. Atk"] / totalWeight,
+                              "Sp. Def": statWeights["Sp. Def"] / totalWeight,
+                              Speed: statWeights.Speed / totalWeight
                             };
-                            if (answerKey.includes("water") || answerKey.includes("blue") || answerKey.includes("rainy")) {
-                              result = {
-                                name: "Squirtle",
-                                img: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png",
-                                desc: "You are calm, adaptable, and go with the flow."
+                            
+                            // Encontrar o melhor Pokemon no dataset
+                            let bestMatch = null;
+                            let bestScore = -1;
+                            
+                            pokemon.forEach(p => {
+                              // Calcular score de similaridade
+                              const pStats = {
+                                Attack: Number(p.Attack) || 0,
+                                Defense: Number(p.Defense) || 0,
+                                HP: Number(p.HP) || 0,
+                                "Sp. Atk": Number(p["Sp. Atk"]) || 0,
+                                "Sp. Def": Number(p["Sp. Def"]) || 0,
+                                Speed: Number(p.Speed) || 0
                               };
-                            } else if (answerKey.includes("fire") || answerKey.includes("red") || answerKey.includes("sunny")) {
-                              result = {
-                                name: "Charmander",
-                                img: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png",
-                                desc: "You are passionate, bold, and light up every room you enter!"
+                              
+                              // Normalizar stats do Pokemon (0-1 baseado no max do dataset)
+                              const maxStats = { Attack: 194, Defense: 230, HP: 255, "Sp. Atk": 194, "Sp. Def": 230, Speed: 180 };
+                              const normPStats = {
+                                Attack: pStats.Attack / maxStats.Attack,
+                                Defense: pStats.Defense / maxStats.Defense,
+                                HP: pStats.HP / maxStats.HP,
+                                "Sp. Atk": pStats["Sp. Atk"] / maxStats["Sp. Atk"],
+                                "Sp. Def": pStats["Sp. Def"] / maxStats["Sp. Def"],
+                                Speed: pStats.Speed / maxStats.Speed
                               };
-                            } else if (answerKey.includes("green") || answerKey.includes("grass") || answerKey.includes("adventure")) {
-                              result = {
-                                name: "Bulbasaur",
-                                img: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
-                                desc: "You are reliable, grounded, and love nature."
-                              };
-                            } else if (answerKey.includes("chocolate") || answerKey.includes("electric") || answerKey.includes("yellow")) {
-                              result = {
-                                name: "Pikachu",
-                                img: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png",
-                                desc: "You are energetic, friendly, and always ready to help your friends!"
-                              };
-                            } else if (answerKey.includes("psychic") || answerKey.includes("invisibility") || answerKey.includes("cookies")) {
-                              result = {
-                                name: "Alakazam",
-                                img: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/65.png",
-                                desc: "You are smart, thoughtful, and always thinking ahead."
-                              };
-                            } else if (answerKey.includes("ghost") || answerKey.includes("snowy") || answerKey.includes("leave it there")) {
-                              result = {
-                                name: "Gengar",
-                                img: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png",
-                                desc: "You are mysterious, playful, and love a good prank."
-                              };
-                            }
+                              
+                              // Calcular score (produto escalar dos vetores normalizados)
+                              let score = 0;
+                              Object.keys(normalizedWeights).forEach(stat => {
+                                score += normalizedWeights[stat] * normPStats[stat];
+                              });
+                              
+                              if (score > bestScore) {
+                                bestScore = score;
+                                bestMatch = p;
+                              }
+                            });
+                            
+                            // Criar resultado
+                            const result = {
+                              name: bestMatch?.Name || "Unknown",
+                              img: bestMatch ? getPokemonImageUrl(bestMatch) : null,
+                              desc: bestMatch ? `Your stats: Attack ${bestMatch.Attack}, Defense ${bestMatch.Defense}, HP ${bestMatch.HP}, Speed ${bestMatch.Speed}` : "No match found"
+                            };
+                            
                             setSpiritResult(result);
                             setQuizStep(0);
                           } else {
