@@ -1,5 +1,3 @@
-
-
 import { useEffect, useMemo, useState } from "react";
 
 function parseCsv(text) {
@@ -92,6 +90,23 @@ function App() {
   const [lookupError, setLookupError] = useState(null);
 const [showHero, setShowHero] = useState(true); // Começa como true para mostrar a capa
 const [heroPokemons, setHeroPokemons] = useState([]); // Para as imagens aleatórias
+const [isFighting, setIsFighting] = useState(false);
+
+const [currentTip, setCurrentTip] = useState(""); // Guarda a dica do dia
+
+// Lista de dicas (podes adicionar mais sobre ML e Clustering)
+const mlTips = [
+  "Clustering insight: Pokémon with similar total stats often inhabit the same 'islands'.",
+  "Type Advantage: Double types (like Water/Flying) often have unique placement in our ML clusters.",
+  "Data Tip: Speed is often the deciding factor in our matchup predictor algorithm.",
+  "ML Concept: We used K-Means to group Pokémon by their combat DNA (Base Stats)."
+];
+
+// Escolhe uma dica aleatória ao carregar
+useEffect(() => {
+  const randomTip = mlTips[Math.floor(Math.random() * mlTips.length)];
+  setCurrentTip(randomTip);
+}, []);
 
   // Filter states
   const [filterType, setFilterType] = useState("");
@@ -105,6 +120,7 @@ const [heroPokemons, setHeroPokemons] = useState([]); // Para as imagens aleató
   const [fighters, setFighters] = useState([null, null]);
   const [draggedItem, setDraggedItem] = useState(null);
   const [dropTarget, setDropTarget] = useState(null);
+  const [arenaExpanded, setArenaExpanded] = useState(false);
 
   // O TEU CÓDIGO DO QUIZ INTACTO
   const [quizStep, setQuizStep] = useState(0);
@@ -191,6 +207,18 @@ const [heroPokemons, setHeroPokemons] = useState([]); // Para as imagens aleató
   }, [filteredPokemon, searchName]);
 
   const searchImageUrl = searchResult ? getPokemonImageUrl(searchResult) : null;
+  // 1. O ESTADO PARA GUARDAR OS RECENTES (Coloca isto junto aos outros const [..., set...])
+const [recentSearches, setRecentSearches] = useState([]);
+
+// 2. A LÓGICA QUE GUARDA AUTOMATICAMENTE (Cola isto abaixo do searchImageUrl)
+useEffect(() => {
+  if (searchResult) {
+    setRecentSearches(prev => {
+      if (prev.find(p => p.Name === searchResult.Name)) return prev;
+      return [searchResult, ...prev].slice(0, 4);
+    });
+  }
+}, [searchResult]);
 
   useEffect(() => {
     if (!searchResult) {
@@ -248,13 +276,16 @@ const [heroPokemons, setHeroPokemons] = useState([]); // Para as imagens aleató
         gap: "12px", 
         cursor: 'pointer' // Mostra a "mãozinha" ao passar o rato
       }}
+      
     >
-      Pokémon ML Explorer 
-      <img 
-        src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" 
+       <img 
+        src="https://www.pngplay.com/wp-content/uploads/2/Pokeball-PNG-Photo-Image.png" 
         alt="Pokéball" 
-        style={{ width: "36px", height: "36px" }} 
+        style={{ width: "75px", height: "75px" }} 
       />
+      Pokémon ML Explorer 
+     
+    
     </h1>
     <p style={{ margin: 0, opacity: 0.7, fontSize: "0.9rem" }}>Machine Learning meets the Pokémon world</p>
   </div>
@@ -278,6 +309,11 @@ const [heroPokemons, setHeroPokemons] = useState([]); // Para as imagens aleató
     <div className="hero-content">
       <h2 className="hero-title">Machine Learning meets the Pokémon World</h2>
       <p className="hero-subtitle">Unveiling hidden patterns, base stats, and type advantages through data science.</p>
+      <div className="hero-mini-stats">
+        <div className="mini-stat"><strong>{pokemon.length}</strong><span>Entries</span></div>
+        <div className="mini-stat"><strong>{allTypes.length}</strong><span>Types</span></div>
+        <div className="mini-stat"><strong>{allGenerations.length}</strong><span>Gens</span></div>
+      </div>
       <button className="start-button" onClick={() => setShowHero(false)}>
         Get Started
       </button>
@@ -293,86 +329,39 @@ const [heroPokemons, setHeroPokemons] = useState([]); // Para as imagens aleató
           <section>
             <div className="page-header">
               <h2>Dashboard & Analysis</h2>
-              <p>Filter the dataset and drag Pokémon into the arena to predict matchups!</p>
+              <p>Filter the dataset and explore the Pokémon world through data!</p>
             </div>
 
             {!loading && !error && (
               <>
-                {/* Top Row: About & Battle Arena */}
+                {/* Top Row: About Section Only - Arena moved to sticky bottom */}
                 <div className="dashboard-top-row">
-                  <div className="dataset-copy" style={{marginBottom: 0}}>
-                    <h3>The Global Pokédex</h3>
-                    <p>Welcome to this <strong>Pokémon Analytics Hub</strong>. This platform leverages a curated dataset to explore the relationship between <strong>Base Stats</strong>, elemental <strong>Type Advantages</strong>, and evolutionary shifts across <strong>Generations</strong>.</p>
-                    <div className="mini-stats-grid">
-                      <div className="mini-stat"><strong>{pokemon.length}</strong><span>Entries</span></div>
-                      <div className="mini-stat"><strong>{allTypes.length}</strong><span>Types</span></div>
-                      <div className="mini-stat"><strong>{allGenerations.length}</strong><span>Gens</span></div>
-                    </div>
-                  </div>
+  {/* Card 1: Tip of the Day */}
+  <div className="info-card tip-card">
+    <div className="card-icon">💡</div>
+    <div className="card-content">
+      <h4>ML Insight</h4>
+      <p>{currentTip}</p>
+    </div>
+  </div>
 
-                  {/* Arena Widget */}
-                  <div className="arena-widget">
-                    <h3>Battle Arena</h3>
-                    <div className="arena-slots">
-                      {/* Slot 1 */}
-                      <div 
-                        className={`drop-zone ${fighters[0] ? 'filled' : ''} ${dropTarget === 0 ? 'active-drag' : ''}`}
-                        onDragOver={e => { e.preventDefault(); setDropTarget(0); }}
-                        onDragLeave={() => setDropTarget(null)}
-                        onDrop={() => { if(draggedItem) { const n = [...fighters]; n[0] = draggedItem; setFighters(n); } setDropTarget(null); }}
-                      >
-                        {fighters[0] ? (
-                          <>
-                            <button className="slot-remove-btn" onClick={() => { const n = [...fighters]; n[0] = null; setFighters(n); }}>X</button>
-                            <img src={getPokemonImageUrl(fighters[0])} className="arena-pokemon-img" alt={fighters[0].Name} />
-                            <span className="arena-pokemon-name">{fighters[0].Name}</span>
-                            <span className="arena-pokemon-type">{fighters[0]["Type 1"]}</span>
-                          </>
-                        ) : "Drag Pokémon Here"}
-                      </div>
-
-                      <div className="arena-vs">VS</div>
-
-                      {/* Slot 2 */}
-                      <div 
-                        className={`drop-zone ${fighters[1] ? 'filled' : ''} ${dropTarget === 1 ? 'active-drag' : ''}`}
-                        onDragOver={e => { e.preventDefault(); setDropTarget(1); }}
-                        onDragLeave={() => setDropTarget(null)}
-                        onDrop={() => { if(draggedItem) { const n = [...fighters]; n[1] = draggedItem; setFighters(n); } setDropTarget(null); }}
-                      >
-                        {fighters[1] ? (
-                          <>
-                            <button className="slot-remove-btn" onClick={() => { const n = [...fighters]; n[1] = null; setFighters(n); }}>X</button>
-                            <img src={getPokemonImageUrl(fighters[1])} className="arena-pokemon-img" alt={fighters[1].Name} />
-                            <span className="arena-pokemon-name">{fighters[1].Name}</span>
-                            <span className="arena-pokemon-type">{fighters[1]["Type 1"]}</span>
-                          </>
-                        ) : "Drag Pokémon Here"}
-                      </div>
-                    </div>
-
-                    {/* Smart Narrative Result */}
-                    {fighters[0] && fighters[1] && (() => {
-                      const p1 = fighters[0];
-                      const p2 = fighters[1];
-                      const p1Multi = getTypeMultiplier(p1["Type 1"], p2["Type 1"]);
-                      const p2Multi = getTypeMultiplier(p2["Type 1"], p1["Type 1"]);
-                      const p1Score = Number(p1.Total) * p1Multi;
-                      const p2Score = Number(p2.Total) * p2Multi;
-                      
-                      let title = "It's a Tie! 🤝";
-                      if (p1Score > p2Score) title = `${p1.Name} Wins! 🏆`;
-                      if (p2Score > p1Score) title = `${p2.Name} Wins! 🏆`;
-
-                      return (
-                        <div className="arena-result">
-                          <strong>{title}</strong>
-                          <div className="narrative-text">{generateBattleNarrative(p1, p2, p1Score, p2Score, p1Multi, p2Multi)}</div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                </div>
+  {/* Card 2: Recent Searches */}
+  <div className="info-card recent-card">
+    <h4>Recent Explorations</h4>
+    <div className="recent-list">
+      {recentSearches.length > 0 ? (
+        recentSearches.map((p, i) => (
+          <div key={i} className="recent-item" onClick={() => setSearchTerm(p.Name.toLowerCase())}>
+            <img src={getPokemonImageUrl(p)} alt={p.Name} />
+            <span>{p.Name}</span>
+          </div>
+        ))
+      ) : (
+        <p className="no-recent">No recent searches yet.</p>
+      )}
+    </div>
+  </div>
+</div>
 
                 <div className="dataset-overview">
                   <div className="dashboard-card">
@@ -482,12 +471,23 @@ const [heroPokemons, setHeroPokemons] = useState([]); // Para as imagens aleató
                       <div className="empty-state">Use the search or filters above to begin exploration.</div>
                     )}
                     
-                    {/* Click Details for Grid items */}
+                    {/* Click Details for Grid items - WITH DRAG */}
                     {selectedPokemon && !searchName && (
                       <div className="selected-pokemon" style={{marginTop: '20px'}}>
                         <button className="back-btn" onClick={() => setSelectedPokemon(null)}>← Back to results</button>
                         <div className="pokemon-card">
-                          <img className="pokemon-image" src={getPokemonImageUrl(selectedPokemon)} alt={selectedPokemon.Name} />
+                          <div className="drag-hint-container">
+                            <img 
+                              className="pokemon-image" 
+                              src={getPokemonImageUrl(selectedPokemon)} 
+                              alt={selectedPokemon.Name} 
+                              draggable="true"
+                              onDragStart={() => setDraggedItem(selectedPokemon)}
+                              onDragEnd={() => setDraggedItem(null)}
+                              style={{cursor: 'grab'}}
+                            />
+                            <div className="drag-badge">DRAG ME</div>
+                          </div>
                           <div className="pokemon-detail-copy">
                             <h4>{selectedPokemon.Name}</h4>
                             <p>{selectedPokemon["Type 1"]}{selectedPokemon["Type 2"] ? ` / ${selectedPokemon["Type 2"]}` : ""}</p>
@@ -756,16 +756,68 @@ const [heroPokemons, setHeroPokemons] = useState([]); // Para as imagens aleató
   ) : null}
       </main>
 
-      {/* --- STICKY BATTLE BAR --- */}
-      {(fighters[0] || fighters[1]) && activePage !== "compare" && (
-        <div className="sticky-battle-bar">
-          <div className="battle-slots">
-            <div className={`battle-slot ${fighters[0] ? 'filled' : ''}`}>{fighters[0]?.Name || "Slot 1"}</div>
-            <div className="battle-vs">VS</div>
-            <div className={`battle-slot ${fighters[1] ? 'filled' : ''}`}>{fighters[1]?.Name || "Slot 2"}</div>
-          </div>
-          <button className="battle-btn" onClick={() => setActivePage("compare")} disabled={!fighters[0] || !fighters[1]}>Battle!</button>
-          <button className="clear-btn" onClick={() => setPokemonToCompare([null, null])}>Clear</button>
+      {/* --- STICKY BOTTOM ARENA BAR --- */}
+      {activePage === "exploration" && (
+        <div className={`sticky-bottom-arena ${arenaExpanded ? 'expanded' : ''}`}>
+          <button 
+            className="sticky-arena-toggle"
+            onClick={() => setArenaExpanded(!arenaExpanded)}
+          >
+            Battle Arena ⚔️ {fighters[0] && fighters[1] ? `(${fighters[0].Name} vs ${fighters[1].Name})` : ""}
+          </button>
+          {arenaExpanded && (
+            <div className="sticky-arena-content">
+              <div className="sticky-arena-slots">
+                <div className={`sticky-drop-zone ${fighters[0] ? 'filled' : ''}`} onDragOver={e => { e.preventDefault(); setDropTarget(0); }} onDragLeave={() => setDropTarget(null)} onDrop={() => { if(draggedItem) { const n = [...fighters]; n[0] = draggedItem; setFighters(n); } setDropTarget(null); }}>
+                  {fighters[0] ? <><img src={getPokemonImageUrl(fighters[0])} alt={fighters[0].Name} /><span>{fighters[0].Name}</span></> : "Drop here"}
+                </div>
+                {isFighting && fighters[0] && fighters[1] && (
+  <div className="battle-result-announcement">
+    {/* Usamos a lógica que já funciona no teu código em vez de uma função inexistente */}
+    {(() => {
+        const p1 = fighters[0];
+        const p2 = fighters[1];
+        const p1Multi = getTypeMultiplier(p1["Type 1"], p2["Type 1"]);
+        const p2Multi = getTypeMultiplier(p2["Type 1"], p1["Type 1"]);
+        const p1Score = Number(p1.Total) * p1Multi;
+        const p2Score = Number(p2.Total) * p2Multi;
+        
+        let title = "It's a Tie!";
+        if (p1Score > p2Score) title = `${p1.Name} Wins!`;
+        if (p2Score > p1Score) title = `${p2.Name} Wins!`;
+
+        return (
+          <>
+            <strong>{title}</strong>
+            <div className="narrative-text" style={{fontSize: '0.8rem', marginTop: '5px'}}>
+               {generateBattleNarrative(p1, p2, p1Score, p2Score, p1Multi, p2Multi)}
+            </div>
+          </>
+        );
+    })()}
+    <button className="clear-arena-btn" style={{marginTop: '10px'}} onClick={() => setIsFighting(false)}>Back to Arena</button>
+  </div>
+
+)}
+                <div className="arena-center-controls">
+  {fighters[0] && fighters[1] && !isFighting ? (
+    <button className="fight-button" onClick={() => setIsFighting(true)}>
+      FIGHT!
+    </button>
+  ) : (
+    <span className="arena-vs">VS</span>
+  )}
+</div>
+                <div className={`sticky-drop-zone ${fighters[1] ? 'filled' : ''}`} onDragOver={e => { e.preventDefault(); setDropTarget(1); }} onDragLeave={() => setDropTarget(null)} onDrop={() => { if(draggedItem) { const n = [...fighters]; n[1] = draggedItem; setFighters(n); } setDropTarget(null); }}>
+                  {fighters[1] ? <><img src={getPokemonImageUrl(fighters[1])} alt={fighters[1].Name} /><span>{fighters[1].Name}</span></> : "Drop here"}
+                </div>
+              </div>
+              
+              <button className="clear-arena-btn" onClick={() => { setFighters([null, null]); setIsFighting(false); }}>
+  Clear Arena
+</button>
+            </div>
+          )}
         </div>
       )}
     </div>
