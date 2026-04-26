@@ -90,6 +90,8 @@ function App() {
   const [cardResults, setCardResults] = useState([]);
   const [lookupLoading, setLookupLoading] = useState(false);
   const [lookupError, setLookupError] = useState(null);
+const [showHero, setShowHero] = useState(true); // Começa como true para mostrar a capa
+const [heroPokemons, setHeroPokemons] = useState([]); // Para as imagens aleatórias
 
   // Filter states
   const [filterType, setFilterType] = useState("");
@@ -149,6 +151,14 @@ function App() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+  if (pokemon.length > 0 && heroPokemons.length === 0) {
+    // Escolhe 8 pokémons aleatórios do teu dataset para o fundo
+    const shuffled = [...pokemon].sort(() => 0.5 - Math.random());
+    setHeroPokemons(shuffled.slice(0, 8));
+  }
+}, [pokemon]);
 
   const datasetHead = useMemo(() => pokemon.slice(0, 5), [pokemon]);
   
@@ -226,18 +236,58 @@ function App() {
 
   return (
     <div className="app-shell">
-      <header>
-        <div><h1>ML Pokemon Project</h1></div>
-        <nav className="app-nav" aria-label="Main navigation">
-          {menuItems.map((item) => (
-            <button key={item.id} className={`nav-link ${activePage === item.id ? "active" : ""}`} onClick={() => setActivePage(item.id)} type="button">
-              {item.label}
-            </button>
-          ))}
-        </nav>
-      </header>
+     <header>
+  <div>
+    {/* Este bloco agora é o teu botão Home: Título + Imagem da Pokébola */}
+    <h1 
+      onClick={() => setShowHero(true)} 
+      style={{ 
+        margin: 0, 
+        display: "flex", 
+        alignItems: "center", 
+        gap: "12px", 
+        cursor: 'pointer' // Mostra a "mãozinha" ao passar o rato
+      }}
+    >
+      Pokémon ML Explorer 
+      <img 
+        src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" 
+        alt="Pokéball" 
+        style={{ width: "36px", height: "36px" }} 
+      />
+    </h1>
+    <p style={{ margin: 0, opacity: 0.7, fontSize: "0.9rem" }}>Machine Learning meets the Pokémon world</p>
+  </div>
+  
+  <nav className="app-nav" aria-label="Main navigation">
+    {menuItems.map((item) => (
+      <button key={item.id} className={`nav-link ${activePage === item.id ? "active" : ""}`} onClick={() => setActivePage(item.id)} type="button">
+        {item.label}
+      </button>
+    ))}
+  </nav>
+</header>
+
+{showHero && (
+  <div className="hero-section">
+    <div className="hero-carousel">
+      {heroPokemons.map((p, i) => (
+        <img key={i} src={getPokemonImageUrl(p)} alt="" className="hero-bg-img" />
+      ))}
+    </div>
+    <div className="hero-content">
+      <h2 className="hero-title">Machine Learning meets the Pokémon World</h2>
+      <p className="hero-subtitle">Unveiling hidden patterns, base stats, and type advantages through data science.</p>
+      <button className="start-button" onClick={() => setShowHero(false)}>
+        Get Started
+      </button>
+    </div>
+  </div>
+)}
 
       <main>
+        {!showHero ? (
+    <>
         {/* --- DASHBOARD PAGE --- */}
         {activePage === "exploration" && (
           <section>
@@ -561,11 +611,59 @@ function App() {
               <p>Discover your own match or meet the team behind this project!</p>
             </div>
 
-            {/* QUIZ SECTION */}
-            <div className="quiz-container-box" style={{ marginBottom: '40px' }}>
-              <h3>Take the Quiz</h3>
-              <p>Analyze your personality traits against our dataset to find your match.</p>
-              <button className="start-quiz-btn" onClick={() => { setQuizStep(1); setQuizAnswers([]); setSpiritResult(null); }}>
+            {/* RESULT SHOWS FIRST - ABOVE EVERYTHING */}
+            {spiritResult && (
+              <div className="quiz-result" style={{ 
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", 
+                borderRadius: "24px", 
+                padding: "40px", 
+                textAlign: "center", 
+                color: "white",
+                marginBottom: "40px",
+                boxShadow: "0 20px 60px rgba(102, 126, 234, 0.4)"
+              }}>
+                <h3 style={{ margin: "0 0 20px", fontSize: "1.4rem", color: "rgba(255,255,255,0.9)" }}>Your Spirit Pokémon</h3>
+                <img src={spiritResult.img} alt={spiritResult.name} style={{ width: "180px", margin: "0 auto", display: "block", background: "white", borderRadius: "20px", padding: "15px" }} />
+                <div className="spirit-name" style={{ fontSize: "2rem", fontWeight: 800, marginTop: "20px" }}>{spiritResult.name}</div>
+                <div className="spirit-desc" style={{ marginBottom: "24px", opacity: 0.9 }}>{spiritResult.desc}</div>
+                <button style={{ 
+                  padding: "14px 32px", 
+                  borderRadius: "16px", 
+                  border: "none", 
+                  background: "white", 
+                  color: "#667eea", 
+                  fontSize: "1rem", 
+                  fontWeight: 700, 
+                  cursor: "pointer",
+                  transition: "transform 0.2s"
+                }} onClick={() => { setQuizStep(1); setQuizAnswers([]); setSpiritResult(null); }}>Try Again</button>
+              </div>
+            )}
+
+            {/* QUIZ SECTION - BEAUTIFUL HEADER */}
+            <div style={{ 
+              background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)", 
+              borderRadius: "24px", 
+              padding: "40px", 
+              textAlign: "center", 
+              color: "white",
+              marginBottom: "40px",
+              boxShadow: "0 20px 60px rgba(245, 87, 108, 0.3)"
+            }}>
+              <h3 style={{ margin: "0 0 12px", fontSize: "1.6rem" }}>Find Your Spirit Pokémon</h3>
+              <p style={{ margin: "0 0 24px", opacity: 0.9, textAlign: "center" }}>Analyze your personality traits against our dataset to find your match.</p>
+              <button style={{ 
+                padding: "18px 48px", 
+                borderRadius: "20px", 
+                border: "none", 
+                background: "white", 
+                color: "#f5576c", 
+                fontSize: "1.2rem", 
+                fontWeight: 800, 
+                cursor: "pointer",
+                boxShadow: "0 8px 30px rgba(0,0,0,0.2)",
+                transition: "transform 0.2s, box-shadow 0.2s"
+              }} onClick={() => { setQuizStep(1); setQuizAnswers([]); setSpiritResult(null); }}>
                 Start Quiz
               </button>
             </div>
@@ -651,18 +749,11 @@ function App() {
                 </div>
               </div>
             )}
-
-            {spiritResult && (
-              <div className="quiz-result">
-                <h3>Your spirit Pokémon is:</h3>
-                <img src={spiritResult.img} alt={spiritResult.name} style={{ width: "140px", margin: "18px auto", display: "block" }} />
-                <div className="spirit-name" style={{ fontSize: "1.5rem", fontWeight: 700 }}>{spiritResult.name}</div>
-                <div className="spirit-desc" style={{ marginBottom: "20px" }}>{spiritResult.desc}</div>
-                <button className="start-quiz-btn" onClick={() => { setQuizStep(1); setQuizAnswers([]); setSpiritResult(null); }}>Try Again</button>
-              </div>
-            )}
           </section>
         )}
+      
+    </>
+  ) : null}
       </main>
 
       {/* --- STICKY BATTLE BAR --- */}
