@@ -121,6 +121,9 @@ useEffect(() => {
   const [draggedItem, setDraggedItem] = useState(null);
   const [dropTarget, setDropTarget] = useState(null);
   const [arenaExpanded, setArenaExpanded] = useState(false);
+  
+  // Pokemon World animation
+  const [worldTime, setWorldTime] = useState(0);
 
   // O TEU CÓDIGO DO QUIZ INTACTO
   const [quizStep, setQuizStep] = useState(0);
@@ -153,6 +156,7 @@ useEffect(() => {
 
   const menuItems = [
     { id: "exploration", label: "Dashboard & Analysis" },
+    { id: "pokemonWorld", label: "Pokémon World" },
     { id: "charts", label: "Charts & Stats" },
     { id: "spirit", label: "Spirit Pokémon" },
   ];
@@ -175,6 +179,14 @@ useEffect(() => {
     setHeroPokemons(shuffled.slice(0, 8));
   }
 }, [pokemon]);
+
+  // Animation for Pokemon World
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setWorldTime(t => t + 1);
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
 
   const datasetHead = useMemo(() => pokemon.slice(0, 5), [pokemon]);
   
@@ -340,18 +352,31 @@ useEffect(() => {
   <div className="info-card tip-card">
     <div className="card-icon">💡</div>
     <div className="card-content">
-      <h4>ML Insight</h4>
+      <div className="tip-card-header">
+        <h4>ML Insight</h4>
+      </div>
       <p>{currentTip}</p>
     </div>
   </div>
 
   {/* Card 2: Recent Searches */}
   <div className="info-card recent-card">
-    <h4>Recent Explorations</h4>
-    <div className="recent-list">
+    <div className="card-icon">🔍</div>
+    <div className="card-content">
+      <div className="recent-card-header">
+        <h4>Recent Explorations</h4>
+      </div>
+      <div className="recent-list">
       {recentSearches.length > 0 ? (
         recentSearches.map((p, i) => (
-          <div key={i} className="recent-item" onClick={() => setSearchTerm(p.Name.toLowerCase())}>
+          <div 
+            key={i} 
+            className="recent-item" 
+            draggable="true"
+            onDragStart={() => { setDraggedItem(p); }}
+            onDragEnd={() => setDraggedItem(null)}
+            onClick={() => setSearchTerm(p.Name.toLowerCase())}
+          >
             <img src={getPokemonImageUrl(p)} alt={p.Name} />
             <span>{p.Name}</span>
           </div>
@@ -359,6 +384,7 @@ useEffect(() => {
       ) : (
         <p className="no-recent">No recent searches yet.</p>
       )}
+      </div>
     </div>
   </div>
 </div>
@@ -398,7 +424,7 @@ useEffect(() => {
                               src={searchImageUrl} 
                               alt={searchResult.Name} 
                               draggable="true"
-                              onDragStart={() => setDraggedItem(searchResult)}
+                              onDragStart={() => { setDraggedItem(searchResult); }}
                               onDragEnd={() => setDraggedItem(null)}
                               style={{cursor: 'grab'}}
                             />
@@ -450,7 +476,7 @@ useEffect(() => {
                               key={p.Name} 
                               className="pokemon-grid-item"
                               draggable="true"
-                              onDragStart={() => setDraggedItem(p)}
+                              onDragStart={() => { setDraggedItem(p); }}
                               onDragEnd={() => setDraggedItem(null)}
                               onClick={() => setSelectedPokemon(p)}
                             >
@@ -482,7 +508,7 @@ useEffect(() => {
                               src={getPokemonImageUrl(selectedPokemon)} 
                               alt={selectedPokemon.Name} 
                               draggable="true"
-                              onDragStart={() => setDraggedItem(selectedPokemon)}
+                              onDragStart={() => { setDraggedItem(selectedPokemon); }}
                               onDragEnd={() => setDraggedItem(null)}
                               style={{cursor: 'grab'}}
                             />
@@ -507,6 +533,7 @@ useEffect(() => {
             {!loading && !error && (
               <section style={{marginTop: '40px'}}>
                 <h2>Dataset Overview</h2>
+                <p style={{marginBottom: '16px', color: '#64748b'}}>Drag any Pokémon into the Battle Arena!</p>
                 <div className="table-wrapper">
                   <table>
                     <thead>
@@ -516,7 +543,13 @@ useEffect(() => {
                       {datasetHead.map((row, index) => {
                         const imgUrl = getPokemonImageUrl(row);
                         return (
-                          <tr key={`${row.Name}-${index}`}>
+                          <tr 
+                            key={`${row.Name}-${index}`} 
+                            draggable="true"
+                            onDragStart={() => { setDraggedItem(row); }}
+                            onDragEnd={() => setDraggedItem(null)}
+                            style={{cursor: 'grab'}}
+                          >
                             <td>{imgUrl && <img src={imgUrl} alt={row.Name} style={{width: "40px", height: "40px", objectFit: "contain"}} />}</td>
                             <td>{row["#"] || index + 1}</td><td>{row.Name}</td><td>{row["Type 1"]}</td><td>{row["Type 2"] || "—"}</td><td>{row.Total}</td><td>{row.HP}</td><td>{row.Attack}</td><td>{row.Defense}</td><td>{row.Speed}</td>
                           </tr>
@@ -526,6 +559,72 @@ useEffect(() => {
                   </table>
                 </div>
               </section>
+            )}
+          </section>
+        )}
+
+        {/* --- POKEMON WORLD PAGE --- */}
+        {activePage === "pokemonWorld" && (
+          <section className="pokemon-world-page">
+            <div className="page-header">
+              <h2>Pokémon World</h2>
+              <p>Explore different clusters of Pokémon based on their stats!</p>
+            </div>
+            
+            {!loading && !error && pokemon.length > 0 && (
+              <div className="world-container">
+                <div className="ocean">
+                  {/* Create 4 clusters/islands based on total stats */}
+                  {[
+                    { name: "Tiny Island", color: "#a8e6cf", centerX: 15, centerY: 20, range: 60 },
+                    { name: "Small Island", color: "#dcedc1", centerX: 75, centerY: 25, range: 70 },
+                    { name: "Medium Island", color: "#ffd3b6", centerX: 25, centerY: 70, range: 80 },
+                    { name: "Giant Island", color: "#ffaaa5", centerX: 70, centerY: 75, range: 90 }
+                  ].map((island, idx) => {
+                    // Get pokemons for this cluster
+                    const clusterPokemon = pokemon
+                      .filter(p => {
+                        const total = Number(p.Total) || 0;
+                        const min = idx * 150;
+                        return total >= min && total < min + 150;
+                      })
+                      .slice(0, 6);
+                    
+                    return (
+                      <div 
+                        key={idx}
+                        className="island"
+                        style={{
+                          left: `${island.centerX}%`,
+                          top: `${island.centerY}%`,
+                          backgroundColor: island.color
+                        }}
+                      >
+                        <span className="island-name">{island.name}</span>
+                        <div className="island-pokemons">
+                          {clusterPokemon.map((p, i) => (
+                            <img
+                              key={i}
+                              src={getPokemonImageUrl(p)}
+                              alt={p.Name}
+                              className="floating-pokemon"
+                              style={{
+                                animationDelay: `${(idx * 6 + i) * 0.3}s`,
+                                left: `${Math.random() * 60 + 10}%`,
+                                top: `${Math.random() * 40 + 20}%`
+                              }}
+                              title={p.Name}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="world-legend">
+                  <p>🌊 Ocean represents the Pokémon world with different islands based on total stats clusters</p>
+                </div>
+              </div>
             )}
           </section>
         )}
@@ -768,7 +867,7 @@ useEffect(() => {
           {arenaExpanded && (
             <div className="sticky-arena-content">
               <div className="sticky-arena-slots">
-                <div className={`sticky-drop-zone ${fighters[0] ? 'filled' : ''}`} onDragOver={e => { e.preventDefault(); setDropTarget(0); }} onDragLeave={() => setDropTarget(null)} onDrop={() => { if(draggedItem) { const n = [...fighters]; n[0] = draggedItem; setFighters(n); } setDropTarget(null); }}>
+                <div className={`sticky-drop-zone ${fighters[0] ? 'filled' : ''}`} onDragOver={e => { e.preventDefault(); setDropTarget(0); setArenaExpanded(true); }} onDragLeave={() => setDropTarget(null)} onDrop={() => { if(draggedItem) { const n = [...fighters]; n[0] = draggedItem; setFighters(n); } setDropTarget(null); }}>
                   {fighters[0] ? <><img src={getPokemonImageUrl(fighters[0])} alt={fighters[0].Name} /><span>{fighters[0].Name}</span></> : "Drop here"}
                 </div>
                 {isFighting && fighters[0] && fighters[1] && (
@@ -808,7 +907,7 @@ useEffect(() => {
     <span className="arena-vs">VS</span>
   )}
 </div>
-                <div className={`sticky-drop-zone ${fighters[1] ? 'filled' : ''}`} onDragOver={e => { e.preventDefault(); setDropTarget(1); }} onDragLeave={() => setDropTarget(null)} onDrop={() => { if(draggedItem) { const n = [...fighters]; n[1] = draggedItem; setFighters(n); } setDropTarget(null); }}>
+                <div className={`sticky-drop-zone ${fighters[1] ? 'filled' : ''}`} onDragOver={e => { e.preventDefault(); setDropTarget(1); setArenaExpanded(true); }} onDragLeave={() => setDropTarget(null)} onDrop={() => { if(draggedItem) { const n = [...fighters]; n[1] = draggedItem; setFighters(n); } setDropTarget(null); }}>
                   {fighters[1] ? <><img src={getPokemonImageUrl(fighters[1])} alt={fighters[1].Name} /><span>{fighters[1].Name}</span></> : "Drop here"}
                 </div>
               </div>

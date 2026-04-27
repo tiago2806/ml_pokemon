@@ -1571,13 +1571,29 @@ main {
   border-radius: 18px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.05);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 15px;
   border: 1px solid #f1f5f9;
 }
 
-.tip-card h4, .recent-card h4 {
-  margin: 0 0 5px 0;
+.card-icon {
+  font-size: 1.5rem;
+  margin-top: 2px;
+}
+
+.card-content {
+  flex: 1;
+}
+
+.tip-card-header, .recent-card-header {
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  min-width: 140px;
+}
+
+.tip-card-header h4, .recent-card-header h4 {
+  margin: 0;
   color: #6366f1;
   font-size: 0.9rem;
   text-transform: uppercase;
@@ -1622,4 +1638,107 @@ main {
   font-weight: bold;
   color: #64748b;
   margin-top: 4px;
+}
+
+/* Pokemon World Page */
+.pokemon-world-page {
+  padding-bottom: 40px;
+}
+
+.world-container {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #4fc3f7 0%, #0288d1 50%, #01579b 100%);
+}
+
+.ocean {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.island {
+  position: absolute;
+  width: 140px;
+  height: 100px;
+  border-radius: 45% 45% 50% 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  box-shadow: 
+    0 8px 24px rgba(0,0,0,0.3),
+    inset 0 -20px 30px rgba(0,100,0,0.3);
+  transform: translate(-50%, -50%);
+  overflow: visible;
+}
+
+.island::before {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 10%;
+  width: 80%;
+  height: 15px;
+  background: #c2b280;
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+.island::after {
+  content: '🌴';
+  position: absolute;
+  top: -15px;
+  font-size: 24px;
+}
+
+.island-name {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  margin-bottom: 8px;
+  z-index: 2;
+}
+
+.island-pokemons {
+  position: relative;
+  width: 100%;
+  height: 60px;
+  z-index: 3;
+}
+
+.floating-pokemon {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.floating-pokemon:hover {
+  transform: scale(1.3);
+  z-index: 10;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.world-legend {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.9);
+  padding: 12px 24px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  color: #1e293b;
 }
