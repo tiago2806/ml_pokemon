@@ -88,13 +88,81 @@ html, body {
   overflow-x: hidden;
 }
 
-header {
+/* =========================================
+   FUTURISTIC GLASSMORPHISM HEADER
+========================================= */
+
+.glass-header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 2000;
   display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
+  border-radius: 24px;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 26px;
+  padding: 15px 40px;
+  
+  /* Efeito de Vidro */
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  
+  margin-bottom: 30px;
+}
+
+.logo-group {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+}
+
+/* Título com Gradiente ML */
+.gradient-title {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 900;
+  background: linear-gradient(90deg, #6366f1, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Pokébola com Efeito de Scanner */
+.scanning-poke {
+  width: 55px;
+  height: 55px;
+  animation: poke-scan 3s ease-in-out infinite;
+}
+
+@keyframes poke-scan {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 0px rgba(99, 102, 241, 0));
+  }
+  50% {
+    transform: scale(1.1) rotate(10deg);
+    filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.6));
+  }
+}
+
+/* Ajuste nos Nav Links para combinarem com o vidro */
+.nav-link {
+  background: rgba(99, 102, 241, 0.05);
+  border: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+.nav-link.active {
+  background: #6366f1;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+
+main {
+  padding-top: 20px;
 }
 
 .app-nav {
@@ -1089,12 +1157,15 @@ tbody tr:hover {
   pointer-events: none;
 }
 
-/* Texto a dizer para usar os filtros */
 .empty-state {
   text-align: center;
-  padding: 40px;
-  color: #94a3b8;
-  font-style: italic;
+  padding: 12px 20px; /* Massively reduced padding to shrink the gap */
+  margin-top: 16px;
+  color: #64748b;
+  font-size: 0.9rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px dashed #cbd5e1;
 }
 
 /* Modo telemóvel (um debaixo do outro) */
@@ -1640,105 +1711,234 @@ main {
   margin-top: 4px;
 }
 
-/* Pokemon World Page */
-.pokemon-world-page {
-  padding-bottom: 40px;
-}
+/* =========================================
+   MAPA 2D V3: ONDAS REAIS E PALMEIRAS
+========================================= */
 
-.world-container {
+.map-ocean {
   position: relative;
   width: 100%;
-  height: 500px;
+  height: 650px;
+  background: #0ea5e9;
   border-radius: 24px;
   overflow: hidden;
-  background: linear-gradient(180deg, #4fc3f7 0%, #0288d1 50%, #01579b 100%);
+  box-shadow: inset 0 0 80px rgba(0,0,0,0.15);
+  border: 8px solid #075985;
 }
 
-.ocean {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.island {
+/* Formato de ONDA real (estilo "~") */
+/* Ondas com formato de "crista" (conforme a imagem do Freepik) */
+.real-wave {
   position: absolute;
-  width: 140px;
-  height: 100px;
-  border-radius: 45% 45% 50% 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  box-shadow: 
-    0 8px 24px rgba(0,0,0,0.3),
-    inset 0 -20px 30px rgba(0,100,0,0.3);
+  width: 60px;
+  height: 40px;
+  /* SVG que desenha a curva da crista da onda com contorno castanho */
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 60"><path d="M10,50 Q40,50 50,30 T90,10" fill="none" stroke="%235d4037" stroke-width="3"/><path d="M10,50 Q40,50 50,30 T90,10 L90,50 Z" fill="%23bae6fd" opacity="0.7"/></svg>');
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0;
+  animation: waveSplash 6s ease-in-out infinite;
+}
+
+@keyframes waveSplash {
+  0% { opacity: 0; transform: scale(0.5) translateX(-20px); }
+  50% { opacity: 0.8; transform: scale(1.1) translateX(0); }
+  100% { opacity: 0; transform: scale(0.5) translateX(20px); }
+}
+
+/* Ilhas com formato de "poça de areia" orgânica */
+.organic-island {
+  position: absolute;
+  width: 350px;
+  height: 280px;
+  background: #fde68a; /* Areia */
   transform: translate(-50%, -50%);
-  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid #f59e0b; /* Borda da areia */
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  /* O formato (shape) é injetado via JS, mas garantimos o overflow */
+  overflow: visible; 
 }
 
-.island::before {
-  content: '';
+/* Palmeira Estilizada (Tronco curvo e folhas detalhadas) */
+.custom-palm {
   position: absolute;
-  bottom: -5px;
-  left: 10%;
-  width: 80%;
-  height: 15px;
-  background: #c2b280;
-  border-radius: 50%;
-  opacity: 0.8;
+  width: 100px;
+  height: 120px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120"><path d="M50,110 Q35,70 50,30" stroke="%235d4037" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="45" cy="35" r="5" fill="%235d4037"/><circle cx="55" cy="35" r="5" fill="%235d4037"/><path d="M50,30 Q10,10 5,50 M50,30 Q30,-10 10,10 M50,30 Q70,-10 90,10 M50,30 Q90,10 95,50" stroke="%2316a34a" stroke-width="6" fill="none" stroke-linecap="round"/></svg>');
+  background-size: contain;
+  background-repeat: no-repeat;
+  z-index: 5;
+  filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
 }
 
-.island::after {
-  content: '🌴';
-  position: absolute;
-  top: -15px;
-  font-size: 24px;
-}
+.p1 { top: -10%; left: 5%; transform: rotate(-5deg); }
+.p2 { bottom: 5%; right: 0%; transform: scale(1.2) rotate(10deg); }
 
-.island-name {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-  margin-bottom: 8px;
-  z-index: 2;
-}
-
-.island-pokemons {
-  position: relative;
-  width: 100%;
-  height: 60px;
-  z-index: 3;
-}
-
-.floating-pokemon {
-  position: absolute;
-  width: 28px;
-  height: 28px;
-  animation: float 3s ease-in-out infinite;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.floating-pokemon:hover {
-  transform: scale(1.3);
+.island-title {
+  font-weight: 900;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 4px 12px;
+  border-radius: 8px;
   z-index: 10;
+  letter-spacing: 1px;
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-
-.world-legend {
+.map-pokemon {
   position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255,255,255,0.9);
-  padding: 12px 24px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  color: #1e293b;
+  width: 55px;
+  height: 55px;
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.4));
+  animation: mapFloat 4s ease-in-out infinite;
+  z-index: 20;
 }
+
+@keyframes mapFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(5deg); }
+}
+/* =========================================
+   UI UPGRADES: BADGES, EMOJI GRID, CHAIN
+========================================= */
+
+/* 1. Name and Type Row */
+.name-type-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.name-type-row h4 {
+  margin: 0 !important;
+  font-size: 1.6rem;
+}
+
+.type-badges {
+  display: flex;
+  gap: 6px;
+}
+
+.type-badge {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Specific Type Colors */
+.type-badge.normal { background: #A8A77A; }
+.type-badge.fire { background: #EE8130; }
+.type-badge.water { background: #6390F0; }
+.type-badge.electric { background: #F7D02C; color: #333; text-shadow: none; }
+.type-badge.grass { background: #7AC74C; }
+.type-badge.ice { background: #96D9D6; color: #333; text-shadow: none; }
+.type-badge.fighting { background: #C22E28; }
+.type-badge.poison { background: #A33EA1; }
+.type-badge.ground { background: #E2BF65; color: #333; text-shadow: none; }
+.type-badge.flying { background: #A98FF3; }
+.type-badge.psychic { background: #F95587; }
+.type-badge.bug { background: #A6B91A; }
+.type-badge.rock { background: #B6A136; }
+.type-badge.ghost { background: #735797; }
+.type-badge.dragon { background: #6F35FC; }
+.type-badge.dark { background: #705746; }
+.type-badge.steel { background: #B7B7CE; color: #333; text-shadow: none; }
+.type-badge.fairy { background: #D685AD; }
+
+/* 2. Emoji Stat Grid */
+/* 2. Emoji Stat Grid - Versão Limpa (sem tabela) */
+.emoji-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 24px;
+  background: transparent; /* Remove o fundo branco */
+  padding: 8px 0; /* Ajusta o espaçamento */
+  border: none; /* Remove a borda */
+  box-shadow: none; /* Remove a sombra */
+  margin-top: -20px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  color: #1e293b; /* Cor um pouco mais escura para ler melhor sem o fundo branco */
+}
+
+.stat-item strong {
+  color: #0f172a;
+  font-size: 1.1rem;
+}
+
+.stat-item.total {
+  grid-column: span 2;
+  border-top: 2px solid rgba(99, 102, 241, 0.2); /* Uma linha mais visível para o total */
+  padding-top: 12px;
+  margin-top: 4px;
+  font-weight: 800;
+}
+
+/* Ajuste opcional para a Evolution Chain ficar mais profissional com maiúsculas */
+.breadcrumb-item {
+  letter-spacing: 1px; /* Dá um pouco de ar às letras maiúsculas */
+  font-size: 0.85rem;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.stat-item strong {
+  color: #0f172a;
+  font-size: 1.05rem;
+}
+
+.stat-item.total {
+  grid-column: span 2;
+  border-top: 1px dashed #cbd5e1;
+  padding-top: 10px;
+  margin-top: 2px;
+}
+
+/* 3. Compact Breadcrumb Evolution Chain */
+.breadcrumb-chain {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  background: white;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+.breadcrumb-item .arrow {
+  color: #cbd5e1;
+  margin-left: 8px;
+  font-size: 0.8rem;
+}
+

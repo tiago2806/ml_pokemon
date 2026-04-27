@@ -276,35 +276,23 @@ useEffect(() => {
 
   return (
     <div className="app-shell">
-     <header>
-  <div>
-    {/* Este bloco agora é o teu botão Home: Título + Imagem da Pokébola */}
-    <h1 
-      onClick={() => setShowHero(true)} 
-      style={{ 
-        margin: 0, 
-        display: "flex", 
-        alignItems: "center", 
-        gap: "12px", 
-        cursor: 'pointer' // Mostra a "mãozinha" ao passar o rato
-      }}
-      
-    >
-       <img 
-        src="https://www.pngplay.com/wp-content/uploads/2/Pokeball-PNG-Photo-Image.png" 
-        alt="Pokéball" 
-        style={{ width: "75px", height: "75px" }} 
-      />
-      Pokémon ML Explorer 
-     
-    
-    </h1>
-    <p style={{ margin: 0, opacity: 0.7, fontSize: "0.9rem" }}>Machine Learning meets the Pokémon world</p>
+    <header className="glass-header">
+  <div className="logo-group" onClick={() => setShowHero(true)}>
+    <img 
+      src="https://www.pngplay.com/wp-content/uploads/2/Pokeball-PNG-Photo-Image.png" 
+      alt="Pokéball" 
+      className="scanning-poke" 
+    />
+    <h1 className="gradient-title">Pokémon ML Explorer</h1>
   </div>
   
-  <nav className="app-nav" aria-label="Main navigation">
+  <nav className="app-nav">
     {menuItems.map((item) => (
-      <button key={item.id} className={`nav-link ${activePage === item.id ? "active" : ""}`} onClick={() => setActivePage(item.id)} type="button">
+      <button 
+        key={item.id} 
+        className={`nav-link ${activePage === item.id ? "active" : ""}`} 
+        onClick={() => setActivePage(item.id)}
+      >
         {item.label}
       </button>
     ))}
@@ -433,21 +421,38 @@ useEffect(() => {
                           
                           {/* Os Stats agora vivem AQUI DENTRO, ao lado da imagem */}
                           <div className="pokemon-detail-copy">
-                            <h4>{searchResult.Name}</h4>
-                            <p style={{marginBottom: '12px'}}>{searchResult["Type 1"]}{searchResult["Type 2"] ? ` / ${searchResult["Type 2"]}` : ""}</p>
-                            <div className="detail-row"><span>HP: {searchResult.HP}</span><span>Attack: {searchResult.Attack}</span></div>
-                            <div className="detail-row"><span>Defense: {searchResult.Defense}</span><span>Speed: {searchResult.Speed}</span></div>
-                            <div className="detail-row"><span>Total: {searchResult.Total}</span></div>
-                          </div>
+  <div className="name-type-row">
+    <h4>{searchResult.Name}</h4>
+    <div className="type-badges">
+      <span className={`type-badge ${searchResult["Type 1"]?.toLowerCase()}`}>{searchResult["Type 1"]}</span>
+      {searchResult["Type 2"] && <span className={`type-badge ${searchResult["Type 2"].toLowerCase()}`}>{searchResult["Type 2"]}</span>}
+    </div>
+  </div>
+  
+  <div className="emoji-stat-grid">
+    <div className="stat-item"><span>❤️ HP:</span> <strong>{searchResult.HP}</strong></div>
+    <div className="stat-item"><span>⚔️ Attack:</span> <strong>{searchResult.Attack}</strong></div>
+    <div className="stat-item"><span>🛡️ Defense:</span> <strong>{searchResult.Defense}</strong></div>
+    <div className="stat-item"><span>⚡ Speed:</span> <strong>{searchResult.Speed}</strong></div>
+    <div className="stat-item total"><span>⭐ Total:</span> <strong>{searchResult.Total}</strong></div>
+  </div>
+</div>
                         </div>
 
                         {lookupLoading && <div className="status">Loading evolutions and cards…</div>}
                         {!lookupLoading && !lookupError && evolutionChain.length > 0 && (
-                          <div className="lookup-section">
-                            <h4>Evolution chain</h4>
-                            <p>{evolutionChain.join(" → ")}</p>
-                          </div>
-                        )}
+  <div className="lookup-section">
+    <h4>Evolution chain</h4>
+    <div className="breadcrumb-chain">
+      {evolutionChain.map((name, idx) => (
+        <span key={name} className="breadcrumb-item">
+          {name.charAt(0).toUpperCase() + name.slice(1)}
+          {idx < evolutionChain.length - 1 && <span className="arrow">➔</span>}
+        </span>
+      ))}
+    </div>
+  </div>
+)}
                         {!lookupLoading && !lookupError && cardResults.length > 0 && (
                           <div className="lookup-section">
                             <h4>Top card results</h4>
@@ -515,9 +520,22 @@ useEffect(() => {
                             <div className="drag-badge">DRAG ME</div>
                           </div>
                           <div className="pokemon-detail-copy">
-                            <h4>{selectedPokemon.Name}</h4>
-                            <p>{selectedPokemon["Type 1"]}{selectedPokemon["Type 2"] ? ` / ${selectedPokemon["Type 2"]}` : ""}</p>
-                          </div>
+  <div className="name-type-row">
+    <h4>{selectedPokemon.Name}</h4>
+    <div className="type-badges">
+      <span className={`type-badge ${selectedPokemon["Type 1"]?.toLowerCase()}`}>{selectedPokemon["Type 1"]}</span>
+      {selectedPokemon["Type 2"] && <span className={`type-badge ${selectedPokemon["Type 2"].toLowerCase()}`}>{selectedPokemon["Type 2"]}</span>}
+    </div>
+  </div>
+  
+  <div className="emoji-stat-grid">
+    <div className="stat-item"><span>❤️ HP:</span> <strong>{selectedPokemon.HP}</strong></div>
+    <div className="stat-item"><span>⚔️ Attack:</span> <strong>{selectedPokemon.Attack}</strong></div>
+    <div className="stat-item"><span>🛡️ Defense:</span> <strong>{selectedPokemon.Defense}</strong></div>
+    <div className="stat-item"><span>⚡ Speed:</span> <strong>{selectedPokemon.Speed}</strong></div>
+    <div className="stat-item total"><span>⭐ Total:</span> <strong>{selectedPokemon.Total}</strong></div>
+  </div>
+</div>
                         </div>
                         <div className="detail-row"><span>HP: {selectedPokemon.HP}</span><span>Attack: {selectedPokemon.Attack}</span></div>
                         <div className="detail-row"><span>Defense: {selectedPokemon.Defense}</span><span>Speed: {selectedPokemon.Speed}</span></div>
@@ -563,72 +581,69 @@ useEffect(() => {
           </section>
         )}
 
-        {/* --- POKEMON WORLD PAGE --- */}
-        {activePage === "pokemonWorld" && (
-          <section className="pokemon-world-page">
-            <div className="page-header">
-              <h2>Pokémon World</h2>
-              <p>Explore different clusters of Pokémon based on their stats!</p>
-            </div>
-            
-            {!loading && !error && pokemon.length > 0 && (
-              <div className="world-container">
-                <div className="ocean">
-                  {/* Create 4 clusters/islands based on total stats */}
-                  {[
-                    { name: "Tiny Island", color: "#a8e6cf", centerX: 15, centerY: 20, range: 60 },
-                    { name: "Small Island", color: "#dcedc1", centerX: 75, centerY: 25, range: 70 },
-                    { name: "Medium Island", color: "#ffd3b6", centerX: 25, centerY: 70, range: 80 },
-                    { name: "Giant Island", color: "#ffaaa5", centerX: 70, centerY: 75, range: 90 }
-                  ].map((island, idx) => {
-                    // Get pokemons for this cluster
-                    const clusterPokemon = pokemon
-                      .filter(p => {
-                        const total = Number(p.Total) || 0;
-                        const min = idx * 150;
-                        return total >= min && total < min + 150;
-                      })
-                      .slice(0, 6);
-                    
-                    return (
-                      <div 
-                        key={idx}
-                        className="island"
-                        style={{
-                          left: `${island.centerX}%`,
-                          top: `${island.centerY}%`,
-                          backgroundColor: island.color
-                        }}
-                      >
-                        <span className="island-name">{island.name}</span>
-                        <div className="island-pokemons">
-                          {clusterPokemon.map((p, i) => (
-                            <img
-                              key={i}
-                              src={getPokemonImageUrl(p)}
-                              alt={p.Name}
-                              className="floating-pokemon"
-                              style={{
-                                animationDelay: `${(idx * 6 + i) * 0.3}s`,
-                                left: `${Math.random() * 60 + 10}%`,
-                                top: `${Math.random() * 40 + 20}%`
-                              }}
-                              title={p.Name}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="world-legend">
-                  <p>🌊 Ocean represents the Pokémon world with different islands based on total stats clusters</p>
-                </div>
-              </div>
-            )}
-          </section>
-        )}
+ {/* --- POKÉMON WORLD MAP V3 (ILHAS ASSIMÉTRICAS + ONDAS REAIS) --- */}
+{activePage === "pokemonWorld" && (
+  <section className="pokemon-world-page">
+    <div className="page-header">
+      <h2>Exploração de Clusters</h2>
+      <p>Mapa topográfico baseado na distribuição estatística dos Pokémon.</p>
+    </div>
 
+    {!loading && !error && pokemon.length > 0 && (
+      <div className="map-ocean">
+        {/* Ondas Reais Estilizadas */}
+        {[...Array(20)].map((_, i) => (
+          <div key={i} className="real-wave" style={{
+            top: `${Math.random() * 100}%`,
+            left: `${Math.random() * 100}%`,
+            animationDelay: `${Math.random() * 8}s`,
+          }}></div>
+        ))}
+
+        {/* Ilhas Orgânicas */}
+        {[
+          { name: "Stats Alpha", x: 25, y: 30, shape: "40% 60% 70% 30% / 40% 40% 60% 60%" },
+          { name: "Stats Beta", x: 75, y: 25, shape: "60% 40% 30% 70% / 50% 30% 70% 50%" },
+          { name: "Stats Gamma", x: 30, y: 75, shape: "50% 50% 20% 80% / 30% 80% 20% 70%" },
+          { name: "Stats Delta", x: 70, y: 75, shape: "80% 20% 50% 50% / 40% 30% 70% 60%" }
+        ].map((island, idx) => (
+          <div 
+            key={idx}
+            className="organic-island"
+            style={{
+              left: `${island.x}%`,
+              top: `${island.y}%`,
+              borderRadius: island.shape
+            }}
+          >
+            <div className="island-grass" style={{ borderRadius: island.shape }}>
+              {/* Palmeiras nos cantos da ilha */}
+              <div className="custom-palm" style={{ top: '-20px', left: '-10px', transform: 'rotate(-15deg)' }}></div>
+              <div className="custom-palm" style={{ bottom: '-10px', right: '-10px', transform: 'scale(0.8) rotate(10deg)' }}></div>
+              
+              <span className="island-title">{island.name}</span>
+            </div>
+
+            {/* Pokémon da Ilha */}
+            {pokemon.slice(idx * 5, idx * 5 + 3).map((p, i) => (
+              <img
+                key={i}
+                src={getPokemonImageUrl(p)}
+                className="map-pokemon"
+                style={{
+                  left: `${20 + (i * 25)}%`,
+                  top: `${40 + (Math.sin(i) * 10)}%`,
+                  animationDelay: `${i * 0.5}s`
+                }}
+                alt={p.Name}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    )}
+  </section>
+)}
         {/* --- CHARTS PAGE --- */}
         {activePage === "charts" && (
           <section className="charts-page">
@@ -808,8 +823,8 @@ useEffect(() => {
                   <div className="member-info">
                     <span className="member-name">Tiago Carvalho</span>
                     <div className="spirit-match">
-                      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/131.png" alt="Lapras" />
-                      <span>Lapras</span>
+                      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/321.png" alt="Wailord" />
+                      <span>Wailord</span>
                     </div>
                   </div>
                 </div>
