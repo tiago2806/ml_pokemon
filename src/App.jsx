@@ -918,6 +918,8 @@ useEffect(() => {
     <button className="fight-button" onClick={() => setIsFighting(true)}>
       FIGHT!
     </button>
+  ) : fighters[0] && fighters[1] && isFighting ? (
+    <span style={{fontSize: '1.5rem', fontWeight: '900', color: '#cbd5e1'}}></span>
   ) : (
     <span className="arena-vs">VS</span>
   )}

@@ -1449,8 +1449,8 @@ tbody tr:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100px;
-  height: 70px;
+  width: 130px;
+  height: 90px;
   border: 2px dashed #cbd5e1;
   border-radius: 12px;
   background: rgba(248, 250, 252, 0.8);
@@ -1466,8 +1466,8 @@ tbody tr:hover {
 }
 
 .sticky-drop-zone img {
-  width: 40px;
-  height: 40px;
+  width: 55px;
+  height: 55px;
   object-fit: contain;
 }
 
