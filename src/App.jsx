@@ -1,5 +1,39 @@
 import { useEffect, useMemo, useState } from "react";
+import { MapContainer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
+// Função para criar os ícones das 18 ilhas
+const createIslandIcon = (typeName) => {
+  return new L.Icon({
+    iconUrl: `/islands/island_${typeName.toLowerCase()}.png`, // Caminho para as tuas imagens cortadas
+    iconSize: [160, 160], // Tamanho da ilha no mapa
+    iconAnchor: [80, 80], // Ponto central
+    popupAnchor: [0, -80] // Onde o popup aparece
+  });
+};
+
+// Coordenadas [Y, X] das 18 Ilhas no oceano infinito
+const islandClusters = [
+  { type: "Fire", coords: [800, 200] },
+  { type: "Water", coords: [800, 500] },
+  { type: "Grass", coords: [800, 800] },
+  { type: "Electric", coords: [600, 350] },
+  { type: "Ice", coords: [600, 650] },
+  { type: "Fighting", coords: [400, 200] },
+  { type: "Poison", coords: [400, 500] },
+  { type: "Ground", coords: [400, 800] },
+  { type: "Flying", coords: [200, 350] },
+  { type: "Psychic", coords: [200, 650] },
+  { type: "Bug", coords: [900, 350] },
+  { type: "Rock", coords: [900, 650] },
+  { type: "Ghost", coords: [700, 200] },
+  { type: "Dragon", coords: [700, 800] },
+  { type: "Dark", coords: [500, 200] },
+  { type: "Steel", coords: [500, 800] },
+  { type: "Fairy", coords: [300, 350] },
+  { type: "Normal", coords: [300, 650] }
+];
 function parseCsv(text) {
   const lines = text.trim().split(/\r?\n/).filter(Boolean);
   if (!lines.length) return [];
@@ -581,65 +615,39 @@ useEffect(() => {
           </section>
         )}
 
- {/* --- POKÉMON WORLD MAP V3 (ILHAS ASSIMÉTRICAS + ONDAS REAIS) --- */}
+  {/* --- POKÉMON WORLD MAP V4 (INTERATIVO COM LEAFLET) --- */}
 {activePage === "pokemonWorld" && (
   <section className="pokemon-world-page">
     <div className="page-header">
-      <h2>Exploração de Clusters</h2>
-      <p>Mapa topográfico baseado na distribuição estatística dos Pokémon.</p>
+      <h2>Pokémon Archipelago</h2>
+      <p>Explore as 18 ilhas de clusters. Arrastar para mover, scroll para fazer zoom.</p>
     </div>
 
     {!loading && !error && pokemon.length > 0 && (
-      <div className="map-ocean">
-        {/* Ondas Reais Estilizadas */}
-        {[...Array(20)].map((_, i) => (
-          <div key={i} className="real-wave" style={{
-            top: `${Math.random() * 100}%`,
-            left: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 8}s`,
-          }}></div>
-        ))}
-
-        {/* Ilhas Orgânicas */}
-        {[
-          { name: "Stats Alpha", x: 25, y: 30, shape: "40% 60% 70% 30% / 40% 40% 60% 60%" },
-          { name: "Stats Beta", x: 75, y: 25, shape: "60% 40% 30% 70% / 50% 30% 70% 50%" },
-          { name: "Stats Gamma", x: 30, y: 75, shape: "50% 50% 20% 80% / 30% 80% 20% 70%" },
-          { name: "Stats Delta", x: 70, y: 75, shape: "80% 20% 50% 50% / 40% 30% 70% 60%" }
-        ].map((island, idx) => (
-          <div 
-            key={idx}
-            className="organic-island"
-            style={{
-              left: `${island.x}%`,
-              top: `${island.y}%`,
-              borderRadius: island.shape
-            }}
-          >
-            <div className="island-grass" style={{ borderRadius: island.shape }}>
-              {/* Palmeiras nos cantos da ilha */}
-              <div className="custom-palm" style={{ top: '-20px', left: '-10px', transform: 'rotate(-15deg)' }}></div>
-              <div className="custom-palm" style={{ bottom: '-10px', right: '-10px', transform: 'scale(0.8) rotate(10deg)' }}></div>
-              
-              <span className="island-title">{island.name}</span>
-            </div>
-
-            {/* Pokémon da Ilha */}
-            {pokemon.slice(idx * 5, idx * 5 + 3).map((p, i) => (
-              <img
-                key={i}
-                src={getPokemonImageUrl(p)}
-                className="map-pokemon"
-                style={{
-                  left: `${20 + (i * 25)}%`,
-                  top: `${40 + (Math.sin(i) * 10)}%`,
-                  animationDelay: `${i * 0.5}s`
-                }}
-                alt={p.Name}
-              />
-            ))}
-          </div>
-        ))}
+      <div className="pokemon-world-map">
+        <MapContainer
+          center={[550, 500]} // Ponto inicial da câmara
+          zoom={0} // Zoom inicial
+          minZoom={-1} // Permite afastar
+          maxZoom={2} // Permite aproximar muito
+          crs={L.CRS.Simple} // Crucial: Diz ao mapa que não é o planeta Terra, é um plano infinito
+          style={{ height: '100%', width: '100%' }}
+        >
+          {islandClusters.map((island) => (
+            <Marker
+              key={island.type}
+              position={island.coords}
+              icon={createIslandIcon(island.type)}
+            >
+              <Popup className="custom-popup">
+                <b>{island.type} Island</b><br/>
+                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                  ML Cluster Data Here
+                </span>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
       </div>
     )}
   </section>

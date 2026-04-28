@@ -1712,94 +1712,47 @@ main {
 }
 
 /* =========================================
-   MAPA 2D V3: ONDAS REAIS E PALMEIRAS
+   POKEMON WORLD INTERACTIVE MAP (LEAFLET)
 ========================================= */
 
-.map-ocean {
-  position: relative;
+/* O Contentor do Mapa */
+.pokemon-world-map {
   width: 100%;
   height: 650px;
-  background: #0ea5e9;
   border-radius: 24px;
-  overflow: hidden;
-  box-shadow: inset 0 0 80px rgba(0,0,0,0.15);
   border: 8px solid #075985;
+  box-shadow: inset 0 0 80px rgba(0,0,0,0.15);
+  overflow: hidden; /* Mantém o mapa dentro das bordas redondas */
 }
 
-/* Formato de ONDA real (estilo "~") */
-/* Ondas com formato de "crista" (conforme a imagem do Freepik) */
-.real-wave {
-  position: absolute;
-  width: 60px;
-  height: 40px;
-  /* SVG que desenha a curva da crista da onda com contorno castanho */
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 60"><path d="M10,50 Q40,50 50,30 T90,10" fill="none" stroke="%235d4037" stroke-width="3"/><path d="M10,50 Q40,50 50,30 T90,10 L90,50 Z" fill="%23bae6fd" opacity="0.7"/></svg>');
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 0;
-  animation: waveSplash 6s ease-in-out infinite;
+/* O Efeito de Oceano Ondulado usando Leaflet Background */
+.leaflet-container {
+  background-color: #0ea5e9 !important; /* Azul base do oceano */
+  background-image: url("data:image/svg+xml,%3Csvg width='120' height='30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 15 Q 30 30, 60 15 T 120 15' fill='none' stroke='%2338bdf8' stroke-width='3' opacity='0.6'/%3E%3C/svg%3E") !important;
+  background-size: 120px 30px !important;
+  animation: oceanMove 10s linear infinite;
 }
 
-@keyframes waveSplash {
-  0% { opacity: 0; transform: scale(0.5) translateX(-20px); }
-  50% { opacity: 0.8; transform: scale(1.1) translateX(0); }
-  100% { opacity: 0; transform: scale(0.5) translateX(20px); }
+@keyframes oceanMove {
+  from { background-position: 0 0; }
+  to { background-position: 120px 30px; }
 }
 
-/* Ilhas com formato de "poça de areia" orgânica */
-.organic-island {
-  position: absolute;
-  width: 350px;
-  height: 280px;
-  background: #fde68a; /* Areia */
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 4px solid #f59e0b; /* Borda da areia */
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-  /* O formato (shape) é injetado via JS, mas garantimos o overflow */
-  overflow: visible; 
+/* Estilo da Janela de Informação (Popup) ao clicar nas ilhas */
+.custom-popup .leaflet-popup-content-wrapper {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(5px);
+  border-radius: 16px;
+  text-align: center;
+  border: 2px solid #6366f1;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
-/* Palmeira Estilizada (Tronco curvo e folhas detalhadas) */
-.custom-palm {
-  position: absolute;
-  width: 100px;
-  height: 120px;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120"><path d="M50,110 Q35,70 50,30" stroke="%235d4037" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="45" cy="35" r="5" fill="%235d4037"/><circle cx="55" cy="35" r="5" fill="%235d4037"/><path d="M50,30 Q10,10 5,50 M50,30 Q30,-10 10,10 M50,30 Q70,-10 90,10 M50,30 Q90,10 95,50" stroke="%2316a34a" stroke-width="6" fill="none" stroke-linecap="round"/></svg>');
-  background-size: contain;
-  background-repeat: no-repeat;
-  z-index: 5;
-  filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
-}
-
-.p1 { top: -10%; left: 5%; transform: rotate(-5deg); }
-.p2 { bottom: 5%; right: 0%; transform: scale(1.2) rotate(10deg); }
-
-.island-title {
-  font-weight: 900;
-  font-size: 0.75rem;
+.custom-popup .leaflet-popup-content b {
+  color: #1e293b;
+  font-size: 1.1rem;
   text-transform: uppercase;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 4px 12px;
-  border-radius: 8px;
-  z-index: 10;
   letter-spacing: 1px;
-}
-
-.map-pokemon {
-  position: absolute;
-  width: 55px;
-  height: 55px;
-  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.4));
-  animation: mapFloat 4s ease-in-out infinite;
-  z-index: 20;
-}
-
-@keyframes mapFloat {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-12px) rotate(5deg); }
 }
 /* =========================================
    UI UPGRADES: BADGES, EMOJI GRID, CHAIN
