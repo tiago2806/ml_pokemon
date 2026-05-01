@@ -1,3 +1,5 @@
+@import "leaflet/dist/leaflet.css";
+
 /* Quiz Modal Styles */
 .quiz-modal {
   position: fixed;
@@ -1895,3 +1897,32 @@ main {
   font-size: 0.8rem;
 }
 
+/* Animated Pokemon Sprites on the Map */
+.pokemon-sprite-marker {
+  background: transparent;
+  border: none;
+}
+
+/* Animated Pokemon Sprites on the Map */
+.pokemon-sprite-marker {
+  background: transparent;
+  border: none;
+}
+
+.pokemon-sprite-img {
+  width: 45px; /* Ligeiramente mais pequenos para caberem melhor na ilha */
+  height: 45px;
+  object-fit: contain;
+  /* Removida a sombra preta que estava a bugar as bordas */
+  animation: floatSprite 3s ease-in-out infinite alternate, fadeIn 1s ease-in;
+}
+
+@keyframes floatSprite {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-6px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
