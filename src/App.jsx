@@ -99,7 +99,7 @@ function generateBattleNarrative(p1, p2, s1, s2, m1, m2) {
   const winMulti = s1 > s2 ? m1 : m2;
   const winBase = Number(win.Total);
   const loseBase = Number(lose.Total);
-  
+
   if (winMulti > 1) {
     if (winBase < loseBase) {
       return `An amazing upset! Even though ${win.Name} has lower base stats, its ${winMulti}x type advantage against ${lose.Name} completely turns the tide!`;
@@ -122,25 +122,25 @@ function App() {
   const [cardResults, setCardResults] = useState([]);
   const [lookupLoading, setLookupLoading] = useState(false);
   const [lookupError, setLookupError] = useState(null);
-const [showHero, setShowHero] = useState(true); // Começa como true para mostrar a capa
-const [heroPokemons, setHeroPokemons] = useState([]); // Para as imagens aleatórias
-const [isFighting, setIsFighting] = useState(false);
+  const [showHero, setShowHero] = useState(true); // Começa como true para mostrar a capa
+  const [heroPokemons, setHeroPokemons] = useState([]); // Para as imagens aleatórias
+  const [isFighting, setIsFighting] = useState(false);
 
-const [currentTip, setCurrentTip] = useState(""); // Guarda a dica do dia
+  const [currentTip, setCurrentTip] = useState(""); // Guarda a dica do dia
 
-// Lista de dicas (podes adicionar mais sobre ML e Clustering)
-const mlTips = [
-  "Clustering insight: Pokémon with similar total stats often inhabit the same 'islands'.",
-  "Type Advantage: Double types (like Water/Flying) often have unique placement in our ML clusters.",
-  "Data Tip: Speed is often the deciding factor in our matchup predictor algorithm.",
-  "ML Concept: We used K-Means to group Pokémon by their combat DNA (Base Stats)."
-];
+  // Lista de dicas (podes adicionar mais sobre ML e Clustering)
+  const mlTips = [
+    "Clustering insight: Pokémon with similar total stats often inhabit the same 'islands'.",
+    "Type Advantage: Double types (like Water/Flying) often have unique placement in our ML clusters.",
+    "Data Tip: Speed is often the deciding factor in our matchup predictor algorithm.",
+    "ML Concept: We used K-Means to group Pokémon by their combat DNA (Base Stats)."
+  ];
 
-// Escolhe uma dica aleatória ao carregar
-useEffect(() => {
-  const randomTip = mlTips[Math.floor(Math.random() * mlTips.length)];
-  setCurrentTip(randomTip);
-}, []);
+  // Escolhe uma dica aleatória ao carregar
+  useEffect(() => {
+    const randomTip = mlTips[Math.floor(Math.random() * mlTips.length)];
+    setCurrentTip(randomTip);
+  }, []);
 
   // Filter states
   const [filterType, setFilterType] = useState("");
@@ -149,13 +149,13 @@ useEffect(() => {
   const [currentPage, setCurrentPage] = useState(0);
   const ITEMS_PER_PAGE = 11;
   const [selectedPokemon, setSelectedPokemon] = useState(null);
-  
+
   // Arena (Drag & Drop) states
   const [fighters, setFighters] = useState([null, null]);
   const [draggedItem, setDraggedItem] = useState(null);
   const [dropTarget, setDropTarget] = useState(null);
   const [arenaExpanded, setArenaExpanded] = useState(false);
-  
+
   // Pokemon World animation
   const [worldTime, setWorldTime] = useState(0);
 
@@ -213,7 +213,7 @@ useEffect(() => {
       selected.forEach((p, index) => {
         const offsetY = (Math.random() - 0.5) * 80;  // Keeps them out of the water
         const offsetX = (Math.random() - 0.5) * 100;
-        
+
         initialSprites.push({
           id: `${island.type}-${index}`,
           pokemon: p,
@@ -222,11 +222,11 @@ useEffect(() => {
           coords: [island.coords[0] + offsetY, island.coords[1] + offsetX],
           animDelay: `${(Math.random() * 2).toFixed(2)}s`,
           // Stagger expiration so they don't refresh all at once!
-          expireAt: Date.now() + ((index + 1) * 4000) + (Math.random() * 2000) 
+          expireAt: Date.now() + ((index + 1) * 4000) + (Math.random() * 2000)
         });
       });
     });
-    
+
     setMapSprites(initialSprites);
 
     // 2. The "Heartbeat": Check every 1 second to see if ONE pokemon needs swapping
@@ -240,7 +240,7 @@ useEffect(() => {
             needsUpdate = true;
             const typeMons = pokemon.filter(p => p["Type 1"] === sprite.islandType || p["Type 2"] === sprite.islandType);
             const randomNewMon = typeMons[Math.floor(Math.random() * typeMons.length)];
-            
+
             const offsetY = (Math.random() - 0.5) * 80;
             const offsetX = (Math.random() - 0.5) * 100;
 
@@ -257,7 +257,7 @@ useEffect(() => {
 
         return needsUpdate ? updatedSprites : currentSprites;
       });
-    }, 1000); 
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [pokemon, activePage]);
@@ -274,12 +274,12 @@ useEffect(() => {
   }, []);
 
   useEffect(() => {
-  if (pokemon.length > 0 && heroPokemons.length === 0) {
-    // Escolhe 8 pokémons aleatórios do teu dataset para o fundo
-    const shuffled = [...pokemon].sort(() => 0.5 - Math.random());
-    setHeroPokemons(shuffled.slice(0, 8));
-  }
-}, [pokemon]);
+    if (pokemon.length > 0 && heroPokemons.length === 0) {
+      // Escolhe 8 pokémons aleatórios do teu dataset para o fundo
+      const shuffled = [...pokemon].sort(() => 0.5 - Math.random());
+      setHeroPokemons(shuffled.slice(0, 8));
+    }
+  }, [pokemon]);
 
   // Animation for Pokemon World
   useEffect(() => {
@@ -290,7 +290,7 @@ useEffect(() => {
   }, []);
 
   const datasetHead = useMemo(() => pokemon.slice(0, 5), [pokemon]);
-  
+
   const filteredPokemon = useMemo(() => {
     return pokemon.filter(p => {
       if (filterType && p["Type 1"] !== filterType && p["Type 2"] !== filterType) return false;
@@ -321,17 +321,17 @@ useEffect(() => {
 
   const searchImageUrl = searchResult ? getPokemonImageUrl(searchResult) : null;
   // 1. O ESTADO PARA GUARDAR OS RECENTES (Coloca isto junto aos outros const [..., set...])
-const [recentSearches, setRecentSearches] = useState([]);
+  const [recentSearches, setRecentSearches] = useState([]);
 
-// 2. A LÓGICA QUE GUARDA AUTOMATICAMENTE (Cola isto abaixo do searchImageUrl)
-useEffect(() => {
-  if (searchResult) {
-    setRecentSearches(prev => {
-      if (prev.find(p => p.Name === searchResult.Name)) return prev;
-      return [searchResult, ...prev].slice(0, 4);
-    });
-  }
-}, [searchResult]);
+  // 2. A LÓGICA QUE GUARDA AUTOMATICAMENTE (Cola isto abaixo do searchImageUrl)
+  useEffect(() => {
+    if (searchResult) {
+      setRecentSearches(prev => {
+        if (prev.find(p => p.Name === searchResult.Name)) return prev;
+        return [searchResult, ...prev].slice(0, 4);
+      });
+    }
+  }, [searchResult]);
 
   useEffect(() => {
     if (!searchResult) {
@@ -377,594 +377,594 @@ useEffect(() => {
 
   return (
     <div className="app-shell">
-    <header className="glass-header">
-  <div className="logo-group" onClick={() => setShowHero(true)}>
-    <img 
-      src="https://www.pngplay.com/wp-content/uploads/2/Pokeball-PNG-Photo-Image.png" 
-      alt="Pokéball" 
-      className="scanning-poke" 
-    />
-    <h1 className="gradient-title">Pokémon ML Explorer</h1>
-  </div>
-  
-  <nav className="app-nav">
-    {menuItems.map((item) => (
-      <button 
-        key={item.id} 
-        className={`nav-link ${activePage === item.id ? "active" : ""}`} 
-        onClick={() => setActivePage(item.id)}
-      >
-        {item.label}
-      </button>
-    ))}
-  </nav>
-</header>
+      <header className="glass-header">
+        <div className="logo-group" onClick={() => setShowHero(true)}>
+          <img
+            src="https://www.pngplay.com/wp-content/uploads/2/Pokeball-PNG-Photo-Image.png"
+            alt="Pokéball"
+            className="scanning-poke"
+          />
+          <h1 className="gradient-title">Pokémon ML Explorer</h1>
+        </div>
 
-{showHero && (
-  <div className="hero-section">
-    <div className="hero-carousel">
-      {heroPokemons.map((p, i) => (
-        <img key={i} src={getPokemonImageUrl(p)} alt="" className="hero-bg-img" />
-      ))}
-    </div>
-    <div className="hero-content">
-      <h2 className="hero-title">Machine Learning meets the Pokémon World</h2>
-      <p className="hero-subtitle">Unveiling hidden patterns, base stats, and type advantages through data science.</p>
-      <div className="hero-mini-stats">
-        <div className="mini-stat"><strong>{pokemon.length}</strong><span>Entries</span></div>
-        <div className="mini-stat"><strong>{allTypes.length}</strong><span>Types</span></div>
-        <div className="mini-stat"><strong>{allGenerations.length}</strong><span>Gens</span></div>
-      </div>
-      <button className="start-button" onClick={() => setShowHero(false)}>
-        Get Started
-      </button>
-    </div>
-  </div>
-)}
+        <nav className="app-nav">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              className={`nav-link ${activePage === item.id ? "active" : ""}`}
+              onClick={() => setActivePage(item.id)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+      </header>
+
+      {showHero && (
+        <div className="hero-section">
+          <div className="hero-carousel">
+            {heroPokemons.map((p, i) => (
+              <img key={i} src={getPokemonImageUrl(p)} alt="" className="hero-bg-img" />
+            ))}
+          </div>
+          <div className="hero-content">
+            <h2 className="hero-title">Machine Learning meets the Pokémon World</h2>
+            <p className="hero-subtitle">Unveiling hidden patterns, base stats, and type advantages through data science.</p>
+            <div className="hero-mini-stats">
+              <div className="mini-stat"><strong>{pokemon.length}</strong><span>Entries</span></div>
+              <div className="mini-stat"><strong>{allTypes.length}</strong><span>Types</span></div>
+              <div className="mini-stat"><strong>{allGenerations.length}</strong><span>Gens</span></div>
+            </div>
+            <button className="start-button" onClick={() => setShowHero(false)}>
+              Get Started
+            </button>
+          </div>
+        </div>
+      )}
 
       <main>
         {!showHero ? (
-    <>
-        {/* --- DASHBOARD PAGE --- */}
-        {activePage === "exploration" && (
-          <section>
-            <div className="page-header">
-              <h2>Dashboard & Analysis</h2>
-              <p>Filter the dataset and explore the Pokémon world through data!</p>
-            </div>
+          <>
+            {/* --- DASHBOARD PAGE --- */}
+            {activePage === "exploration" && (
+              <section>
+                <div className="page-header">
+                  <h2>Dashboard & Analysis</h2>
+                  <p>Filter the dataset and explore the Pokémon world through data!</p>
+                </div>
 
-            {!loading && !error && (
-              <>
-                {/* Top Row: About Section Only - Arena moved to sticky bottom */}
-                <div className="dashboard-top-row">
-  {/* Card 1: Tip of the Day */}
-  <div className="info-card tip-card">
-    <div className="card-icon">💡</div>
-    <div className="card-content">
-      <div className="tip-card-header">
-        <h4>ML Insight</h4>
-      </div>
-      <p>{currentTip}</p>
-    </div>
-  </div>
-
-  {/* Card 2: Recent Searches */}
-  <div className="info-card recent-card">
-    <div className="card-icon">🔍</div>
-    <div className="card-content">
-      <div className="recent-card-header">
-        <h4>Recent Explorations</h4>
-      </div>
-      <div className="recent-list">
-      {recentSearches.length > 0 ? (
-        recentSearches.map((p, i) => (
-          <div 
-            key={i} 
-            className="recent-item" 
-            draggable="true"
-            onDragStart={() => { setDraggedItem(p); }}
-            onDragEnd={() => setDraggedItem(null)}
-            onClick={() => setSearchTerm(p.Name.toLowerCase())}
-          >
-            <img src={getPokemonImageUrl(p)} alt={p.Name} />
-            <span>{p.Name}</span>
-          </div>
-        ))
-      ) : (
-        <p className="no-recent">No recent searches yet.</p>
-      )}
-      </div>
-    </div>
-  </div>
-</div>
-
-                <div className="dataset-overview">
-                  <div className="dashboard-card">
-                    <h3>Explore & Select</h3>
-                    <div className="filters-row">
-                      <label className="input-label">Type
-                        <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="filter-select">
-                          <option value="">All</option>{allTypes.map(t => <option key={t} value={t}>{t}</option>)}
-                        </select>
-                      </label>
-                      <label className="input-label">Generation
-                        <select value={filterGeneration} onChange={(e) => setFilterGeneration(e.target.value)} className="filter-select">
-                          <option value="">All</option>{allGenerations.map(g => <option key={g} value={g}>Gen {g}</option>)}
-                        </select>
-                      </label>
-                      <label className="input-label">Legendary
-                        <select value={filterLegendary} onChange={(e) => setFilterLegendary(e.target.value)} className="filter-select">
-                          <option value="">All</option><option value="true">Yes</option><option value="false">No</option>
-                        </select>
-                      </label>
-                    </div>
-                    
-                    <label className="input-label">Search by name</label>
-                    <input value={searchName} onChange={(e) => setSearchName(e.target.value)} placeholder="e.g. Pikachu" className="search-input" />
-                    
-                    {/* The Full Search Details Panel (WITH DRAG HINT) */}
-{/* The Full Search Details Panel (WITH DRAG HINT) */}
-                    {searchResult && (
-                      <div className="pokemon-details" style={{marginTop: '20px'}}>
-                        <div className="pokemon-card">
-                          <div className="drag-hint-container">
-                            <img 
-                              className="pokemon-image" 
-                              src={searchImageUrl} 
-                              alt={searchResult.Name} 
-                              draggable="true"
-                              onDragStart={() => { setDraggedItem(searchResult); }}
-                              onDragEnd={() => setDraggedItem(null)}
-                              style={{cursor: 'grab'}}
-                            />
-                            <div className="drag-badge">DRAG ME</div>
+                {!loading && !error && (
+                  <>
+                    {/* Top Row: About Section Only - Arena moved to sticky bottom */}
+                    <div className="dashboard-top-row">
+                      {/* Card 1: Tip of the Day */}
+                      <div className="info-card tip-card">
+                        <div className="card-icon">💡</div>
+                        <div className="card-content">
+                          <div className="tip-card-header">
+                            <h4>ML Insight</h4>
                           </div>
-                          
-                          {/* Os Stats agora vivem AQUI DENTRO, ao lado da imagem */}
-                          <div className="pokemon-detail-copy">
-  <div className="name-type-row">
-    <h4>{searchResult.Name}</h4>
-    <div className="type-badges">
-      <span className={`type-badge ${searchResult["Type 1"]?.toLowerCase()}`}>{searchResult["Type 1"]}</span>
-      {searchResult["Type 2"] && <span className={`type-badge ${searchResult["Type 2"].toLowerCase()}`}>{searchResult["Type 2"]}</span>}
-    </div>
-  </div>
-  
-  <div className="emoji-stat-grid">
-    <div className="stat-item"><span>❤️ HP:</span> <strong>{searchResult.HP}</strong></div>
-    <div className="stat-item"><span>⚔️ Attack:</span> <strong>{searchResult.Attack}</strong></div>
-    <div className="stat-item"><span>🛡️ Defense:</span> <strong>{searchResult.Defense}</strong></div>
-    <div className="stat-item"><span>⚡ Speed:</span> <strong>{searchResult.Speed}</strong></div>
-    <div className="stat-item total"><span>⭐ Total:</span> <strong>{searchResult.Total}</strong></div>
-  </div>
-</div>
+                          <p>{currentTip}</p>
+                        </div>
+                      </div>
+
+                      {/* Card 2: Recent Searches */}
+                      <div className="info-card recent-card">
+                        <div className="card-icon">🔍</div>
+                        <div className="card-content">
+                          <div className="recent-card-header">
+                            <h4>Recent Explorations</h4>
+                          </div>
+                          <div className="recent-list">
+                            {recentSearches.length > 0 ? (
+                              recentSearches.map((p, i) => (
+                                <div
+                                  key={i}
+                                  className="recent-item"
+                                  draggable="true"
+                                  onDragStart={() => { setDraggedItem(p); }}
+                                  onDragEnd={() => setDraggedItem(null)}
+                                  onClick={() => setSearchTerm(p.Name.toLowerCase())}
+                                >
+                                  <img src={getPokemonImageUrl(p)} alt={p.Name} />
+                                  <span>{p.Name}</span>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="no-recent">No recent searches yet.</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="dataset-overview">
+                      <div className="dashboard-card">
+                        <h3>Explore & Select</h3>
+                        <div className="filters-row">
+                          <label className="input-label">Type
+                            <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="filter-select">
+                              <option value="">All</option>{allTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                            </select>
+                          </label>
+                          <label className="input-label">Generation
+                            <select value={filterGeneration} onChange={(e) => setFilterGeneration(e.target.value)} className="filter-select">
+                              <option value="">All</option>{allGenerations.map(g => <option key={g} value={g}>Gen {g}</option>)}
+                            </select>
+                          </label>
+                          <label className="input-label">Legendary
+                            <select value={filterLegendary} onChange={(e) => setFilterLegendary(e.target.value)} className="filter-select">
+                              <option value="">All</option><option value="true">Yes</option><option value="false">No</option>
+                            </select>
+                          </label>
                         </div>
 
-                        {lookupLoading && <div className="status">Loading evolutions and cards…</div>}
-                        {!lookupLoading && !lookupError && evolutionChain.length > 0 && (
-  <div className="lookup-section">
-    <h4>Evolution chain</h4>
-    <div className="breadcrumb-chain">
-      {evolutionChain.map((name, idx) => (
-        <span key={name} className="breadcrumb-item">
-          {name.charAt(0).toUpperCase() + name.slice(1)}
-          {idx < evolutionChain.length - 1 && <span className="arrow">➔</span>}
-        </span>
-      ))}
-    </div>
-  </div>
-)}
-                        {!lookupLoading && !lookupError && cardResults.length > 0 && (
-                          <div className="lookup-section">
-                            <h4>Top card results</h4>
-                            <div className="card-grid">
-                              {cardResults.map((card) => (
-                                <article key={card.id} className="card-tile">
-                                  <img src={card.images.small} alt={card.name} className="card-image" />
-                                  <div><strong>{card.name}</strong><p>{card.set.name}</p></div>
-                                </article>
+                        <label className="input-label">Search by name</label>
+                        <input value={searchName} onChange={(e) => setSearchName(e.target.value)} placeholder="e.g. Pikachu" className="search-input" />
+
+                        {/* The Full Search Details Panel (WITH DRAG HINT) */}
+                        {/* The Full Search Details Panel (WITH DRAG HINT) */}
+                        {searchResult && (
+                          <div className="pokemon-details" style={{ marginTop: '20px' }}>
+                            <div className="pokemon-card">
+                              <div className="drag-hint-container">
+                                <img
+                                  className="pokemon-image"
+                                  src={searchImageUrl}
+                                  alt={searchResult.Name}
+                                  draggable="true"
+                                  onDragStart={() => { setDraggedItem(searchResult); }}
+                                  onDragEnd={() => setDraggedItem(null)}
+                                  style={{ cursor: 'grab' }}
+                                />
+                                <div className="drag-badge">DRAG ME</div>
+                              </div>
+
+                              {/* Os Stats agora vivem AQUI DENTRO, ao lado da imagem */}
+                              <div className="pokemon-detail-copy">
+                                <div className="name-type-row">
+                                  <h4>{searchResult.Name}</h4>
+                                  <div className="type-badges">
+                                    <span className={`type-badge ${searchResult["Type 1"]?.toLowerCase()}`}>{searchResult["Type 1"]}</span>
+                                    {searchResult["Type 2"] && <span className={`type-badge ${searchResult["Type 2"].toLowerCase()}`}>{searchResult["Type 2"]}</span>}
+                                  </div>
+                                </div>
+
+                                <div className="emoji-stat-grid">
+                                  <div className="stat-item"><span>❤️ HP:</span> <strong>{searchResult.HP}</strong></div>
+                                  <div className="stat-item"><span>⚔️ Attack:</span> <strong>{searchResult.Attack}</strong></div>
+                                  <div className="stat-item"><span>🛡️ Defense:</span> <strong>{searchResult.Defense}</strong></div>
+                                  <div className="stat-item"><span>⚡ Speed:</span> <strong>{searchResult.Speed}</strong></div>
+                                  <div className="stat-item total"><span>⭐ Total:</span> <strong>{searchResult.Total}</strong></div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {lookupLoading && <div className="status">Loading evolutions and cards…</div>}
+                            {!lookupLoading && !lookupError && evolutionChain.length > 0 && (
+                              <div className="lookup-section">
+                                <h4>Evolution chain</h4>
+                                <div className="breadcrumb-chain">
+                                  {evolutionChain.map((name, idx) => (
+                                    <span key={name} className="breadcrumb-item">
+                                      {name.charAt(0).toUpperCase() + name.slice(1)}
+                                      {idx < evolutionChain.length - 1 && <span className="arrow">➔</span>}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {!lookupLoading && !lookupError && cardResults.length > 0 && (
+                              <div className="lookup-section">
+                                <h4>Top card results</h4>
+                                <div className="card-grid">
+                                  {cardResults.map((card) => (
+                                    <article key={card.id} className="card-tile">
+                                      <img src={card.images.small} alt={card.name} className="card-image" />
+                                      <div><strong>{card.name}</strong><p>{card.set.name}</p></div>
+                                    </article>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Draggable Grid */}
+                        {isFilteringOrSearching && !searchName ? (
+                          <div className="filtered-grid" style={{ marginTop: '20px' }}>
+                            <div className="filter-results" style={{ marginBottom: "14px" }}>
+                              Found {filteredPokemon.length} Pokémon (Drag them into the Arena above!)
+                            </div>
+                            <div className="pokemon-grid">
+                              {paginatedPokemon.map((p) => (
+                                <div
+                                  key={p.Name}
+                                  className="pokemon-grid-item"
+                                  draggable="true"
+                                  onDragStart={() => { setDraggedItem(p); }}
+                                  onDragEnd={() => setDraggedItem(null)}
+                                  onClick={() => setSelectedPokemon(p)}
+                                >
+                                  <img src={getPokemonImageUrl(p)} alt={p.Name} className="grid-pokemon-img" draggable="false" />
+                                  <span className="grid-pokemon-name">{p.Name}</span>
+                                </div>
                               ))}
                             </div>
+                            {totalPages > 1 && (
+                              <div className="pagination">
+                                <button className="page-btn" onClick={() => setCurrentPage(p => Math.max(0, p - 1))} disabled={currentPage === 0}>← Prev</button>
+                                <span className="page-info">{currentPage + 1} / {totalPages}</span>
+                                <button className="page-btn" onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))} disabled={currentPage >= totalPages - 1}>Next →</button>
+                              </div>
+                            )}
                           </div>
+                        ) : !isFilteringOrSearching && (
+                          <div className="empty-state">Use the search or filters above to begin exploration.</div>
                         )}
-                      </div>
-                    )}
-                    
-                    {/* Draggable Grid */}
-                    {isFilteringOrSearching && !searchName ? (
-                      <div className="filtered-grid" style={{marginTop: '20px'}}>
-                        <div className="filter-results" style={{marginBottom: "14px"}}>
-                          Found {filteredPokemon.length} Pokémon (Drag them into the Arena above!)
-                        </div>
-                        <div className="pokemon-grid">
-                          {paginatedPokemon.map((p) => (
-                            <div 
-                              key={p.Name} 
-                              className="pokemon-grid-item"
-                              draggable="true"
-                              onDragStart={() => { setDraggedItem(p); }}
-                              onDragEnd={() => setDraggedItem(null)}
-                              onClick={() => setSelectedPokemon(p)}
-                            >
-                              <img src={getPokemonImageUrl(p)} alt={p.Name} className="grid-pokemon-img" draggable="false" />
-                              <span className="grid-pokemon-name">{p.Name}</span>
-                            </div>
-                          ))}
-                        </div>
-                        {totalPages > 1 && (
-                          <div className="pagination">
-                            <button className="page-btn" onClick={() => setCurrentPage(p => Math.max(0, p - 1))} disabled={currentPage === 0}>← Prev</button>
-                            <span className="page-info">{currentPage + 1} / {totalPages}</span>
-                            <button className="page-btn" onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))} disabled={currentPage >= totalPages - 1}>Next →</button>
-                          </div>
-                        )}
-                      </div>
-                    ) : !isFilteringOrSearching && (
-                      <div className="empty-state">Use the search or filters above to begin exploration.</div>
-                    )}
-                    
-                    {/* Click Details for Grid items - WITH DRAG */}
-                    {selectedPokemon && !searchName && (
-                      <div className="selected-pokemon" style={{marginTop: '20px'}}>
-                        <button className="back-btn" onClick={() => setSelectedPokemon(null)}>← Back to results</button>
-                        <div className="pokemon-card">
-                          <div className="drag-hint-container">
-                            <img 
-                              className="pokemon-image" 
-                              src={getPokemonImageUrl(selectedPokemon)} 
-                              alt={selectedPokemon.Name} 
-                              draggable="true"
-                              onDragStart={() => { setDraggedItem(selectedPokemon); }}
-                              onDragEnd={() => setDraggedItem(null)}
-                              style={{cursor: 'grab'}}
-                            />
-                            <div className="drag-badge">DRAG ME</div>
-                          </div>
-                          <div className="pokemon-detail-copy">
-  <div className="name-type-row">
-    <h4>{selectedPokemon.Name}</h4>
-    <div className="type-badges">
-      <span className={`type-badge ${selectedPokemon["Type 1"]?.toLowerCase()}`}>{selectedPokemon["Type 1"]}</span>
-      {selectedPokemon["Type 2"] && <span className={`type-badge ${selectedPokemon["Type 2"].toLowerCase()}`}>{selectedPokemon["Type 2"]}</span>}
-    </div>
-  </div>
-  
-  <div className="emoji-stat-grid">
-    <div className="stat-item"><span>❤️ HP:</span> <strong>{selectedPokemon.HP}</strong></div>
-    <div className="stat-item"><span>⚔️ Attack:</span> <strong>{selectedPokemon.Attack}</strong></div>
-    <div className="stat-item"><span>🛡️ Defense:</span> <strong>{selectedPokemon.Defense}</strong></div>
-    <div className="stat-item"><span>⚡ Speed:</span> <strong>{selectedPokemon.Speed}</strong></div>
-    <div className="stat-item total"><span>⭐ Total:</span> <strong>{selectedPokemon.Total}</strong></div>
-  </div>
-</div>
-                        </div>
-                        <div className="detail-row"><span>HP: {selectedPokemon.HP}</span><span>Attack: {selectedPokemon.Attack}</span></div>
-                        <div className="detail-row"><span>Defense: {selectedPokemon.Defense}</span><span>Speed: {selectedPokemon.Speed}</span></div>
-                        <div className="detail-row"><span>Total: {selectedPokemon.Total}</span><span>Gen: {selectedPokemon.Generation}</span></div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
 
-            {/* RAW DATA TABLE RESTORED */}
-            {!loading && !error && (
-              <section style={{marginTop: '40px'}}>
-                <h2>Dataset Overview</h2>
-                <p style={{marginBottom: '16px', color: '#64748b'}}>Drag any Pokémon into the Battle Arena!</p>
-                <div className="table-wrapper">
-                  <table>
-                    <thead>
-                      <tr><th>Image</th><th>#</th><th>Name</th><th>Type 1</th><th>Type 2</th><th>Total</th><th>HP</th><th>Attack</th><th>Defense</th><th>Speed</th></tr>
-                    </thead>
-                    <tbody>
-                      {datasetHead.map((row, index) => {
-                        const imgUrl = getPokemonImageUrl(row);
-                        return (
-                          <tr 
-                            key={`${row.Name}-${index}`} 
-                            draggable="true"
-                            onDragStart={() => { setDraggedItem(row); }}
-                            onDragEnd={() => setDraggedItem(null)}
-                            style={{cursor: 'grab'}}
-                          >
-                            <td>{imgUrl && <img src={imgUrl} alt={row.Name} style={{width: "40px", height: "40px", objectFit: "contain"}} />}</td>
-                            <td>{row["#"] || index + 1}</td><td>{row.Name}</td><td>{row["Type 1"]}</td><td>{row["Type 2"] || "—"}</td><td>{row.Total}</td><td>{row.HP}</td><td>{row.Attack}</td><td>{row.Defense}</td><td>{row.Speed}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                        {/* Click Details for Grid items - WITH DRAG */}
+                        {selectedPokemon && !searchName && (
+                          <div className="selected-pokemon" style={{ marginTop: '20px' }}>
+                            <button className="back-btn" onClick={() => setSelectedPokemon(null)}>← Back to results</button>
+                            <div className="pokemon-card">
+                              <div className="drag-hint-container">
+                                <img
+                                  className="pokemon-image"
+                                  src={getPokemonImageUrl(selectedPokemon)}
+                                  alt={selectedPokemon.Name}
+                                  draggable="true"
+                                  onDragStart={() => { setDraggedItem(selectedPokemon); }}
+                                  onDragEnd={() => setDraggedItem(null)}
+                                  style={{ cursor: 'grab' }}
+                                />
+                                <div className="drag-badge">DRAG ME</div>
+                              </div>
+                              <div className="pokemon-detail-copy">
+                                <div className="name-type-row">
+                                  <h4>{selectedPokemon.Name}</h4>
+                                  <div className="type-badges">
+                                    <span className={`type-badge ${selectedPokemon["Type 1"]?.toLowerCase()}`}>{selectedPokemon["Type 1"]}</span>
+                                    {selectedPokemon["Type 2"] && <span className={`type-badge ${selectedPokemon["Type 2"].toLowerCase()}`}>{selectedPokemon["Type 2"]}</span>}
+                                  </div>
+                                </div>
+
+                                <div className="emoji-stat-grid">
+                                  <div className="stat-item"><span>❤️ HP:</span> <strong>{selectedPokemon.HP}</strong></div>
+                                  <div className="stat-item"><span>⚔️ Attack:</span> <strong>{selectedPokemon.Attack}</strong></div>
+                                  <div className="stat-item"><span>🛡️ Defense:</span> <strong>{selectedPokemon.Defense}</strong></div>
+                                  <div className="stat-item"><span>⚡ Speed:</span> <strong>{selectedPokemon.Speed}</strong></div>
+                                  <div className="stat-item total"><span>⭐ Total:</span> <strong>{selectedPokemon.Total}</strong></div>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="detail-row"><span>HP: {selectedPokemon.HP}</span><span>Attack: {selectedPokemon.Attack}</span></div>
+                            <div className="detail-row"><span>Defense: {selectedPokemon.Defense}</span><span>Speed: {selectedPokemon.Speed}</span></div>
+                            <div className="detail-row"><span>Total: {selectedPokemon.Total}</span><span>Gen: {selectedPokemon.Generation}</span></div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* RAW DATA TABLE RESTORED */}
+                {!loading && !error && (
+                  <section style={{ marginTop: '40px' }}>
+                    <h2>Dataset Overview</h2>
+                    <p style={{ marginBottom: '16px', color: '#64748b' }}>Drag any Pokémon into the Battle Arena!</p>
+                    <div className="table-wrapper">
+                      <table>
+                        <thead>
+                          <tr><th>Image</th><th>#</th><th>Name</th><th>Type 1</th><th>Type 2</th><th>Total</th><th>HP</th><th>Attack</th><th>Defense</th><th>Speed</th></tr>
+                        </thead>
+                        <tbody>
+                          {datasetHead.map((row, index) => {
+                            const imgUrl = getPokemonImageUrl(row);
+                            return (
+                              <tr
+                                key={`${row.Name}-${index}`}
+                                draggable="true"
+                                onDragStart={() => { setDraggedItem(row); }}
+                                onDragEnd={() => setDraggedItem(null)}
+                                style={{ cursor: 'grab' }}
+                              >
+                                <td>{imgUrl && <img src={imgUrl} alt={row.Name} style={{ width: "40px", height: "40px", objectFit: "contain" }} />}</td>
+                                <td>{row["#"] || index + 1}</td><td>{row.Name}</td><td>{row["Type 1"]}</td><td>{row["Type 2"] || "—"}</td><td>{row.Total}</td><td>{row.HP}</td><td>{row.Attack}</td><td>{row.Defense}</td><td>{row.Speed}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+                )}
               </section>
             )}
-          </section>
-        )}
 
-  {/* --- POKÉMON WORLD MAP V4 (INTERATIVO COM LEAFLET) --- */}
-{activePage === "pokemonWorld" && (
-  <section className="pokemon-world-page">
-    <div className="page-header">
-      <h2>Pokémon Archipelago</h2>
-      <p>Explore as 18 ilhas de clusters. Arrastar para mover, scroll para fazer zoom.</p>
-    </div>
-
-    {!loading && !error && pokemon.length > 0 && (
-      <div className="pokemon-world-map">
-        <MapContainer
-          center={[550, 500]} // Ponto inicial da câmara
-          zoom={0} // Zoom inicial
-          minZoom={-1} // Permite afastar
-          maxZoom={2} // Permite aproximar muito
-          crs={L.CRS.Simple} // Crucial: Diz ao mapa que não é o planeta Terra, é um plano infinito
-          style={{ height: '100%', width: '100%' }}
-        >
-          {/* 1. Loop to render the 18 Islands */}
-          {islandClusters.map((island) => (
-            <Marker key={island.type} position={island.coords} icon={createIslandIcon(island.type)}>
-              <Popup className="custom-popup">
-                <b>{island.type} Island</b><br/>
-                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>ML Cluster Data Here</span>
-              </Popup>
-            </Marker>
-          ))}
-
-          {/* Loop to render the randomly changing, floating Pokémon */}
-          {mapSprites.map(sprite => (
-            <Marker
-              key={`${sprite.id}-${sprite.updateKey || 0}`} 
-              position={sprite.coords}
-              icon={L.divIcon({
-                className: 'pokemon-sprite-marker',
-                html: `<img src="${getPokemonImageUrl(sprite.pokemon)}" class="pokemon-sprite-img" style="animation-delay: ${sprite.animDelay};" alt="${sprite.pokemon.Name}" />`,
-                iconSize: [45, 45],
-                iconAnchor: [22, 22]
-              })}
-            >
-              <Popup className="custom-popup">
-                <b>{sprite.pokemon.Name}</b><br/>
-                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                  Total Stats: {sprite.pokemon.Total}
-                </span>
-              </Popup>
-            </Marker>
-          ))}
-        </MapContainer>
-      </div>
-    )}
-  </section>
-)}
-        {/* --- CHARTS PAGE --- */}
-        {activePage === "charts" && (
-          <section className="charts-page">
-            <h2>Charts & Statistics</h2>
-            <p>Explore the Pokémon dataset through visualizations.</p>
-            {!loading && !error && pokemon.length > 0 && (
-              <div className="charts-container">
-                {/* Type Distribution Chart */}
-                <div className="chart-card">
-                  <h3>Pokémon by Type</h3>
-                  <div className="bar-chart">
-                    {(() => {
-                      const typeCounts = {};
-                      pokemon.forEach(p => { const t = p["Type 1"]; typeCounts[t] = (typeCounts[t] || 0) + 1; });
-                      const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
-                      const maxCount = sortedTypes[0]?.[1] || 1;
-                      return sortedTypes.map(([type, count]) => (
-                        <div key={type} className="bar-row">
-                          <span className="bar-label">{type}</span>
-                          <div className="bar-container"><div className="bar" style={{width: `${(count / maxCount) * 100}%`}}></div></div>
-                          <span className="bar-value">{count}</span>
-                        </div>
-                      ));
-                    })()}
-                  </div>
+            {/* --- POKÉMON WORLD MAP V4 (INTERATIVO COM LEAFLET) --- */}
+            {activePage === "pokemonWorld" && (
+              <section className="pokemon-world-page">
+                <div className="page-header">
+                  <h2>Pokémon Archipelago</h2>
+                  <p>Explore as 18 ilhas de clusters. Arrastar para mover, scroll para fazer zoom.</p>
                 </div>
 
-                {/* Generation Distribution Chart */}
-                <div className="chart-card">
-                  <h3>Pokémon by Generation</h3>
-                  <div className="bar-chart">
-                    {(() => {
-                      const genCounts = {};
-                      pokemon.forEach(p => { const g = p["Generation"]; if (g) genCounts[g] = (genCounts[g] || 0) + 1; });
-                      const sortedGens = Object.entries(genCounts).sort((a, b) => Number(a[0]) - Number(b[0]));
-                      const maxCount = sortedGens[0]?.[1] || 1;
-                      return sortedGens.map(([gen, count]) => (
-                        <div key={gen} className="bar-row">
-                          <span className="bar-label">Gen {gen}</span>
-                          <div className="bar-container"><div className="bar gen-bar" style={{width: `${(count / maxCount) * 100}%`}}></div></div>
-                          <span className="bar-value">{count}</span>
-                        </div>
-                      ));
-                    })()}
-                  </div>
-                </div>
-
-                {/* Stats Average Chart */}
-                <div className="chart-card">
-                  <h3>Average Stats</h3>
-                  <div className="bar-chart">
-                    {(() => {
-                      const stats = ["HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed"];
-                      const avgStats = stats.map(stat => {
-                        const sum = pokemon.reduce((acc, p) => acc + (Number(p[stat]) || 0), 0);
-                        return (sum / pokemon.length).toFixed(1);
-                      });
-                      const maxAvg = Math.max(...avgStats);
-                      return stats.map((stat, i) => (
-                        <div key={stat} className="bar-row">
-                          <span className="bar-label">{stat}</span>
-                          <div className="bar-container"><div className="bar stat-bar" style={{width: `${(avgStats[i] / maxAvg) * 100}%`}}></div></div>
-                          <span className="bar-value">{avgStats[i]}</span>
-                        </div>
-                      ));
-                    })()}
-                  </div>
-                </div>
-              </div>
-            )}
-          </section>
-        )}
-
-{/* --- SPIRIT QUIZ PAGE --- */}
-        {activePage === "spirit" && (
-          <section className="spirit-quiz">
-            <div className="page-header">
-              <h2>Spirit Pokémon</h2>
-              <p>Discover your own match or meet the team behind this project!</p>
-            </div>
-
-            {/* RESULT SHOWS FIRST - ABOVE EVERYTHING */}
-            {spiritResult && (
-              <div className="quiz-result" style={{ 
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", 
-                borderRadius: "24px", 
-                padding: "40px", 
-                textAlign: "center", 
-                color: "white",
-                marginBottom: "40px",
-                boxShadow: "0 20px 60px rgba(102, 126, 234, 0.4)"
-              }}>
-                <h3 style={{ margin: "0 0 20px", fontSize: "1.4rem", color: "rgba(255,255,255,0.9)" }}>Your Spirit Pokémon</h3>
-                <img src={spiritResult.img} alt={spiritResult.name} style={{ width: "180px", margin: "0 auto", display: "block", background: "white", borderRadius: "20px", padding: "15px" }} />
-                <div className="spirit-name" style={{ fontSize: "2rem", fontWeight: 800, marginTop: "20px" }}>{spiritResult.name}</div>
-                <div className="spirit-desc" style={{ marginBottom: "24px", opacity: 0.9 }}>{spiritResult.desc}</div>
-                <button style={{ 
-                  padding: "14px 32px", 
-                  borderRadius: "16px", 
-                  border: "none", 
-                  background: "white", 
-                  color: "#667eea", 
-                  fontSize: "1rem", 
-                  fontWeight: 700, 
-                  cursor: "pointer",
-                  transition: "transform 0.2s"
-                }} onClick={() => { setQuizStep(1); setQuizAnswers([]); setSpiritResult(null); }}>Try Again</button>
-              </div>
-            )}
-
-            {/* QUIZ SECTION - BEAUTIFUL HEADER */}
-            <div style={{ 
-              background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)", 
-              borderRadius: "24px", 
-              padding: "40px", 
-              textAlign: "center", 
-              color: "white",
-              marginBottom: "40px",
-              boxShadow: "0 20px 60px rgba(245, 87, 108, 0.3)"
-            }}>
-              <h3 style={{ margin: "0 0 12px", fontSize: "1.6rem" }}>Find Your Spirit Pokémon</h3>
-              <p style={{ margin: "0 0 24px", opacity: 0.9, textAlign: "center" }}>Analyze your personality traits against our dataset to find your match.</p>
-              <button style={{ 
-                padding: "18px 48px", 
-                borderRadius: "20px", 
-                border: "none", 
-                background: "white", 
-                color: "#f5576c", 
-                fontSize: "1.2rem", 
-                fontWeight: 800, 
-                cursor: "pointer",
-                boxShadow: "0 8px 30px rgba(0,0,0,0.2)",
-                transition: "transform 0.2s, box-shadow 0.2s"
-              }} onClick={() => { setQuizStep(1); setQuizAnswers([]); setSpiritResult(null); }}>
-                Start Quiz
-              </button>
-            </div>
-
-            {/* TEAM INDIVIDUAL CARDS SECTION */}
-            <div className="group-spirit-section">
-              <h3>Our Group's Spirit Pokemon</h3>
-              <div className="group-grid">
-
-                {/* Team Member 1 */}
-                <div className="member-card">
-                  <div className="member-photo-container">
-                    <img src="foto.jpg" alt="Member 1" className="individual-photo" />
-                  </div>
-                  <div className="member-info">
-                    <span className="member-name">Henrique Santos</span>
-                    <div className="spirit-match">
-                      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png" alt="Charizard" />
-                      <span>Charizard</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Team Member 2 */}
-                <div className="member-card">
-                  <div className="member-photo-container">
-                    <img src="/DSC07114.jpg" alt="Member 2" className="individual-photo" />
-                  </div>
-                  <div className="member-info">
-                    <span className="member-name">Laura Lisboa</span>
-                    <div className="spirit-match">
-                      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/252.png" alt="Treecko" />
-                      <span>Treecko</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Team Member 3 */}
-                <div className="member-card">
-                  <div className="member-photo-container">
-                    <img src="/teu-caminho/foto3.jpg" alt="Member 3" className="individual-photo" />
-                  </div>
-                  <div className="member-info">
-                    <span className="member-name">Tiago Carvalho</span>
-                    <div className="spirit-match">
-                      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/321.png" alt="Wailord" />
-                      <span>Wailord</span>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            {/* MODAL DO QUIZ */}
-            {quizStep > 0 && (
-              <div className="quiz-modal">
-                <div className="quiz-content">
-                  {quizStep <= quizQuestions.length ? (
-                    <>
-                      <h3>Question {quizStep} of {quizQuestions.length}</h3>
-                      <p>{quizQuestions[quizStep - 1].question}</p>
-                      {quizQuestions[quizStep - 1].options.map((opt) => (
-                        <button key={opt} onClick={() => {
-                          const newAnswers = [...quizAnswers, opt];
-                          if (quizStep === quizQuestions.length) {
-                            const match = pokemon[Math.floor(Math.random() * pokemon.length)];
-                            setSpiritResult({
-                              name: match.Name,
-                              img: getPokemonImageUrl(match),
-                              desc: `Stats: Attack ${match.Attack}, Defense ${match.Defense}`
-                            });
-                            setQuizStep(0);
-                          } else {
-                            setQuizAnswers(newAnswers);
-                            setQuizStep(quizStep + 1);
-                          }
-                        }}>{opt}</button>
+                {!loading && !error && pokemon.length > 0 && (
+                  <div className="pokemon-world-map">
+                    <MapContainer
+                      center={[550, 500]} // Ponto inicial da câmara
+                      zoom={0} // Zoom inicial
+                      minZoom={-1} // Permite afastar
+                      maxZoom={2} // Permite aproximar muito
+                      crs={L.CRS.Simple} // Crucial: Diz ao mapa que não é o planeta Terra, é um plano infinito
+                      style={{ height: '100%', width: '100%' }}
+                    >
+                      {/* 1. Loop to render the 18 Islands */}
+                      {islandClusters.map((island) => (
+                        <Marker key={island.type} position={island.coords} icon={createIslandIcon(island.type)}>
+                          <Popup className="custom-popup">
+                            <b>{island.type} Island</b><br />
+                            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>ML Cluster Data Here</span>
+                          </Popup>
+                        </Marker>
                       ))}
-                      <button className="close-quiz-btn" onClick={() => setQuizStep(0)}>Close</button>
-                    </>
-                  ) : null}
-                </div>
-              </div>
+
+                      {/* Loop to render the randomly changing, floating Pokémon */}
+                      {mapSprites.map(sprite => (
+                        <Marker
+                          key={`${sprite.id}-${sprite.updateKey || 0}`}
+                          position={sprite.coords}
+                          icon={L.divIcon({
+                            className: 'pokemon-sprite-marker',
+                            html: `<img src="${getPokemonImageUrl(sprite.pokemon)}" class="pokemon-sprite-img" style="animation-delay: ${sprite.animDelay};" alt="${sprite.pokemon.Name}" />`,
+                            iconSize: [45, 45],
+                            iconAnchor: [22, 22]
+                          })}
+                        >
+                          <Popup className="custom-popup">
+                            <b>{sprite.pokemon.Name}</b><br />
+                            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                              Total Stats: {sprite.pokemon.Total}
+                            </span>
+                          </Popup>
+                        </Marker>
+                      ))}
+                    </MapContainer>
+                  </div>
+                )}
+              </section>
             )}
-          </section>
-        )}
-      
-    </>
-  ) : null}
+            {/* --- CHARTS PAGE --- */}
+            {activePage === "charts" && (
+              <section className="charts-page">
+                <h2>Charts & Statistics</h2>
+                <p>Explore the Pokémon dataset through visualizations.</p>
+                {!loading && !error && pokemon.length > 0 && (
+                  <div className="charts-container">
+                    {/* Type Distribution Chart */}
+                    <div className="chart-card">
+                      <h3>Pokémon by Type</h3>
+                      <div className="bar-chart">
+                        {(() => {
+                          const typeCounts = {};
+                          pokemon.forEach(p => { const t = p["Type 1"]; typeCounts[t] = (typeCounts[t] || 0) + 1; });
+                          const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
+                          const maxCount = sortedTypes[0]?.[1] || 1;
+                          return sortedTypes.map(([type, count]) => (
+                            <div key={type} className="bar-row">
+                              <span className="bar-label">{type}</span>
+                              <div className="bar-container"><div className="bar" style={{ width: `${(count / maxCount) * 100}%` }}></div></div>
+                              <span className="bar-value">{count}</span>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Generation Distribution Chart */}
+                    <div className="chart-card">
+                      <h3>Pokémon by Generation</h3>
+                      <div className="bar-chart">
+                        {(() => {
+                          const genCounts = {};
+                          pokemon.forEach(p => { const g = p["Generation"]; if (g) genCounts[g] = (genCounts[g] || 0) + 1; });
+                          const sortedGens = Object.entries(genCounts).sort((a, b) => Number(a[0]) - Number(b[0]));
+                          const maxCount = sortedGens[0]?.[1] || 1;
+                          return sortedGens.map(([gen, count]) => (
+                            <div key={gen} className="bar-row">
+                              <span className="bar-label">Gen {gen}</span>
+                              <div className="bar-container"><div className="bar gen-bar" style={{ width: `${(count / maxCount) * 100}%` }}></div></div>
+                              <span className="bar-value">{count}</span>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Stats Average Chart */}
+                    <div className="chart-card">
+                      <h3>Average Stats</h3>
+                      <div className="bar-chart">
+                        {(() => {
+                          const stats = ["HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed"];
+                          const avgStats = stats.map(stat => {
+                            const sum = pokemon.reduce((acc, p) => acc + (Number(p[stat]) || 0), 0);
+                            return (sum / pokemon.length).toFixed(1);
+                          });
+                          const maxAvg = Math.max(...avgStats);
+                          return stats.map((stat, i) => (
+                            <div key={stat} className="bar-row">
+                              <span className="bar-label">{stat}</span>
+                              <div className="bar-container"><div className="bar stat-bar" style={{ width: `${(avgStats[i] / maxAvg) * 100}%` }}></div></div>
+                              <span className="bar-value">{avgStats[i]}</span>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* --- SPIRIT QUIZ PAGE --- */}
+            {activePage === "spirit" && (
+              <section className="spirit-quiz">
+                <div className="page-header">
+                  <h2>Spirit Pokémon</h2>
+                  <p>Discover your own match or meet the team behind this project!</p>
+                </div>
+
+                {/* RESULT SHOWS FIRST - ABOVE EVERYTHING */}
+                {spiritResult && (
+                  <div className="quiz-result" style={{
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    borderRadius: "24px",
+                    padding: "40px",
+                    textAlign: "center",
+                    color: "white",
+                    marginBottom: "40px",
+                    boxShadow: "0 20px 60px rgba(102, 126, 234, 0.4)"
+                  }}>
+                    <h3 style={{ margin: "0 0 20px", fontSize: "1.4rem", color: "rgba(255,255,255,0.9)" }}>Your Spirit Pokémon</h3>
+                    <img src={spiritResult.img} alt={spiritResult.name} style={{ width: "180px", margin: "0 auto", display: "block", background: "white", borderRadius: "20px", padding: "15px" }} />
+                    <div className="spirit-name" style={{ fontSize: "2rem", fontWeight: 800, marginTop: "20px" }}>{spiritResult.name}</div>
+                    <div className="spirit-desc" style={{ marginBottom: "24px", opacity: 0.9 }}>{spiritResult.desc}</div>
+                    <button style={{
+                      padding: "14px 32px",
+                      borderRadius: "16px",
+                      border: "none",
+                      background: "white",
+                      color: "#667eea",
+                      fontSize: "1rem",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      transition: "transform 0.2s"
+                    }} onClick={() => { setQuizStep(1); setQuizAnswers([]); setSpiritResult(null); }}>Try Again</button>
+                  </div>
+                )}
+
+                {/* QUIZ SECTION - BEAUTIFUL HEADER */}
+                <div style={{
+                  background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                  borderRadius: "24px",
+                  padding: "40px",
+                  textAlign: "center",
+                  color: "white",
+                  marginBottom: "40px",
+                  boxShadow: "0 20px 60px rgba(245, 87, 108, 0.3)"
+                }}>
+                  <h3 style={{ margin: "0 0 12px", fontSize: "1.6rem" }}>Find Your Spirit Pokémon</h3>
+                  <p style={{ margin: "0 0 24px", opacity: 0.9, textAlign: "center" }}>Analyze your personality traits against our dataset to find your match.</p>
+                  <button style={{
+                    padding: "18px 48px",
+                    borderRadius: "20px",
+                    border: "none",
+                    background: "white",
+                    color: "#f5576c",
+                    fontSize: "1.2rem",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                    boxShadow: "0 8px 30px rgba(0,0,0,0.2)",
+                    transition: "transform 0.2s, box-shadow 0.2s"
+                  }} onClick={() => { setQuizStep(1); setQuizAnswers([]); setSpiritResult(null); }}>
+                    Start Quiz
+                  </button>
+                </div>
+
+                {/* TEAM INDIVIDUAL CARDS SECTION */}
+                <div className="group-spirit-section">
+                  <h3>Our Group's Spirit Pokemon</h3>
+                  <div className="group-grid">
+
+                    {/* Team Member 1 */}
+                    <div className="member-card">
+                      <div className="member-photo-container">
+                        <img src="foto.jpg" alt="Member 1" className="individual-photo" />
+                      </div>
+                      <div className="member-info">
+                        <span className="member-name">Henrique Santos</span>
+                        <div className="spirit-match">
+                          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png" alt="Charizard" />
+                          <span>Charizard</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Team Member 2 */}
+                    <div className="member-card">
+                      <div className="member-photo-container">
+                        <img src="/DSC07114.jpg" alt="Member 2" className="individual-photo" />
+                      </div>
+                      <div className="member-info">
+                        <span className="member-name">Laura Lisboa</span>
+                        <div className="spirit-match">
+                          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/252.png" alt="Treecko" />
+                          <span>Treecko</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Team Member 3 */}
+                    <div className="member-card">
+                      <div className="member-photo-container">
+                        <img src="/teu-caminho/foto3.jpg" alt="Member 3" className="individual-photo" />
+                      </div>
+                      <div className="member-info">
+                        <span className="member-name">Tiago Carvalho</span>
+                        <div className="spirit-match">
+                          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/321.png" alt="Wailord" />
+                          <span>Wailord</span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* MODAL DO QUIZ */}
+                {quizStep > 0 && (
+                  <div className="quiz-modal">
+                    <div className="quiz-content">
+                      {quizStep <= quizQuestions.length ? (
+                        <>
+                          <h3>Question {quizStep} of {quizQuestions.length}</h3>
+                          <p>{quizQuestions[quizStep - 1].question}</p>
+                          {quizQuestions[quizStep - 1].options.map((opt) => (
+                            <button key={opt} onClick={() => {
+                              const newAnswers = [...quizAnswers, opt];
+                              if (quizStep === quizQuestions.length) {
+                                const match = pokemon[Math.floor(Math.random() * pokemon.length)];
+                                setSpiritResult({
+                                  name: match.Name,
+                                  img: getPokemonImageUrl(match),
+                                  desc: `Stats: Attack ${match.Attack}, Defense ${match.Defense}`
+                                });
+                                setQuizStep(0);
+                              } else {
+                                setQuizAnswers(newAnswers);
+                                setQuizStep(quizStep + 1);
+                              }
+                            }}>{opt}</button>
+                          ))}
+                          <button className="close-quiz-btn" onClick={() => setQuizStep(0)}>Close</button>
+                        </>
+                      ) : null}
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
+
+          </>
+        ) : null}
       </main>
 
       {/* --- STICKY BOTTOM ARENA BAR --- */}
       {activePage === "exploration" && (
         <div className={`sticky-bottom-arena ${arenaExpanded ? 'expanded' : ''}`}>
-          <button 
+          <button
             className="sticky-arena-toggle"
             onClick={() => setArenaExpanded(!arenaExpanded)}
           >
@@ -973,56 +973,56 @@ useEffect(() => {
           {arenaExpanded && (
             <div className="sticky-arena-content">
               <div className="sticky-arena-slots">
-                <div className={`sticky-drop-zone ${fighters[0] ? 'filled' : ''}`} onDragOver={e => { e.preventDefault(); setDropTarget(0); setArenaExpanded(true); }} onDragLeave={() => setDropTarget(null)} onDrop={() => { if(draggedItem) { const n = [...fighters]; n[0] = draggedItem; setFighters(n); } setDropTarget(null); }}>
+                <div className={`sticky-drop-zone ${fighters[0] ? 'filled' : ''}`} onDragOver={e => { e.preventDefault(); setDropTarget(0); setArenaExpanded(true); }} onDragLeave={() => setDropTarget(null)} onDrop={() => { if (draggedItem) { const n = [...fighters]; n[0] = draggedItem; setFighters(n); } setDropTarget(null); }}>
                   {fighters[0] ? <><img src={getPokemonImageUrl(fighters[0])} alt={fighters[0].Name} /><span>{fighters[0].Name}</span></> : "Drop here"}
                 </div>
                 {isFighting && fighters[0] && fighters[1] && (
-  <div className="battle-result-announcement">
-    {/* Usamos a lógica que já funciona no teu código em vez de uma função inexistente */}
-    {(() => {
-        const p1 = fighters[0];
-        const p2 = fighters[1];
-        const p1Multi = getTypeMultiplier(p1["Type 1"], p2["Type 1"]);
-        const p2Multi = getTypeMultiplier(p2["Type 1"], p1["Type 1"]);
-        const p1Score = Number(p1.Total) * p1Multi;
-        const p2Score = Number(p2.Total) * p2Multi;
-        
-        let title = "It's a Tie!";
-        if (p1Score > p2Score) title = `${p1.Name} Wins!`;
-        if (p2Score > p1Score) title = `${p2.Name} Wins!`;
+                  <div className="battle-result-announcement">
+                    {/* Usamos a lógica que já funciona no teu código em vez de uma função inexistente */}
+                    {(() => {
+                      const p1 = fighters[0];
+                      const p2 = fighters[1];
+                      const p1Multi = getTypeMultiplier(p1["Type 1"], p2["Type 1"]);
+                      const p2Multi = getTypeMultiplier(p2["Type 1"], p1["Type 1"]);
+                      const p1Score = Number(p1.Total) * p1Multi;
+                      const p2Score = Number(p2.Total) * p2Multi;
 
-        return (
-          <>
-            <strong>{title}</strong>
-            <div className="narrative-text" style={{fontSize: '0.8rem', marginTop: '5px'}}>
-               {generateBattleNarrative(p1, p2, p1Score, p2Score, p1Multi, p2Multi)}
-            </div>
-          </>
-        );
-    })()}
-    <button className="clear-arena-btn" style={{marginTop: '10px'}} onClick={() => setIsFighting(false)}>Back to Arena</button>
-  </div>
+                      let title = "It's a Tie!";
+                      if (p1Score > p2Score) title = `${p1.Name} Wins!`;
+                      if (p2Score > p1Score) title = `${p2.Name} Wins!`;
 
-)}
+                      return (
+                        <>
+                          <strong>{title}</strong>
+                          <div className="narrative-text" style={{ fontSize: '0.8rem', marginTop: '5px' }}>
+                            {generateBattleNarrative(p1, p2, p1Score, p2Score, p1Multi, p2Multi)}
+                          </div>
+                        </>
+                      );
+                    })()}
+                    <button className="clear-arena-btn" style={{ marginTop: '10px' }} onClick={() => setIsFighting(false)}>Back to Arena</button>
+                  </div>
+
+                )}
                 <div className="arena-center-controls">
-  {fighters[0] && fighters[1] && !isFighting ? (
-    <button className="fight-button" onClick={() => setIsFighting(true)}>
-      FIGHT!
-    </button>
-  ) : fighters[0] && fighters[1] && isFighting ? (
-    <span style={{fontSize: '1.5rem', fontWeight: '900', color: '#cbd5e1'}}></span>
-  ) : (
-    <span className="arena-vs">VS</span>
-  )}
-</div>
-                <div className={`sticky-drop-zone ${fighters[1] ? 'filled' : ''}`} onDragOver={e => { e.preventDefault(); setDropTarget(1); setArenaExpanded(true); }} onDragLeave={() => setDropTarget(null)} onDrop={() => { if(draggedItem) { const n = [...fighters]; n[1] = draggedItem; setFighters(n); } setDropTarget(null); }}>
+                  {fighters[0] && fighters[1] && !isFighting ? (
+                    <button className="fight-button" onClick={() => setIsFighting(true)}>
+                      FIGHT!
+                    </button>
+                  ) : fighters[0] && fighters[1] && isFighting ? (
+                    <span style={{ fontSize: '1.5rem', fontWeight: '900', color: '#cbd5e1' }}></span>
+                  ) : (
+                    <span className="arena-vs">VS</span>
+                  )}
+                </div>
+                <div className={`sticky-drop-zone ${fighters[1] ? 'filled' : ''}`} onDragOver={e => { e.preventDefault(); setDropTarget(1); setArenaExpanded(true); }} onDragLeave={() => setDropTarget(null)} onDrop={() => { if (draggedItem) { const n = [...fighters]; n[1] = draggedItem; setFighters(n); } setDropTarget(null); }}>
                   {fighters[1] ? <><img src={getPokemonImageUrl(fighters[1])} alt={fighters[1].Name} /><span>{fighters[1].Name}</span></> : "Drop here"}
                 </div>
               </div>
-              
+
               <button className="clear-arena-btn" onClick={() => { setFighters([null, null]); setIsFighting(false); }}>
-  Clear Arena
-</button>
+                Clear Arena
+              </button>
             </div>
           )}
         </div>

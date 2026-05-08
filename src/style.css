@@ -7,7 +7,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0,0,0,0.35);
+  background: rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,7 +17,7 @@
 .quiz-content {
   background: #fff;
   border-radius: 18px;
-  box-shadow: 0 8px 32px rgba(15,23,42,0.18);
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.18);
   padding: 36px 32px 28px;
   min-width: 320px;
   max-width: 90vw;
@@ -39,6 +39,7 @@
   cursor: pointer;
   transition: background 0.18s;
 }
+
 .quiz-content button:hover {
   background: #4338ca;
 }
@@ -61,9 +62,11 @@
   cursor: pointer;
   transition: background 0.18s;
 }
+
 .start-quiz-btn:hover {
   background: #4338ca;
 }
+
 :root {
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #0f172a;
@@ -74,7 +77,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
@@ -105,14 +109,14 @@ html, body {
   align-items: center;
   justify-content: space-between;
   padding: 15px 40px;
-  
+
   /* Efeito de Vidro */
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.5);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  
+
   margin-bottom: 30px;
 }
 
@@ -142,10 +146,13 @@ html, body {
 }
 
 @keyframes poke-scan {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1) rotate(0deg);
     filter: drop-shadow(0 0 0px rgba(99, 102, 241, 0));
   }
+
   50% {
     transform: scale(1.1) rotate(10deg);
     filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.6));
@@ -562,8 +569,16 @@ section h2 {
   background: #eef2ff;
 }
 
-.pokemon-card { display: flex; gap: 20px; align-items: flex-start; margin-bottom: 15px; }
-.pokemon-detail-copy { flex: 1; }
+.pokemon-card {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.pokemon-detail-copy {
+  flex: 1;
+}
 
 .pokemon-image {
   width: 128px;
@@ -625,7 +640,7 @@ section h2 {
   color: #1e293b;
 }
 
-.charts-page > p {
+.charts-page>p {
   color: #64748b;
   margin-bottom: 24px;
 }
@@ -1008,6 +1023,7 @@ tbody tr:hover {
 .pokemon-grid-item[draggable="true"]:active {
   cursor: grabbing;
 }
+
 /* =========================================
    NOVA BATTLE ARENA & DASHBOARD
 ========================================= */
@@ -1161,7 +1177,8 @@ tbody tr:hover {
 
 .empty-state {
   text-align: center;
-  padding: 12px 20px; /* Massively reduced padding to shrink the gap */
+  padding: 12px 20px;
+  /* Massively reduced padding to shrink the gap */
   margin-top: 16px;
   color: #64748b;
   font-size: 0.9rem;
@@ -1175,15 +1192,15 @@ tbody tr:hover {
   .dashboard-top-row {
     grid-template-columns: 1fr;
   }
-  
+
   .app-shell {
     padding: 18px 14px 30px;
   }
-  
+
   .charts-container {
     grid-template-columns: 1fr;
   }
-  
+
   .group-grid {
     grid-template-columns: 1fr;
   }
@@ -1194,7 +1211,8 @@ tbody tr:hover {
   width: 90px;
   height: 90px;
   background: #f1f5f9;
-  border-radius: 18px; /* Slightly rounded corners for a modern look */
+  border-radius: 18px;
+  /* Slightly rounded corners for a modern look */
   overflow: hidden;
   border: 2px solid #6366f1;
   flex-shrink: 0;
@@ -1203,13 +1221,14 @@ tbody tr:hover {
 .individual-photo {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* This ensures your headshot fits perfectly without stretching */
+  object-fit: cover;
+  /* This ensures your headshot fits perfectly without stretching */
 }
 
 .group-grid {
   display: grid;
   /* Cria 3 colunas iguais. Se o ecrã for pequeno, passa para 1 coluna */
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
   margin-top: 20px;
 }
@@ -1221,14 +1240,15 @@ tbody tr:hover {
   box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
   /* Mudança crucial: agora os itens dentro do cartão ficam um debaixo do outro */
   display: flex;
-  flex-direction: column; 
+  flex-direction: column;
   align-items: center;
   text-align: center;
   gap: 15px;
 }
 
 .member-card:hover {
-  transform: translateY(-5px); /* Adds a nice little hover effect */
+  transform: translateY(-5px);
+  /* Adds a nice little hover effect */
 }
 
 .member-name {
@@ -1237,6 +1257,7 @@ tbody tr:hover {
   color: #1e293b;
   margin-bottom: 4px;
 }
+
 .member-info {
   display: flex;
   flex-direction: column;
@@ -1246,7 +1267,8 @@ tbody tr:hover {
 
 .spirit-match {
   display: flex;
-  flex-direction: column; /* Pokémon e nome do Pokémon um debaixo do outro */
+  flex-direction: column;
+  /* Pokémon e nome do Pokémon um debaixo do outro */
   align-items: center;
   gap: 8px;
   background: #f8fafc;
@@ -1257,7 +1279,8 @@ tbody tr:hover {
 }
 
 .spirit-match img {
-  width: 120px; /* Limitamos o tamanho do Pokémon para não "explodir" o layout */
+  width: 120px;
+  /* Limitamos o tamanho do Pokémon para não "explodir" o layout */
   height: 120px;
   object-fit: contain;
 }
@@ -1284,8 +1307,8 @@ tbody tr:hover {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
-  opacity: 0.25; 
-  filter: blur(8px); 
+  opacity: 0.25;
+  filter: blur(8px);
   padding: 40px;
   pointer-events: none;
 }
@@ -1298,8 +1321,15 @@ tbody tr:hover {
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
 }
 
 .hero-content {
@@ -1385,6 +1415,7 @@ tbody tr:hover {
   vertical-align: middle;
   margin-left: 8px;
 }
+
 .logo-poke::after {
   content: '';
   position: absolute;
@@ -1517,7 +1548,8 @@ main {
 
 /* Botão de Luta Central */
 .fight-button {
-  background: #ef4444; /* Vermelho vibrante */
+  background: #ef4444;
+  /* Vermelho vibrante */
   color: white;
   border: none;
   padding: 10px 25px;
@@ -1536,9 +1568,17 @@ main {
 }
 
 @keyframes pulse-red {
-  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-  70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
 }
 
 /* Animação dos Lutadores quando estão prontos */
@@ -1547,8 +1587,13 @@ main {
 }
 
 @keyframes ready-shake {
-  from { transform: translateY(0); }
-  to { transform: translateY(-5px); }
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-5px);
+  }
 }
 
 /* Destaque para o resultado */
@@ -1568,8 +1613,15 @@ main {
 }
 
 @keyframes ready-shake {
-  from { transform: translateY(0) scale(1); }
-  to { transform: translateY(-8px) scale(1.05); } /* Ele pula e cresce um pouco */
+  from {
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    transform: translateY(-8px) scale(1.05);
+  }
+
+  /* Ele pula e cresce um pouco */
 }
 
 /* Para o botão de Fight não ficar colado */
@@ -1579,17 +1631,19 @@ main {
   justify-content: center;
   min-width: 100px;
 }
+
 .battle-result-announcement {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  max-width: 400px; /* Impede que o texto estique a barra toda */
+  max-width: 400px;
+  /* Impede que o texto estique a barra toda */
   text-align: center;
   background: rgba(255, 255, 255, 0.9);
   padding: 10px;
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .back-btn {
@@ -1609,23 +1663,26 @@ main {
 
 .sticky-bottom-arena {
   position: fixed;
-  bottom: 30px !important; /* Descola do fundo do ecrã */
+  bottom: 30px !important;
+  /* Descola do fundo do ecrã */
   left: 50% !important;
-  transform: translateX(-50%) !important; /* Centraliza horizontalmente */
+  transform: translateX(-50%) !important;
+  /* Centraliza horizontalmente */
   width: 85% !important;
   max-width: 900px !important;
-  
+
   /* Arredondamento Máximo */
-  border-radius: 50px !important; 
-  
+  border-radius: 50px !important;
+
   /* Cores e Vidro */
-  background: rgba(99, 102, 241, 0.95) !important; /* O teu roxo com transparência */
+  background: rgba(99, 102, 241, 0.95) !important;
+  /* O teu roxo com transparência */
   backdrop-filter: blur(10px);
-  
+
   /* Sombra para dar profundidade */
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
   border: 2px solid rgba(255, 255, 255, 0.2) !important;
-  
+
   z-index: 1000;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   overflow: hidden;
@@ -1633,7 +1690,8 @@ main {
 
 .dashboard-top-row {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* Divide o topo ao meio */
+  grid-template-columns: 1fr 1fr;
+  /* Divide o topo ao meio */
   gap: 20px;
   margin-bottom: 25px;
 }
@@ -1642,7 +1700,7 @@ main {
   background: white;
   padding: 20px;
   border-radius: 18px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: flex-start;
   gap: 15px;
@@ -1658,14 +1716,16 @@ main {
   flex: 1;
 }
 
-.tip-card-header, .recent-card-header {
+.tip-card-header,
+.recent-card-header {
   margin-bottom: 5px;
   display: flex;
   align-items: center;
   min-width: 140px;
 }
 
-.tip-card-header h4, .recent-card-header h4 {
+.tip-card-header h4,
+.recent-card-header h4 {
   margin: 0;
   color: #6366f1;
   font-size: 0.9rem;
@@ -1723,21 +1783,28 @@ main {
   height: 650px;
   border-radius: 24px;
   border: 8px solid #075985;
-  box-shadow: inset 0 0 80px rgba(0,0,0,0.15);
-  overflow: hidden; /* Mantém o mapa dentro das bordas redondas */
+  box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  /* Mantém o mapa dentro das bordas redondas */
 }
 
 /* O Efeito de Oceano Ondulado usando Leaflet Background */
 .leaflet-container {
-  background-color: #0ea5e9 !important; /* Azul base do oceano */
+  background-color: #0ea5e9 !important;
+  /* Azul base do oceano */
   background-image: url("data:image/svg+xml,%3Csvg width='120' height='30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 15 Q 30 30, 60 15 T 120 15' fill='none' stroke='%2338bdf8' stroke-width='3' opacity='0.6'/%3E%3C/svg%3E") !important;
   background-size: 120px 30px !important;
   animation: oceanMove 10s linear infinite;
 }
 
 @keyframes oceanMove {
-  from { background-position: 0 0; }
-  to { background-position: 120px 30px; }
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 120px 30px;
+  }
 }
 
 /* Estilo da Janela de Informação (Popup) ao clicar nas ilhas */
@@ -1747,7 +1814,7 @@ main {
   border-radius: 16px;
   text-align: center;
   border: 2px solid #6366f1;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
 .custom-popup .leaflet-popup-content b {
@@ -1756,6 +1823,7 @@ main {
   text-transform: uppercase;
   letter-spacing: 1px;
 }
+
 /* =========================================
    UI UPGRADES: BADGES, EMOJI GRID, CHAIN
 ========================================= */
@@ -1787,29 +1855,90 @@ main {
   color: white;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* Specific Type Colors */
-.type-badge.normal { background: #A8A77A; }
-.type-badge.fire { background: #EE8130; }
-.type-badge.water { background: #6390F0; }
-.type-badge.electric { background: #F7D02C; color: #333; text-shadow: none; }
-.type-badge.grass { background: #7AC74C; }
-.type-badge.ice { background: #96D9D6; color: #333; text-shadow: none; }
-.type-badge.fighting { background: #C22E28; }
-.type-badge.poison { background: #A33EA1; }
-.type-badge.ground { background: #E2BF65; color: #333; text-shadow: none; }
-.type-badge.flying { background: #A98FF3; }
-.type-badge.psychic { background: #F95587; }
-.type-badge.bug { background: #A6B91A; }
-.type-badge.rock { background: #B6A136; }
-.type-badge.ghost { background: #735797; }
-.type-badge.dragon { background: #6F35FC; }
-.type-badge.dark { background: #705746; }
-.type-badge.steel { background: #B7B7CE; color: #333; text-shadow: none; }
-.type-badge.fairy { background: #D685AD; }
+.type-badge.normal {
+  background: #A8A77A;
+}
+
+.type-badge.fire {
+  background: #EE8130;
+}
+
+.type-badge.water {
+  background: #6390F0;
+}
+
+.type-badge.electric {
+  background: #F7D02C;
+  color: #333;
+  text-shadow: none;
+}
+
+.type-badge.grass {
+  background: #7AC74C;
+}
+
+.type-badge.ice {
+  background: #96D9D6;
+  color: #333;
+  text-shadow: none;
+}
+
+.type-badge.fighting {
+  background: #C22E28;
+}
+
+.type-badge.poison {
+  background: #A33EA1;
+}
+
+.type-badge.ground {
+  background: #E2BF65;
+  color: #333;
+  text-shadow: none;
+}
+
+.type-badge.flying {
+  background: #A98FF3;
+}
+
+.type-badge.psychic {
+  background: #F95587;
+}
+
+.type-badge.bug {
+  background: #A6B91A;
+}
+
+.type-badge.rock {
+  background: #B6A136;
+}
+
+.type-badge.ghost {
+  background: #735797;
+}
+
+.type-badge.dragon {
+  background: #6F35FC;
+}
+
+.type-badge.dark {
+  background: #705746;
+}
+
+.type-badge.steel {
+  background: #B7B7CE;
+  color: #333;
+  text-shadow: none;
+}
+
+.type-badge.fairy {
+  background: #D685AD;
+}
 
 /* 2. Emoji Stat Grid */
 /* 2. Emoji Stat Grid - Versão Limpa (sem tabela) */
@@ -1817,10 +1946,14 @@ main {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px 24px;
-  background: transparent; /* Remove o fundo branco */
-  padding: 8px 0; /* Ajusta o espaçamento */
-  border: none; /* Remove a borda */
-  box-shadow: none; /* Remove a sombra */
+  background: transparent;
+  /* Remove o fundo branco */
+  padding: 8px 0;
+  /* Ajusta o espaçamento */
+  border: none;
+  /* Remove a borda */
+  box-shadow: none;
+  /* Remove a sombra */
   margin-top: -20px;
 }
 
@@ -1829,7 +1962,8 @@ main {
   justify-content: space-between;
   align-items: center;
   font-size: 0.95rem;
-  color: #1e293b; /* Cor um pouco mais escura para ler melhor sem o fundo branco */
+  color: #1e293b;
+  /* Cor um pouco mais escura para ler melhor sem o fundo branco */
 }
 
 .stat-item strong {
@@ -1839,7 +1973,8 @@ main {
 
 .stat-item.total {
   grid-column: span 2;
-  border-top: 2px solid rgba(99, 102, 241, 0.2); /* Uma linha mais visível para o total */
+  border-top: 2px solid rgba(99, 102, 241, 0.2);
+  /* Uma linha mais visível para o total */
   padding-top: 12px;
   margin-top: 4px;
   font-weight: 800;
@@ -1847,7 +1982,8 @@ main {
 
 /* Ajuste opcional para a Evolution Chain ficar mais profissional com maiúsculas */
 .breadcrumb-item {
-  letter-spacing: 1px; /* Dá um pouco de ar às letras maiúsculas */
+  letter-spacing: 1px;
+  /* Dá um pouco de ar às letras maiúsculas */
   font-size: 0.85rem;
 }
 
@@ -1910,7 +2046,8 @@ main {
 }
 
 .pokemon-sprite-img {
-  width: 45px; /* Ligeiramente mais pequenos para caberem melhor na ilha */
+  width: 45px;
+  /* Ligeiramente mais pequenos para caberem melhor na ilha */
   height: 45px;
   object-fit: contain;
   /* Removida a sombra preta que estava a bugar as bordas */
@@ -1918,11 +2055,23 @@ main {
 }
 
 @keyframes floatSprite {
-  0% { transform: translateY(0px); }
-  100% { transform: translateY(-6px); }
+  0% {
+    transform: translateY(0px);
+  }
+
+  100% {
+    transform: translateY(-6px);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.5); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
