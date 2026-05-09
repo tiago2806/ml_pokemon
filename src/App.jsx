@@ -978,13 +978,20 @@ function App() {
                 </div>
                 {!loading && !error && pokemon.length > 0 && (
                   <div className="charts-container">
-                    {/* 1. Which Stat Dominates */}
+                    {/* === SECTION: Overview === */}
+                    <div className="charts-section-title" style={{ gridColumn:'1 / -1' }}>
+                      <h3 style={{ margin:0, fontSize:'1.4rem', fontWeight:700, color:'#1e293b', display:'flex', alignItems:'center', gap:'10px' }}>
+                        <span style={{ width:4, height:22, background:'linear-gradient(180deg,#6366f1,#818cf8)', borderRadius:2, display:'inline-block' }}></span>
+                        Overview
+                      </h3>
+                      <p style={{ margin:'4px 0 0 14px', color:'#94a3b8', fontSize:'0.82rem' }}>General dataset statistics at a glance</p>
+                    </div>
+
                     <div className="chart-card">
                       <h3>Which Stat Dominates?</h3>
-                      <p style={{ color:'#64748b', fontSize:'0.9rem', marginBottom:'16px' }}>Average base stat across all Pokémon</p>
+                      <p style={{ color:'#64748b', fontSize:'0.85rem', marginBottom:'12px' }}>Average base stat across all Pokémon</p>
                       <div className="bar-chart">
                         {(() => {
-                          const statColors = {"HP":"#8AC926","Attack":"#FF595E","Defense":"#6A4C93","Sp. Atk":"#FFCA3A","Sp. Def":"#4D96FF","Speed":"#1982C4"};
                           const stats = ["HP","Attack","Defense","Sp. Atk","Sp. Def","Speed"];
                           const avgs = stats.map(s => ({ stat: s, avg: pokemon.reduce((a, p) => a + (Number(p[s]) || 0), 0) / pokemon.length }));
                           avgs.sort((a, b) => b.avg - a.avg);
@@ -992,7 +999,7 @@ function App() {
                           return avgs.map(({ stat, avg }) => (
                             <div key={stat} className="bar-row">
                               <span className="bar-label">{stat}</span>
-                              <div className="bar-container"><div className="bar" style={{ width:`${(avg/maxAvg)*100}%`, background:statColors[stat] }}></div></div>
+                              <div className="bar-container"><div className="bar" style={{ width:`${(avg/maxAvg)*100}%` }}></div></div>
                               <span className="bar-value">{avg.toFixed(1)}</span>
                             </div>
                           ));
@@ -1000,83 +1007,9 @@ function App() {
                       </div>
                     </div>
 
-                    {/* 2. Average Strength by Type */}
-                    <div className="chart-card">
-                      <h3>Average Strength by Primary Type</h3>
-                      <p style={{ color:'#64748b', fontSize:'0.9rem', marginBottom:'16px' }}>Mean Total base stats per type</p>
-                      <div className="bar-chart">
-                        {(() => {
-                          const typeColors = {"Grass":"#78C850","Fire":"#F08030","Water":"#6890F0","Electric":"#F8D030","Psychic":"#F85888","Ice":"#98D8D8","Dragon":"#7038F8","Dark":"#705848","Fairy":"#EE99AC","Normal":"#A8A878","Fighting":"#C03028","Flying":"#A890F0","Poison":"#A040A0","Ground":"#E0C068","Rock":"#B8A038","Bug":"#A8B820","Ghost":"#705898","Steel":"#B8B8D0"};
-                          const totals = {}; const counts = {};
-                          pokemon.forEach(p => { const t = p["Type 1"]; totals[t] = (totals[t]||0) + (Number(p["Total"])||0); counts[t] = (counts[t]||0) + 1; });
-                          const sorted = Object.entries(totals).map(([t,s]) => ({ type:t, mean:s/counts[t] })).sort((a,b) => b.mean - a.mean);
-                          const maxMean = sorted[0]?.mean || 1;
-                          return sorted.map(({ type, mean }) => (
-                            <div key={type} className="bar-row">
-                              <span className="bar-label">{type}</span>
-                              <div className="bar-container"><div className="bar" style={{ width:`${(mean/maxMean)*100}%`, background:typeColors[type]||'#999' }}></div></div>
-                              <span className="bar-value">{mean.toFixed(0)}</span>
-                            </div>
-                          ));
-                        })()}
-                      </div>
-                    </div>
-
-                    {/* 3. Pokémon Count by Type */}
-                    <div className="chart-card">
-                      <h3>Pokémon Count by Primary Type</h3>
-                      <div className="bar-chart">
-                        {(() => {
-                          const typeColors = {"Grass":"#78C850","Fire":"#F08030","Water":"#6890F0","Electric":"#F8D030","Psychic":"#F85888","Ice":"#98D8D8","Dragon":"#7038F8","Dark":"#705848","Fairy":"#EE99AC","Normal":"#A8A878","Fighting":"#C03028","Flying":"#A890F0","Poison":"#A040A0","Ground":"#E0C068","Rock":"#B8A038","Bug":"#A8B820","Ghost":"#705898","Steel":"#B8B8D0"};
-                          const counts = {};
-                          pokemon.forEach(p => { const t = p["Type 1"]; counts[t] = (counts[t]||0)+1; });
-                          const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
-                          const maxCount = sorted[0]?.[1] || 1;
-                          return sorted.map(([type, count]) => (
-                            <div key={type} className="bar-row">
-                              <span className="bar-label">{type}</span>
-                              <div className="bar-container"><div className="bar" style={{ width:`${(count/maxCount)*100}%`, background:typeColors[type]||'#999' }}></div></div>
-                              <span className="bar-value">{count}</span>
-                            </div>
-                          ));
-                        })()}
-                      </div>
-                    </div>
-
-                    {/* 4. Legendary vs Normal per Generation */}
-                    <div className="chart-card">
-                      <h3>Legendary vs Normal per Generation</h3>
-                      <div style={{ display:'flex', flexDirection:'column', gap:'12px', marginTop:'8px' }}>
-                        {(() => {
-                          const gens = {};
-                          pokemon.forEach(p => { const g = p["Generation"]; if (!g) return; if (!gens[g]) gens[g]={normal:0,legendary:0}; if (p["Legendary"]==="True") gens[g].legendary++; else gens[g].normal++; });
-                          return Object.entries(gens).sort((a,b)=>Number(a[0])-Number(b[0])).map(([gen,data]) => {
-                            const total = data.normal+data.legendary;
-                            const lPct = (data.legendary/total)*100;
-                            return (
-                              <div key={gen}>
-                                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'4px', fontSize:'0.82rem', color:'#475569' }}>
-                                  <span><strong>Gen {gen}</strong></span><span>{data.legendary} Leg. / {data.normal} Normal</span>
-                                </div>
-                                <div style={{ display:'flex', borderRadius:'8px', overflow:'hidden', height:'18px' }}>
-                                  <div style={{ width:`${100-lPct}%`, background:'#4D96FF' }}/>
-                                  <div style={{ width:`${lPct}%`, background:'#FF595E' }}/>
-                                </div>
-                              </div>
-                            );
-                          });
-                        })()}
-                        <div style={{ display:'flex', gap:'16px', marginTop:'4px', fontSize:'0.8rem' }}>
-                          <span style={{ display:'flex', alignItems:'center', gap:'6px' }}><span style={{ width:12, height:12, borderRadius:3, background:'#4D96FF', display:'inline-block' }}></span>Normal</span>
-                          <span style={{ display:'flex', alignItems:'center', gap:'6px' }}><span style={{ width:12, height:12, borderRadius:3, background:'#FF595E', display:'inline-block' }}></span>Legendary</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 5. Single vs Dual Type */}
                     <div className="chart-card">
                       <h3>Typing Complexity</h3>
-                      <p style={{ color:'#64748b', fontSize:'0.9rem', marginBottom:'16px' }}>Single-type vs Dual-type Pokémon</p>
+                      <p style={{ color:'#64748b', fontSize:'0.85rem', marginBottom:'12px' }}>Single-type vs Dual-type Pokémon</p>
                       {(() => {
                         let single=0, dual=0;
                         pokemon.forEach(p => { if (p["Type 2"]&&p["Type 2"]!=="nan"&&p["Type 2"]!=="") dual++; else single++; });
@@ -1087,7 +1020,7 @@ function App() {
                               <div style={{ width:`${(single/total)*100}%`, background:'#8AC926', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontWeight:700, fontSize:'0.85rem' }}>{((single/total)*100).toFixed(1)}%</div>
                               <div style={{ width:`${(dual/total)*100}%`, background:'#FFCA3A', display:'flex', alignItems:'center', justifyContent:'center', color:'#1e293b', fontWeight:700, fontSize:'0.85rem' }}>{((dual/total)*100).toFixed(1)}%</div>
                             </div>
-                            <div style={{ display:'flex', gap:'20px', fontSize:'0.9rem' }}>
+                            <div style={{ display:'flex', gap:'20px', fontSize:'0.85rem' }}>
                               <span style={{ display:'flex', alignItems:'center', gap:'8px' }}><span style={{ width:14, height:14, borderRadius:4, background:'#8AC926', display:'inline-block' }}></span>Single Type ({single})</span>
                               <span style={{ display:'flex', alignItems:'center', gap:'8px' }}><span style={{ width:14, height:14, borderRadius:4, background:'#FFCA3A', display:'inline-block' }}></span>Dual Type ({dual})</span>
                             </div>
@@ -1096,11 +1029,19 @@ function App() {
                       })()}
                     </div>
 
-                    {/* 6. Average Total per Generation - Full Width */}
-                    <div className="chart-card" style={{ gridColumn:'1 / -1' }}>
+                    {/* === SECTION: Generation Analysis === */}
+                    <div className="charts-section-title" style={{ gridColumn:'1 / -1' }}>
+                      <h3 style={{ margin:0, fontSize:'1.4rem', fontWeight:700, color:'#1e293b', display:'flex', alignItems:'center', gap:'10px' }}>
+                        <span style={{ width:4, height:22, background:'linear-gradient(180deg,#6366f1,#818cf8)', borderRadius:2, display:'inline-block' }}></span>
+                        Generation Analysis
+                      </h3>
+                      <p style={{ margin:'4px 0 0 14px', color:'#94a3b8', fontSize:'0.82rem' }}>How Pokémon evolve across generations</p>
+                    </div>
+
+                    <div className="chart-card">
                       <h3>Average Total Stats per Generation</h3>
-                      <p style={{ color:'#64748b', fontSize:'0.9rem', marginBottom:'20px' }}>How overall power evolves across generations</p>
-                      <div style={{ display:'flex', alignItems:'flex-end', gap:'24px', height:'180px', padding:'0 8px' }}>
+                      <p style={{ color:'#64748b', fontSize:'0.85rem', marginBottom:'12px' }}>Overall power across generations</p>
+                      <div style={{ display:'flex', alignItems:'flex-end', gap:'16px', height:'120px', padding:'0 4px' }}>
                         {(() => {
                           const gens = {};
                           pokemon.forEach(p => { const g=p["Generation"]; const t=Number(p["Total"])||0; if(!gens[g])gens[g]={sum:0,count:0}; gens[g].sum+=t; gens[g].count++; });
@@ -1109,12 +1050,349 @@ function App() {
                           const maxM = Math.max(...means.map(m=>m.mean));
                           const minM = Math.min(...means.map(m=>m.mean));
                           return means.map(({ gen, mean }) => (
-                            <div key={gen} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:'8px' }}>
-                              <span style={{ fontSize:'0.8rem', color:'#64748b', fontWeight:600 }}>{mean.toFixed(0)}</span>
-                              <div style={{ width:'100%', background:'linear-gradient(180deg,#8b5cf6,#4338ca)', borderRadius:'8px 8px 0 0', height:`${((mean-minM+30)/(maxM-minM+30))*140}px`, minHeight:'20px' }}/>
-                              <span style={{ fontSize:'0.85rem', fontWeight:700, color:'#1e293b' }}>Gen {gen}</span>
+                            <div key={gen} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:'4px' }}>
+                              <span style={{ fontSize:'0.7rem', color:'#64748b', fontWeight:600 }}>{mean.toFixed(0)}</span>
+                              <div style={{ width:'100%', background:'linear-gradient(180deg,#8b5cf6,#4338ca)', borderRadius:'6px 6px 0 0', height:`${((mean-minM+30)/(maxM-minM+30))*90}px`, minHeight:'16px' }}/>
+                              <span style={{ fontSize:'0.75rem', fontWeight:700, color:'#1e293b' }}>G{gen}</span>
                             </div>
                           ));
+                        })()}
+                      </div>
+                    </div>
+
+                    <div className="chart-card">
+                      <h3>Legendary vs Normal per Generation</h3>
+                      <div style={{ display:'flex', flexDirection:'column', gap:'10px', marginTop:'8px' }}>
+                        {(() => {
+                          const gens = {};
+                          pokemon.forEach(p => { const g = p["Generation"]; if (!g) return; if (!gens[g]) gens[g]={normal:0,legendary:0}; if (p["Legendary"]==="True") gens[g].legendary++; else gens[g].normal++; });
+                          return Object.entries(gens).sort((a,b)=>Number(a[0])-Number(b[0])).map(([gen,data]) => {
+                            const total = data.normal+data.legendary;
+                            const lPct = (data.legendary/total)*100;
+                            return (
+                              <div key={gen}>
+                                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'3px', fontSize:'0.8rem', color:'#475569' }}>
+                                  <span><strong>Gen {gen}</strong></span><span>{data.legendary} Leg. / {data.normal} Normal</span>
+                                </div>
+                                <div style={{ display:'flex', borderRadius:'8px', overflow:'hidden', height:'16px' }}>
+                                  <div style={{ width:`${100-lPct}%`, background:'#4D96FF' }}/>
+                                  <div style={{ width:`${lPct}%`, background:'#FF595E' }}/>
+                                </div>
+                              </div>
+                            );
+                          });
+                        })()}
+                        <div style={{ display:'flex', gap:'16px', marginTop:'2px', fontSize:'0.78rem' }}>
+                          <span style={{ display:'flex', alignItems:'center', gap:'5px' }}><span style={{ width:10, height:10, borderRadius:3, background:'#4D96FF', display:'inline-block' }}></span>Normal</span>
+                          <span style={{ display:'flex', alignItems:'center', gap:'5px' }}><span style={{ width:10, height:10, borderRadius:3, background:'#FF595E', display:'inline-block' }}></span>Legendary</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Attack vs Defense per Generation */}
+                    <div className="chart-card" style={{ gridColumn:'1 / -1' }}>
+                      <h3>Attack vs Defense per Generation</h3>
+                      <p style={{ color:'#64748b', fontSize:'0.85rem', marginBottom:'16px' }}>Average offensive vs defensive stats comparison</p>
+                      <div style={{ display:'flex', alignItems:'flex-end', gap:'20px', padding:'0 8px' }}>
+                        {(() => {
+                          const gens = {};
+                          pokemon.forEach(p => {
+                            const g = p["Generation"]; if (!g) return;
+                            if (!gens[g]) gens[g] = { atkSum:0, defSum:0, count:0 };
+                            gens[g].atkSum += Number(p["Attack"]) || 0;
+                            gens[g].defSum += Number(p["Defense"]) || 0;
+                            gens[g].count++;
+                          });
+                          const entries = Object.entries(gens).sort((a,b) => Number(a[0]) - Number(b[0]));
+                          const maxVal = Math.max(...entries.map(([,d]) => (d.atkSum + d.defSum) / d.count));
+                          return entries.map(([gen, data]) => {
+                            const avgAtk = data.atkSum / data.count;
+                            const avgDef = data.defSum / data.count;
+                            const totalH = 140;
+                            const atkH = (avgAtk / maxVal) * totalH;
+                            const defH = (avgDef / maxVal) * totalH;
+                            return (
+                              <div key={gen} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:'4px' }}>
+                                <span style={{ fontSize:'0.68rem', color:'#64748b' }}>{avgAtk.toFixed(0)}+{avgDef.toFixed(0)}</span>
+                                <div style={{ width:'100%', display:'flex', flexDirection:'column' }}>
+                                  <div style={{ width:'100%', background:'#FF595E', borderRadius:'6px 6px 0 0', height:`${atkH}px` }} title={`Attack: ${avgAtk.toFixed(1)}`}/>
+                                  <div style={{ width:'100%', background:'#6A4C93', borderRadius:'0 0 6px 6px', height:`${defH}px` }} title={`Defense: ${avgDef.toFixed(1)}`}/>
+                                </div>
+                                <span style={{ fontSize:'0.75rem', fontWeight:700, color:'#1e293b' }}>Gen {gen}</span>
+                              </div>
+                            );
+                          });
+                        })()}
+                      </div>
+                      <div style={{ display:'flex', justifyContent:'center', gap:'20px', marginTop:'12px', fontSize:'0.8rem' }}>
+                        <span style={{ display:'flex', alignItems:'center', gap:'6px' }}><span style={{ width:12, height:12, borderRadius:3, background:'#FF595E', display:'inline-block' }}></span>Attack</span>
+                        <span style={{ display:'flex', alignItems:'center', gap:'6px' }}><span style={{ width:12, height:12, borderRadius:3, background:'#6A4C93', display:'inline-block' }}></span>Defense</span>
+                      </div>
+                    </div>
+
+                    {/* === SECTION: Type Analysis === */}
+                    <div className="charts-section-title" style={{ gridColumn:'1 / -1' }}>
+                      <h3 style={{ margin:0, fontSize:'1.4rem', fontWeight:700, color:'#1e293b', display:'flex', alignItems:'center', gap:'10px' }}>
+                        <span style={{ width:4, height:22, background:'linear-gradient(180deg,#6366f1,#818cf8)', borderRadius:2, display:'inline-block' }}></span>
+                        Type Analysis
+                      </h3>
+                      <p style={{ margin:'4px 0 0 14px', color:'#94a3b8', fontSize:'0.82rem' }}>Breakdown by Pokémon primary type</p>
+                    </div>
+
+                    <div className="chart-card">
+                      <h3>Average Strength by Primary Type</h3>
+                      <p style={{ color:'#64748b', fontSize:'0.85rem', marginBottom:'12px' }}>Mean Total base stats per type</p>
+                      <div className="bar-chart">
+                        {(() => {
+                          const totals = {}; const counts = {};
+                          pokemon.forEach(p => { const t = p["Type 1"]; totals[t] = (totals[t]||0) + (Number(p["Total"])||0); counts[t] = (counts[t]||0) + 1; });
+                          const sorted = Object.entries(totals).map(([t,s]) => ({ type:t, mean:s/counts[t] })).sort((a,b) => b.mean - a.mean);
+                          const maxMean = sorted[0]?.mean || 1;
+                          return sorted.map(({ type, mean }) => (
+                            <div key={type} className="bar-row">
+                              <span className="bar-label">{type}</span>
+                              <div className="bar-container"><div className="bar" style={{ width:`${(mean/maxMean)*100}%` }}></div></div>
+                              <span className="bar-value">{mean.toFixed(0)}</span>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+
+                    <div className="chart-card">
+                      <h3>Pokémon Count by Primary Type</h3>
+                      <p style={{ color:'#64748b', fontSize:'0.85rem', marginBottom:'12px' }}>Distribution of primary types</p>
+                      <div className="bar-chart">
+                        {(() => {
+                          const counts = {};
+                          pokemon.forEach(p => { const t = p["Type 1"]; counts[t] = (counts[t]||0)+1; });
+                          const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+                          const maxCount = sorted[0]?.[1] || 1;
+                          return sorted.map(([type, count]) => (
+                            <div key={type} className="bar-row">
+                              <span className="bar-label">{type}</span>
+                              <div className="bar-container"><div className="bar" style={{ width:`${(count/maxCount)*100}%` }}></div></div>
+                              <span className="bar-value">{count}</span>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* === SECTION: Deep Analysis === */}
+                    <div className="charts-section-title" style={{ gridColumn:'1 / -1' }}>
+                      <h3 style={{ margin:0, fontSize:'1.4rem', fontWeight:700, color:'#1e293b', display:'flex', alignItems:'center', gap:'10px' }}>
+                        <span style={{ width:4, height:22, background:'linear-gradient(180deg,#6366f1,#818cf8)', borderRadius:2, display:'inline-block' }}></span>
+                        Deep Analysis
+                      </h3>
+                      <p style={{ margin:'4px 0 0 14px', color:'#94a3b8', fontSize:'0.82rem' }}>Advanced statistical visualizations</p>
+                    </div>
+
+                    {/* Stat Distribution Histograms */}
+                    <div className="chart-card" style={{ gridColumn:'1 / -1' }}>
+                      <h3>Pokémon Stat Distributions</h3>
+                      <p style={{ color:'#64748b', fontSize:'0.9rem', marginBottom:'20px' }}>Frequency distribution of each base stat</p>
+                      <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:'20px' }}>
+                        {(() => {
+                          const statsInfo = [
+                            { key:"HP", color:"#8AC926" }, { key:"Attack", color:"#FF595E" },
+                            { key:"Defense", color:"#6A4C93" }, { key:"Sp. Atk", color:"#FFCA3A" },
+                            { key:"Sp. Def", color:"#4D96FF" }, { key:"Speed", color:"#1982C4" }
+                          ];
+                          return statsInfo.map(({ key, color }) => {
+                            const vals = pokemon.map(p => Number(p[key]) || 0);
+                            const minV = Math.min(...vals); const maxV = Math.max(...vals);
+                            const nBins = 20; const binW = (maxV - minV) / nBins || 1;
+                            const bins = Array(nBins).fill(0);
+                            vals.forEach(v => { let idx = Math.floor((v - minV) / binW); if (idx >= nBins) idx = nBins - 1; bins[idx]++; });
+                            const maxCount = Math.max(...bins);
+                            const svgW = 320; const svgH = 160; const pad = 40; const chartW = svgW - pad - 10; const chartH = svgH - pad - 10;
+                            return (
+                              <div key={key}>
+                                <h4 style={{ textAlign:'center', margin:'0 0 8px', fontSize:'0.95rem', color:'#1e293b' }}>{key} Distribution</h4>
+                                <svg viewBox={`0 0 ${svgW} ${svgH}`} style={{ width:'100%', maxWidth:'400px', display:'block', margin:'0 auto' }}>
+                                  {/* Y axis */}
+                                  <line x1={pad} y1={5} x2={pad} y2={svgH - pad} stroke="#cbd5e1" strokeWidth="1"/>
+                                  {/* X axis */}
+                                  <line x1={pad} y1={svgH - pad} x2={svgW - 5} y2={svgH - pad} stroke="#cbd5e1" strokeWidth="1"/>
+                                  {/* Y labels */}
+                                  {[0, 0.25, 0.5, 0.75, 1].map(f => (
+                                    <g key={f}>
+                                      <text x={pad - 5} y={svgH - pad - f * chartH + 4} textAnchor="end" fontSize="9" fill="#94a3b8">{Math.round(maxCount * f)}</text>
+                                      <line x1={pad} y1={svgH - pad - f * chartH} x2={svgW - 5} y2={svgH - pad - f * chartH} stroke="#e2e8f0" strokeWidth="0.5"/>
+                                    </g>
+                                  ))}
+                                  {/* X labels */}
+                                  {[0, Math.round(maxV / 2), maxV].map((v, i) => (
+                                    <text key={i} x={pad + (i / 2) * chartW} y={svgH - pad + 14} textAnchor="middle" fontSize="9" fill="#94a3b8">{v}</text>
+                                  ))}
+                                  {/* Bars */}
+                                  {bins.map((count, i) => {
+                                    const barW = chartW / nBins;
+                                    const barH = maxCount > 0 ? (count / maxCount) * chartH : 0;
+                                    return <rect key={i} x={pad + i * barW} y={svgH - pad - barH} width={barW - 1} height={barH} fill={color} opacity="0.85" rx="1"/>;
+                                  })}
+                                  <text x={svgW / 2} y={svgH - 2} textAnchor="middle" fontSize="9" fill="#64748b">{key}</text>
+                                  <text x={12} y={svgH / 2 - pad / 2} textAnchor="middle" fontSize="9" fill="#64748b" transform={`rotate(-90, 12, ${svgH / 2 - pad / 2})`}>Count</text>
+                                </svg>
+                              </div>
+                            );
+                          });
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* 8. Rolling Mean Line Chart with Tooltip */}
+                    <div className="chart-card" style={{ gridColumn:'1 / -1' }}>
+                      <h3>How Pokémon Power Evolves Along the Pokédex</h3>
+                      <p style={{ color:'#64748b', fontSize:'0.9rem', marginBottom:'16px' }}>Rolling mean (window = 30) of battle stats ordered by Pokédex index. Hover to inspect values.</p>
+                      {(() => {
+                        const sorted = [...pokemon].sort((a, b) => (Number(a["#"]) || 0) - (Number(b["#"]) || 0));
+                        const statsLine = [
+                          { key:"Attack", color:"#FF595E" }, { key:"Defense", color:"#6A4C93" },
+                          { key:"Sp. Atk", color:"#FFCA3A" }, { key:"Speed", color:"#1982C4" }
+                        ];
+                        const win = 30;
+                        const rollingData = {};
+                        statsLine.forEach(({ key }) => {
+                          const raw = sorted.map(p => Number(p[key]) || 0);
+                          const rm = [];
+                          for (let i = 0; i < raw.length; i++) {
+                            const start = Math.max(0, i - win + 1);
+                            const slice = raw.slice(start, i + 1);
+                            rm.push(slice.reduce((a, b) => a + b, 0) / slice.length);
+                          }
+                          rollingData[key] = rm;
+                        });
+                        const allVals = Object.values(rollingData).flat();
+                        const minY = Math.floor(Math.min(...allVals) / 10) * 10;
+                        const maxY = Math.ceil(Math.max(...allVals) / 10) * 10;
+                        const svgW = 900; const svgH = 300; const padL = 50; const padR = 10; const padT = 10; const padB = 35;
+                        const chartW = svgW - padL - padR; const chartH = svgH - padT - padB;
+                        const n = sorted.length;
+                        const toX = (i) => padL + (i / (n - 1)) * chartW;
+                        const toY = (v) => padT + chartH - ((v - minY) / (maxY - minY)) * chartH;
+                        return (
+                          <div>
+                            <div style={{ position:'relative' }}>
+                              <svg viewBox={`0 0 ${svgW} ${svgH}`} style={{ width:'100%' }} preserveAspectRatio="xMidYMid meet"
+                                onMouseMove={(e) => {
+                                  const svg = e.currentTarget;
+                                  const rect = svg.getBoundingClientRect();
+                                  const mouseX = ((e.clientX - rect.left) / rect.width) * svgW;
+                                  const idx = Math.round(((mouseX - padL) / chartW) * (n - 1));
+                                  if (idx < 0 || idx >= n) { svg.dataset.tooltipIdx = ''; svg.parentElement.querySelector('.line-tooltip')?.setAttribute('style','display:none'); return; }
+                                  const tip = svg.parentElement.querySelector('.line-tooltip');
+                                  const crosshair = svg.querySelector('.crosshair-line');
+                                  if (crosshair) { crosshair.setAttribute('x1', toX(idx)); crosshair.setAttribute('x2', toX(idx)); crosshair.setAttribute('style',''); }
+                                  if (tip) {
+                                    const pctX = ((e.clientX - rect.left) / rect.width) * 100;
+                                    const flipLeft = pctX > 75;
+                                    tip.innerHTML = `<div style="font-weight:700;margin-bottom:4px">Pokédex #${sorted[idx]?.["#"] || idx}</div>` +
+                                      statsLine.map(({ key, color }) => `<div style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block"></span>${key}: <strong>${rollingData[key][idx].toFixed(1)}</strong></div>`).join('');
+                                    tip.setAttribute('style', `display:block;position:absolute;top:10px;${flipLeft ? 'right' : 'left'}:${flipLeft ? (100-pctX+2) : (pctX+2)}%;background:rgba(15,23,42,0.9);color:white;padding:10px 14px;border-radius:10px;font-size:0.78rem;pointer-events:none;z-index:10;line-height:1.6;backdrop-filter:blur(8px)`);
+                                  }
+                                  statsLine.forEach(({ key }) => {
+                                    const dot = svg.querySelector(`.dot-${key.replace(/\.\s/g,'')}`);
+                                    if (dot) { dot.setAttribute('cx', toX(idx)); dot.setAttribute('cy', toY(rollingData[key][idx])); dot.setAttribute('style',''); }
+                                  });
+                                }}
+                                onMouseLeave={(e) => {
+                                  const svg = e.currentTarget;
+                                  svg.querySelector('.crosshair-line')?.setAttribute('style','display:none');
+                                  svg.parentElement.querySelector('.line-tooltip')?.setAttribute('style','display:none');
+                                  statsLine.forEach(({ key }) => { svg.querySelector(`.dot-${key.replace(/\.\s/g,'')}`)?.setAttribute('style','display:none'); });
+                                }}
+                              >
+                                {/* Grid lines */}
+                                {Array.from({ length: 6 }, (_, i) => {
+                                  const v = minY + (i / 5) * (maxY - minY);
+                                  return (
+                                    <g key={i}>
+                                      <line x1={padL} y1={toY(v)} x2={svgW - padR} y2={toY(v)} stroke="#e2e8f0" strokeWidth="0.5"/>
+                                      <text x={padL - 5} y={toY(v) + 3} textAnchor="end" fontSize="10" fill="#94a3b8">{Math.round(v)}</text>
+                                    </g>
+                                  );
+                                })}
+                                {/* Lines */}
+                                {statsLine.map(({ key, color }) => (
+                                  <polyline key={key} fill="none" stroke={color} strokeWidth="2" opacity="0.9"
+                                    points={rollingData[key].map((v, i) => `${toX(i)},${toY(v)}`).join(' ')} />
+                                ))}
+                                {/* Crosshair */}
+                                <line className="crosshair-line" x1={0} y1={padT} x2={0} y2={svgH - padB} stroke="#6366f1" strokeWidth="1" strokeDasharray="4,3" style={{ display:'none' }}/>
+                                {/* Hover dots */}
+                                {statsLine.map(({ key, color }) => (
+                                  <circle key={`dot-${key}`} className={`dot-${key.replace(/\.\s/g,'')}`} cx={0} cy={0} r="4" fill={color} stroke="white" strokeWidth="2" style={{ display:'none' }}/>
+                                ))}
+                                {/* Axis labels */}
+                                <text x={svgW / 2} y={svgH - 3} textAnchor="middle" fontSize="11" fill="#64748b">Pokédex Index</text>
+                                <text x={15} y={svgH / 2} textAnchor="middle" fontSize="11" fill="#64748b" transform={`rotate(-90,15,${svgH / 2})`}>Rolling Mean</text>
+                              </svg>
+                              <div className="line-tooltip" style={{ display:'none' }}></div>
+                            </div>
+                            {/* Legend */}
+                            <div style={{ display:'flex', justifyContent:'center', gap:'24px', marginTop:'12px', flexWrap:'wrap' }}>
+                              {statsLine.map(({ key, color }) => (
+                                <span key={key} style={{ display:'flex', alignItems:'center', gap:'6px', fontSize:'0.85rem' }}>
+                                  <span style={{ width:20, height:3, background:color, display:'inline-block', borderRadius:2 }}></span>{key}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    {/* 9. Radar Charts per Type */}
+                    <div className="chart-card" style={{ gridColumn:'1 / -1' }}>
+                      <h3>Average Pokémon Stats per Type</h3>
+                      <p style={{ color:'#64748b', fontSize:'0.9rem', marginBottom:'20px' }}>Radar chart showing the stat profile of each primary type</p>
+                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:'16px' }}>
+                        {(() => {
+                          const typeColors = {"Grass":"#78C850","Fire":"#F08030","Water":"#6890F0","Electric":"#F8D030","Psychic":"#F85888","Ice":"#98D8D8","Dragon":"#7038F8","Dark":"#705848","Fairy":"#EE99AC","Normal":"#A8A878","Fighting":"#C03028","Flying":"#A890F0","Poison":"#A040A0","Ground":"#E0C068","Rock":"#B8A038","Bug":"#A8B820","Ghost":"#705898","Steel":"#B8B8D0"};
+                          const stats = ["HP","Attack","Defense","Sp. Atk","Sp. Def","Speed"];
+                          const typeSums = {}; const typeCounts = {};
+                          pokemon.forEach(p => {
+                            const t = p["Type 1"]; if (!typeSums[t]) { typeSums[t] = {}; stats.forEach(s => typeSums[t][s] = 0); typeCounts[t] = 0; }
+                            stats.forEach(s => typeSums[t][s] += Number(p[s]) || 0); typeCounts[t]++;
+                          });
+                          const maxStat = 150;
+                          const cx = 100; const cy = 100; const r = 75;
+                          const angleStep = (2 * Math.PI) / stats.length;
+                          const toPoint = (val, i) => {
+                            const frac = Math.min(val / maxStat, 1);
+                            const angle = i * angleStep - Math.PI / 2;
+                            return [cx + frac * r * Math.cos(angle), cy + frac * r * Math.sin(angle)];
+                          };
+                          return Object.entries(typeSums).map(([type, sums]) => {
+                            const means = stats.map(s => sums[s] / typeCounts[type]);
+                            const pts = means.map((v, i) => toPoint(v, i));
+                            const polyStr = pts.map(p => p.join(',')).join(' ');
+                            const color = typeColors[type] || '#999';
+                            return (
+                              <div key={type} style={{ textAlign:'center' }}>
+                                <div style={{ color, fontWeight:700, fontSize:'0.9rem', marginBottom:'4px' }}>{type}</div>
+                                <svg viewBox="0 0 200 200" style={{ width:'100%', maxWidth:'200px' }}>
+                                  {/* Guide rings */}
+                                  {[0.25, 0.5, 0.75, 1].map(f => (
+                                    <polygon key={f} fill="none" stroke="#e2e8f0" strokeWidth="0.5"
+                                      points={stats.map((_, i) => { const a = i * angleStep - Math.PI / 2; return `${cx + f * r * Math.cos(a)},${cy + f * r * Math.sin(a)}`; }).join(' ')} />
+                                  ))}
+                                  {/* Axis lines */}
+                                  {stats.map((_, i) => { const a = i * angleStep - Math.PI / 2; return <line key={i} x1={cx} y1={cy} x2={cx + r * Math.cos(a)} y2={cy + r * Math.sin(a)} stroke="#e2e8f0" strokeWidth="0.5"/>; })}
+                                  {/* Data polygon */}
+                                  <polygon points={polyStr} fill={color} fillOpacity="0.3" stroke={color} strokeWidth="2"/>
+                                  {/* Labels */}
+                                  {stats.map((s, i) => {
+                                    const a = i * angleStep - Math.PI / 2;
+                                    const lx = cx + (r + 18) * Math.cos(a); const ly = cy + (r + 18) * Math.sin(a);
+                                    return <text key={s} x={lx} y={ly + 3} textAnchor="middle" fontSize="8" fill="#64748b">{s}</text>;
+                                  })}
+                                </svg>
+                              </div>
+                            );
+                          });
                         })()}
                       </div>
                     </div>
