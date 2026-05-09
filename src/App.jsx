@@ -978,62 +978,141 @@ function App() {
                 </div>
                 {!loading && !error && pokemon.length > 0 && (
                   <div className="charts-container">
-                    {/* Type Distribution Chart */}
+                    {/* 1. Which Stat Dominates */}
                     <div className="chart-card">
-                      <h3>Pokémon by Type</h3>
+                      <h3>Which Stat Dominates?</h3>
+                      <p style={{ color:'#64748b', fontSize:'0.9rem', marginBottom:'16px' }}>Average base stat across all Pokémon</p>
                       <div className="bar-chart">
                         {(() => {
-                          const typeCounts = {};
-                          pokemon.forEach(p => { const t = p["Type 1"]; typeCounts[t] = (typeCounts[t] || 0) + 1; });
-                          const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
-                          const maxCount = sortedTypes[0]?.[1] || 1;
-                          return sortedTypes.map(([type, count]) => (
-                            <div key={type} className="bar-row">
-                              <span className="bar-label">{type}</span>
-                              <div className="bar-container"><div className="bar" style={{ width: `${(count / maxCount) * 100}%` }}></div></div>
-                              <span className="bar-value">{count}</span>
-                            </div>
-                          ));
-                        })()}
-                      </div>
-                    </div>
-
-                    {/* Generation Distribution Chart */}
-                    <div className="chart-card">
-                      <h3>Pokémon by Generation</h3>
-                      <div className="bar-chart">
-                        {(() => {
-                          const genCounts = {};
-                          pokemon.forEach(p => { const g = p["Generation"]; if (g) genCounts[g] = (genCounts[g] || 0) + 1; });
-                          const sortedGens = Object.entries(genCounts).sort((a, b) => Number(a[0]) - Number(b[0]));
-                          const maxCount = sortedGens[0]?.[1] || 1;
-                          return sortedGens.map(([gen, count]) => (
-                            <div key={gen} className="bar-row">
-                              <span className="bar-label">Gen {gen}</span>
-                              <div className="bar-container"><div className="bar gen-bar" style={{ width: `${(count / maxCount) * 100}%` }}></div></div>
-                              <span className="bar-value">{count}</span>
-                            </div>
-                          ));
-                        })()}
-                      </div>
-                    </div>
-
-                    {/* Stats Average Chart */}
-                    <div className="chart-card">
-                      <h3>Average Stats</h3>
-                      <div className="bar-chart">
-                        {(() => {
-                          const stats = ["HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed"];
-                          const avgStats = stats.map(stat => {
-                            const sum = pokemon.reduce((acc, p) => acc + (Number(p[stat]) || 0), 0);
-                            return (sum / pokemon.length).toFixed(1);
-                          });
-                          const maxAvg = Math.max(...avgStats);
-                          return stats.map((stat, i) => (
+                          const statColors = {"HP":"#8AC926","Attack":"#FF595E","Defense":"#6A4C93","Sp. Atk":"#FFCA3A","Sp. Def":"#4D96FF","Speed":"#1982C4"};
+                          const stats = ["HP","Attack","Defense","Sp. Atk","Sp. Def","Speed"];
+                          const avgs = stats.map(s => ({ stat: s, avg: pokemon.reduce((a, p) => a + (Number(p[s]) || 0), 0) / pokemon.length }));
+                          avgs.sort((a, b) => b.avg - a.avg);
+                          const maxAvg = avgs[0].avg;
+                          return avgs.map(({ stat, avg }) => (
                             <div key={stat} className="bar-row">
                               <span className="bar-label">{stat}</span>
-                              <div className="bar-container"><div className="bar stat-bar" style={{ width: `${(avgStats[i] / maxAvg) * 100}%` }}></div></div>
-                              <span className="bar-value">{avgStats[i]}</span>
+                              <div className="bar-container"><div className="bar" style={{ width:`${(avg/maxAvg)*100}%`, background:statColors[stat] }}></div></div>
+                              <span className="bar-value">{avg.toFixed(1)}</span>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* 2. Average Strength by Type */}
+                    <div className="chart-card">
+                      <h3>Average Strength by Primary Type</h3>
+                      <p style={{ color:'#64748b', fontSize:'0.9rem', marginBottom:'16px' }}>Mean Total base stats per type</p>
+                      <div className="bar-chart">
+                        {(() => {
+                          const typeColors = {"Grass":"#78C850","Fire":"#F08030","Water":"#6890F0","Electric":"#F8D030","Psychic":"#F85888","Ice":"#98D8D8","Dragon":"#7038F8","Dark":"#705848","Fairy":"#EE99AC","Normal":"#A8A878","Fighting":"#C03028","Flying":"#A890F0","Poison":"#A040A0","Ground":"#E0C068","Rock":"#B8A038","Bug":"#A8B820","Ghost":"#705898","Steel":"#B8B8D0"};
+                          const totals = {}; const counts = {};
+                          pokemon.forEach(p => { const t = p["Type 1"]; totals[t] = (totals[t]||0) + (Number(p["Total"])||0); counts[t] = (counts[t]||0) + 1; });
+                          const sorted = Object.entries(totals).map(([t,s]) => ({ type:t, mean:s/counts[t] })).sort((a,b) => b.mean - a.mean);
+                          const maxMean = sorted[0]?.mean || 1;
+                          return sorted.map(({ type, mean }) => (
+                            <div key={type} className="bar-row">
+                              <span className="bar-label">{type}</span>
+                              <div className="bar-container"><div className="bar" style={{ width:`${(mean/maxMean)*100}%`, background:typeColors[type]||'#999' }}></div></div>
+                              <span className="bar-value">{mean.toFixed(0)}</span>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* 3. Pokémon Count by Type */}
+                    <div className="chart-card">
+                      <h3>Pokémon Count by Primary Type</h3>
+                      <div className="bar-chart">
+                        {(() => {
+                          const typeColors = {"Grass":"#78C850","Fire":"#F08030","Water":"#6890F0","Electric":"#F8D030","Psychic":"#F85888","Ice":"#98D8D8","Dragon":"#7038F8","Dark":"#705848","Fairy":"#EE99AC","Normal":"#A8A878","Fighting":"#C03028","Flying":"#A890F0","Poison":"#A040A0","Ground":"#E0C068","Rock":"#B8A038","Bug":"#A8B820","Ghost":"#705898","Steel":"#B8B8D0"};
+                          const counts = {};
+                          pokemon.forEach(p => { const t = p["Type 1"]; counts[t] = (counts[t]||0)+1; });
+                          const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+                          const maxCount = sorted[0]?.[1] || 1;
+                          return sorted.map(([type, count]) => (
+                            <div key={type} className="bar-row">
+                              <span className="bar-label">{type}</span>
+                              <div className="bar-container"><div className="bar" style={{ width:`${(count/maxCount)*100}%`, background:typeColors[type]||'#999' }}></div></div>
+                              <span className="bar-value">{count}</span>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* 4. Legendary vs Normal per Generation */}
+                    <div className="chart-card">
+                      <h3>Legendary vs Normal per Generation</h3>
+                      <div style={{ display:'flex', flexDirection:'column', gap:'12px', marginTop:'8px' }}>
+                        {(() => {
+                          const gens = {};
+                          pokemon.forEach(p => { const g = p["Generation"]; if (!g) return; if (!gens[g]) gens[g]={normal:0,legendary:0}; if (p["Legendary"]==="True") gens[g].legendary++; else gens[g].normal++; });
+                          return Object.entries(gens).sort((a,b)=>Number(a[0])-Number(b[0])).map(([gen,data]) => {
+                            const total = data.normal+data.legendary;
+                            const lPct = (data.legendary/total)*100;
+                            return (
+                              <div key={gen}>
+                                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'4px', fontSize:'0.82rem', color:'#475569' }}>
+                                  <span><strong>Gen {gen}</strong></span><span>{data.legendary} Leg. / {data.normal} Normal</span>
+                                </div>
+                                <div style={{ display:'flex', borderRadius:'8px', overflow:'hidden', height:'18px' }}>
+                                  <div style={{ width:`${100-lPct}%`, background:'#4D96FF' }}/>
+                                  <div style={{ width:`${lPct}%`, background:'#FF595E' }}/>
+                                </div>
+                              </div>
+                            );
+                          });
+                        })()}
+                        <div style={{ display:'flex', gap:'16px', marginTop:'4px', fontSize:'0.8rem' }}>
+                          <span style={{ display:'flex', alignItems:'center', gap:'6px' }}><span style={{ width:12, height:12, borderRadius:3, background:'#4D96FF', display:'inline-block' }}></span>Normal</span>
+                          <span style={{ display:'flex', alignItems:'center', gap:'6px' }}><span style={{ width:12, height:12, borderRadius:3, background:'#FF595E', display:'inline-block' }}></span>Legendary</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 5. Single vs Dual Type */}
+                    <div className="chart-card">
+                      <h3>Typing Complexity</h3>
+                      <p style={{ color:'#64748b', fontSize:'0.9rem', marginBottom:'16px' }}>Single-type vs Dual-type Pokémon</p>
+                      {(() => {
+                        let single=0, dual=0;
+                        pokemon.forEach(p => { if (p["Type 2"]&&p["Type 2"]!=="nan"&&p["Type 2"]!=="") dual++; else single++; });
+                        const total=single+dual;
+                        return (
+                          <div>
+                            <div style={{ display:'flex', borderRadius:'12px', overflow:'hidden', height:'36px', marginBottom:'16px' }}>
+                              <div style={{ width:`${(single/total)*100}%`, background:'#8AC926', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontWeight:700, fontSize:'0.85rem' }}>{((single/total)*100).toFixed(1)}%</div>
+                              <div style={{ width:`${(dual/total)*100}%`, background:'#FFCA3A', display:'flex', alignItems:'center', justifyContent:'center', color:'#1e293b', fontWeight:700, fontSize:'0.85rem' }}>{((dual/total)*100).toFixed(1)}%</div>
+                            </div>
+                            <div style={{ display:'flex', gap:'20px', fontSize:'0.9rem' }}>
+                              <span style={{ display:'flex', alignItems:'center', gap:'8px' }}><span style={{ width:14, height:14, borderRadius:4, background:'#8AC926', display:'inline-block' }}></span>Single Type ({single})</span>
+                              <span style={{ display:'flex', alignItems:'center', gap:'8px' }}><span style={{ width:14, height:14, borderRadius:4, background:'#FFCA3A', display:'inline-block' }}></span>Dual Type ({dual})</span>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    {/* 6. Average Total per Generation - Full Width */}
+                    <div className="chart-card" style={{ gridColumn:'1 / -1' }}>
+                      <h3>Average Total Stats per Generation</h3>
+                      <p style={{ color:'#64748b', fontSize:'0.9rem', marginBottom:'20px' }}>How overall power evolves across generations</p>
+                      <div style={{ display:'flex', alignItems:'flex-end', gap:'24px', height:'180px', padding:'0 8px' }}>
+                        {(() => {
+                          const gens = {};
+                          pokemon.forEach(p => { const g=p["Generation"]; const t=Number(p["Total"])||0; if(!gens[g])gens[g]={sum:0,count:0}; gens[g].sum+=t; gens[g].count++; });
+                          const entries = Object.entries(gens).sort((a,b)=>Number(a[0])-Number(b[0]));
+                          const means = entries.map(([g,d])=>({ gen:g, mean:d.sum/d.count }));
+                          const maxM = Math.max(...means.map(m=>m.mean));
+                          const minM = Math.min(...means.map(m=>m.mean));
+                          return means.map(({ gen, mean }) => (
+                            <div key={gen} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:'8px' }}>
+                              <span style={{ fontSize:'0.8rem', color:'#64748b', fontWeight:600 }}>{mean.toFixed(0)}</span>
+                              <div style={{ width:'100%', background:'linear-gradient(180deg,#8b5cf6,#4338ca)', borderRadius:'8px 8px 0 0', height:`${((mean-minM+30)/(maxM-minM+30))*140}px`, minHeight:'20px' }}/>
+                              <span style={{ fontSize:'0.85rem', fontWeight:700, color:'#1e293b' }}>Gen {gen}</span>
                             </div>
                           ));
                         })()}
