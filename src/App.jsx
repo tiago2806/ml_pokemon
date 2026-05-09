@@ -646,12 +646,12 @@ function App() {
                             <div className="select-wrapper">
                               <select value={filterCluster} onChange={(e) => setFilterCluster(e.target.value)} className="premium-select cluster-select">
                                 <option value="">All Roles</option>
-                                <option value="0">Balanced (Offensive)</option>
+                                <option value="0">Balanced</option>
                                 <option value="1">Physical Attacker</option>
-                                <option value="2">Glass Cannon</option>
+                                <option value="2">Low Stats (weak)</option>
                                 <option value="3">Special Attacker</option>
-                                <option value="4">Wall / Tank</option>
-                                <option value="5">Tank / Defensive</option>
+                                <option value="4">Wall/Tank</option>
+                                <option value="5">Tank/Defensive</option>
                               </select>
                             </div>
                           </div>
@@ -972,8 +972,10 @@ function App() {
             {/* --- CHARTS PAGE --- */}
             {activePage === "charts" && (
               <section className="charts-page">
-                <h2>Charts & Statistics</h2>
-                <p>Explore the Pokémon dataset through visualizations.</p>
+                <div className="page-header">
+                  <h2>Charts & Statistics</h2>
+                  <p>Explore the Pokémon dataset through visualizations.</p>
+                </div>
                 {!loading && !error && pokemon.length > 0 && (
                   <div className="charts-container">
                     {/* Type Distribution Chart */}
