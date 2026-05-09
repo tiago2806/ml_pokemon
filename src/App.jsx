@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { MapContainer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
+import mlData from './ml_data.json';
 
 
 // Função para criar os ícones das 18 ilhas
@@ -117,6 +118,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activePage, setActivePage] = useState("exploration");
+  const [activeClusterTab, setActiveClusterTab] = useState("kmeans");
   const [searchName, setSearchName] = useState("");
   const [evolutionChain, setEvolutionChain] = useState([]);
   const [cardResults, setCardResults] = useState([]);
@@ -146,8 +148,9 @@ function App() {
   const [filterType, setFilterType] = useState("");
   const [filterGeneration, setFilterGeneration] = useState("");
   const [filterLegendary, setFilterLegendary] = useState("");
+  const [filterCluster, setFilterCluster] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
-  const ITEMS_PER_PAGE = 11;
+  const ITEMS_PER_PAGE = 10;
   const [selectedPokemon, setSelectedPokemon] = useState(null);
 
   // Arena (Drag & Drop) states
@@ -193,6 +196,7 @@ function App() {
     { id: "pokemonWorld", label: "Pokémon World" },
     { id: "charts", label: "Charts & Stats" },
     { id: "spirit", label: "Spirit Pokémon" },
+    { id: "clusters", label: "Clusters (ML)" },
   ];
 
   /// --- POKEMON WORLD LIVING SPRITES LOGIC (STAGGERED + SMALL RADIUS) ---
@@ -291,20 +295,34 @@ function App() {
 
   const datasetHead = useMemo(() => pokemon.slice(0, 5), [pokemon]);
 
+  const clusterMap = useMemo(() => {
+    const map = {};
+    if (mlData && mlData.pca) {
+      mlData.pca.forEach(p => {
+        map[p.name] = p.cluster;
+      });
+    }
+    return map;
+  }, []);
+
   const filteredPokemon = useMemo(() => {
     return pokemon.filter(p => {
       if (filterType && p["Type 1"] !== filterType && p["Type 2"] !== filterType) return false;
       if (filterGeneration && p["Generation"] !== filterGeneration) return false;
       if (filterLegendary === "true" && p["Legendary"] !== "True") return false;
       if (filterLegendary === "false" && p["Legendary"] === "True") return false;
+      if (filterCluster !== "") {
+        const pCluster = clusterMap[p.Name];
+        if (pCluster === undefined || String(pCluster) !== filterCluster) return false;
+      }
       return true;
     });
-  }, [pokemon, filterType, filterGeneration, filterLegendary]);
+  }, [pokemon, filterType, filterGeneration, filterLegendary, filterCluster, clusterMap]);
 
   useEffect(() => {
     setCurrentPage(0);
     setSelectedPokemon(null);
-  }, [filterType, filterGeneration, filterLegendary]);
+  }, [filterType, filterGeneration, filterLegendary, filterCluster]);
 
   const paginatedPokemon = useMemo(() => {
     const start = currentPage * ITEMS_PER_PAGE;
@@ -436,71 +454,208 @@ function App() {
                 {!loading && !error && (
                   <>
                     {/* Top Row: About Section Only - Arena moved to sticky bottom */}
-                    <div className="dashboard-top-row">
-                      {/* Card 1: Tip of the Day */}
-                      <div className="info-card tip-card">
-                        <div className="card-icon">💡</div>
-                        <div className="card-content">
-                          <div className="tip-card-header">
-                            <h4>ML Insight</h4>
+                    {/* TOP DASHBOARD WIDGETS */}
+                    <div className="dashboard-widgets-container">
+                      {/* Left Column: Insights & Recent */}
+                      <div className="left-widgets">
+                        {/* Card 1: Tip of the Day */}
+                        <div className="info-card tip-card">
+                          <div className="card-icon">💡</div>
+                          <div className="card-content">
+                            <div className="tip-card-header">
+                              <h4>ML Insight</h4>
+                            </div>
+                            <p>{currentTip}</p>
                           </div>
-                          <p>{currentTip}</p>
+                        </div>
+
+                        {/* Card 2: Recent Searches */}
+                        <div className="info-card recent-card">
+                          <div className="card-icon">🔍</div>
+                          <div className="card-content">
+                            <div className="recent-card-header">
+                              <h4>Recent Explorations</h4>
+                            </div>
+                            <div className="recent-list">
+                              {recentSearches.length > 0 ? (
+                                recentSearches.map((p, i) => (
+                                  <div
+                                    key={i}
+                                    className="recent-item"
+                                    draggable="true"
+                                    onDragStart={() => { setDraggedItem(p); }}
+                                    onDragEnd={() => setDraggedItem(null)}
+                                    onClick={() => setSearchTerm(p.Name.toLowerCase())}
+                                  >
+                                    <img src={getPokemonImageUrl(p)} alt={p.Name} />
+                                    <span>{p.Name}</span>
+                                  </div>
+                                ))
+                              ) : (
+                                <p className="no-recent">No recent searches yet.</p>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Card 2: Recent Searches */}
-                      <div className="info-card recent-card">
-                        <div className="card-icon">🔍</div>
-                        <div className="card-content">
-                          <div className="recent-card-header">
-                            <h4>Recent Explorations</h4>
-                          </div>
-                          <div className="recent-list">
-                            {recentSearches.length > 0 ? (
-                              recentSearches.map((p, i) => (
-                                <div
-                                  key={i}
-                                  className="recent-item"
-                                  draggable="true"
-                                  onDragStart={() => { setDraggedItem(p); }}
-                                  onDragEnd={() => setDraggedItem(null)}
-                                  onClick={() => setSearchTerm(p.Name.toLowerCase())}
-                                >
-                                  <img src={getPokemonImageUrl(p)} alt={p.Name} />
-                                  <span>{p.Name}</span>
-                                </div>
-                              ))
+                      {/* Right Column: BATTLE STADIUM WIDGET */}
+                      <div className="right-widget battle-stadium-section widget-mode">
+                        <div className="stadium-header">
+                          <h3>Battle Stadium ⚔️</h3>
+                          <p>Drop two Pokémon here!</p>
+                        </div>
+                        
+                        <div className="stadium-arena">
+                          {/* Slot 1 */}
+                          <div 
+                            className={`stadium-slot ${fighters[0] ? 'filled' : ''} ${dropTarget === 0 ? 'drag-over' : ''}`}
+                            onDragOver={e => { e.preventDefault(); setDropTarget(0); }}
+                            onDragLeave={() => setDropTarget(null)}
+                            onDrop={() => { if (draggedItem) { const n = [...fighters]; n[0] = draggedItem; setFighters(n); setRecentSearches(prev => { if (prev.find(p => p.Name === draggedItem.Name)) return prev; return [draggedItem, ...prev].slice(0, 4); }); } setDropTarget(null); setIsFighting(false); }}
+                          >
+                            {fighters[0] ? (
+                              <div className="stadium-fighter" style={{ position: 'relative' }}>
+                                <button className="remove-fighter-btn" onClick={(e) => { e.stopPropagation(); const n = [...fighters]; n[0] = null; setFighters(n); setIsFighting(false); }}>×</button>
+                                <img src={getPokemonImageUrl(fighters[0])} alt={fighters[0].Name} className="fighter-img" />
+                                <div className="fighter-name">{fighters[0].Name}</div>
+                                <div className="fighter-stats">Total: {fighters[0].Total}</div>
+                              </div>
                             ) : (
-                              <p className="no-recent">No recent searches yet.</p>
+                              <div className="stadium-empty">
+                                <div className="empty-icon">+</div>
+                                <span>Drop Here</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Center Controls */}
+                          <div className="stadium-center">
+                            {isFighting && fighters[0] && fighters[1] ? (
+                              <div className="battle-result-announcement">
+                                {(() => {
+                                  const p1 = fighters[0];
+                                  const p2 = fighters[1];
+                                  const p1Multi = getTypeMultiplier(p1["Type 1"], p2["Type 1"]);
+                                  const p2Multi = getTypeMultiplier(p2["Type 1"], p1["Type 1"]);
+                                  const p1Score = Number(p1.Total) * p1Multi;
+                                  const p2Score = Number(p2.Total) * p2Multi;
+
+                                  let title = "It's a Tie!";
+                                  let winnerClass = "tie";
+                                  if (p1Score > p2Score) { title = `${p1.Name} Wins!`; winnerClass = "p1-win"; }
+                                  if (p2Score > p1Score) { title = `${p2.Name} Wins!`; winnerClass = "p2-win"; }
+
+                                  return (
+                                    <div className={`result-box ${winnerClass}`}>
+                                      <strong className="winner-title">{title}</strong>
+                                      <p className="narrative-text" style={{ fontSize: '0.75rem', marginBottom: '12px', lineHeight: '1.4' }}>
+                                        {generateBattleNarrative(p1, p2, p1Score, p2Score, p1Multi, p2Multi)}
+                                      </p>
+                                      <button className="reset-battle-btn" onClick={() => setIsFighting(false)}>Reset Match</button>
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+                            ) : fighters[0] && fighters[1] ? (
+                              <button className="fight-button glow-effect" onClick={() => setIsFighting(true)}>
+                                FIGHT!
+                              </button>
+                            ) : (
+                              <div className="stadium-vs">VS</div>
+                            )}
+                          </div>
+
+                          {/* Slot 2 */}
+                          <div 
+                            className={`stadium-slot ${fighters[1] ? 'filled' : ''} ${dropTarget === 1 ? 'drag-over' : ''}`}
+                            onDragOver={e => { e.preventDefault(); setDropTarget(1); }}
+                            onDragLeave={() => setDropTarget(null)}
+                            onDrop={() => { if (draggedItem) { const n = [...fighters]; n[1] = draggedItem; setFighters(n); setRecentSearches(prev => { if (prev.find(p => p.Name === draggedItem.Name)) return prev; return [draggedItem, ...prev].slice(0, 4); }); } setDropTarget(null); setIsFighting(false); }}
+                          >
+                            {fighters[1] ? (
+                              <div className="stadium-fighter" style={{ position: 'relative' }}>
+                                <button className="remove-fighter-btn" onClick={(e) => { e.stopPropagation(); const n = [...fighters]; n[1] = null; setFighters(n); setIsFighting(false); }}>×</button>
+                                <img src={getPokemonImageUrl(fighters[1])} alt={fighters[1].Name} className="fighter-img" />
+                                <div className="fighter-name">{fighters[1].Name}</div>
+                                <div className="fighter-stats">Total: {fighters[1].Total}</div>
+                              </div>
+                            ) : (
+                              <div className="stadium-empty">
+                                <div className="empty-icon">+</div>
+                                <span>Drop Here</span>
+                              </div>
                             )}
                           </div>
                         </div>
+                        
+                        {(fighters[0] || fighters[1]) && !isFighting && (
+                           <div style={{textAlign: "center", marginTop: "16px"}}>
+                              <button className="clear-arena-btn" onClick={() => { setFighters([null, null]); setIsFighting(false); }}>
+                                Clear Arena
+                              </button>
+                           </div>
+                        )}
                       </div>
                     </div>
 
                     <div className="dataset-overview">
-                      <div className="dashboard-card">
-                        <h3>Explore & Select</h3>
-                        <div className="filters-row">
-                          <label className="input-label">Type
-                            <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="filter-select">
-                              <option value="">All</option>{allTypes.map(t => <option key={t} value={t}>{t}</option>)}
-                            </select>
-                          </label>
-                          <label className="input-label">Generation
-                            <select value={filterGeneration} onChange={(e) => setFilterGeneration(e.target.value)} className="filter-select">
-                              <option value="">All</option>{allGenerations.map(g => <option key={g} value={g}>Gen {g}</option>)}
-                            </select>
-                          </label>
-                          <label className="input-label">Legendary
-                            <select value={filterLegendary} onChange={(e) => setFilterLegendary(e.target.value)} className="filter-select">
-                              <option value="">All</option><option value="true">Yes</option><option value="false">No</option>
-                            </select>
-                          </label>
+                      <div className="dashboard-card premium-filters-card">
+                        <div className="filters-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', gap: '20px', flexWrap: 'wrap' }}>
+                          <div className="filters-title-area">
+                            <h3 style={{ fontSize: '1.6rem', margin: '0 0 5px', color: '#1e293b' }}>Explore & Select</h3>
+                            <p style={{ color: '#64748b', margin: 0 }}>Discover Pokémon by filtering through the dataset</p>
+                          </div>
+                          
+                          <div className="premium-search-container" style={{ margin: 0, flex: '1', minWidth: '400px', maxWidth: '650px' }}>
+                            <span className="search-icon">🔍</span>
+                            <input value={searchName} onChange={(e) => setSearchName(e.target.value)} placeholder="Search by name (e.g. Pikachu)" className="premium-search-input" />
+                          </div>
                         </div>
 
-                        <label className="input-label">Search by name</label>
-                        <input value={searchName} onChange={(e) => setSearchName(e.target.value)} placeholder="e.g. Pikachu" className="search-input" />
+                        <div className="premium-filters-grid">
+                          <div className="filter-group">
+                            <label className="filter-label">Element Type</label>
+                            <div className="select-wrapper">
+                              <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="premium-select">
+                                <option value="">All Types</option>{allTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                              </select>
+                            </div>
+                          </div>
+                          
+                          <div className="filter-group">
+                            <label className="filter-label">Generation</label>
+                            <div className="select-wrapper">
+                              <select value={filterGeneration} onChange={(e) => setFilterGeneration(e.target.value)} className="premium-select">
+                                <option value="">All Generations</option>{allGenerations.map(g => <option key={g} value={g}>Generation {g}</option>)}
+                              </select>
+                            </div>
+                          </div>
+                          
+                          <div className="filter-group">
+                            <label className="filter-label">Legendary Status</label>
+                            <div className="select-wrapper">
+                              <select value={filterLegendary} onChange={(e) => setFilterLegendary(e.target.value)} className="premium-select">
+                                <option value="">Any</option><option value="true">Legendary Only</option><option value="false">Non-Legendary</option>
+                              </select>
+                            </div>
+                          </div>
+                          
+                          <div className="filter-group highlight-filter">
+                            <label className="filter-label">Combat Role (ML Cluster)</label>
+                            <div className="select-wrapper">
+                              <select value={filterCluster} onChange={(e) => setFilterCluster(e.target.value)} className="premium-select cluster-select">
+                                <option value="">All Roles</option>
+                                <option value="0">Balanced (Offensive)</option>
+                                <option value="1">Physical Attacker</option>
+                                <option value="2">Glass Cannon</option>
+                                <option value="3">Special Attacker</option>
+                                <option value="4">Wall / Tank</option>
+                                <option value="5">Tank / Defensive</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
 
                         {/* The Full Search Details Panel (WITH DRAG HINT) */}
                         {/* The Full Search Details Panel (WITH DRAG HINT) */}
@@ -638,9 +793,7 @@ function App() {
                                 </div>
                               </div>
                             </div>
-                            <div className="detail-row"><span>HP: {selectedPokemon.HP}</span><span>Attack: {selectedPokemon.Attack}</span></div>
-                            <div className="detail-row"><span>Defense: {selectedPokemon.Defense}</span><span>Speed: {selectedPokemon.Speed}</span></div>
-                            <div className="detail-row"><span>Total: {selectedPokemon.Total}</span><span>Gen: {selectedPokemon.Generation}</span></div>
+
                           </div>
                         )}
                       </div>
@@ -651,7 +804,7 @@ function App() {
                 {/* RAW DATA TABLE RESTORED */}
                 {!loading && !error && (
                   <section style={{ marginTop: '40px' }}>
-                    <h2>Dataset Overview</h2>
+                    <h2 className="premium-section-title">Dataset Overview</h2>
                     <p style={{ marginBottom: '16px', color: '#64748b' }}>Drag any Pokémon into the Battle Arena!</p>
                     <div className="table-wrapper">
                       <table>
@@ -659,7 +812,7 @@ function App() {
                           <tr><th>Image</th><th>#</th><th>Name</th><th>Type 1</th><th>Type 2</th><th>Total</th><th>HP</th><th>Attack</th><th>Defense</th><th>Speed</th></tr>
                         </thead>
                         <tbody>
-                          {datasetHead.map((row, index) => {
+                          {pokemon.map((row, index) => {
                             const imgUrl = getPokemonImageUrl(row);
                             return (
                               <tr
@@ -735,6 +888,87 @@ function App() {
                 )}
               </section>
             )}
+
+            {/* --- CLUSTERS (ML) PAGE --- */}
+            {activePage === "clusters" && (
+              <section className="clusters-page">
+                <div className="page-header clusters-header">
+                  <h2 className="clusters-title">Unsupervised Learning: Pokémon Clusters</h2>
+                  <p>Grouping Pokémon purely by their base stats (HP, Attack, Defense, etc.)</p>
+                </div>
+                
+                <div className="cluster-tabs-nav">
+                  <button 
+                    className={activeClusterTab === "kmeans" ? "active" : ""} 
+                    onClick={() => setActiveClusterTab("kmeans")}
+                  >
+                    K-Means
+                  </button>
+                  <button 
+                    className={activeClusterTab === "hierarchical" ? "active" : ""} 
+                    onClick={() => setActiveClusterTab("hierarchical")}
+                  >
+                    Hierarchical
+                  </button>
+                </div>
+
+                <div className="clusters-content-grid">
+                  
+                  {activeClusterTab === "kmeans" && (
+                    <>
+                      {/* Elbow & Silhouette */}
+                      <div className="cluster-card centered-card">
+                        <h3>Determining the Best K</h3>
+                        <p>Using the Elbow Method and Silhouette Scores to find the optimal number of clusters.</p>
+                        <div className="cluster-images-row">
+                          <div className="cluster-img-container">
+                            <h4>Elbow Method (Inertia)</h4>
+                            <img src="/cluster_img_1.png" alt="Elbow Method Graph" className="ml-img" />
+                            <p className="caption">The optimal 'k' is where the inertia curve begins to flatten (the 'elbow').</p>
+                          </div>
+                          <div className="cluster-img-container">
+                            <h4>Silhouette Method</h4>
+                            <img src="/cluster_img_2.png" alt="Silhouette Score Graph" className="ml-img" />
+                            <p className="caption">A higher score indicates better-defined clusters. The peak determines our 'best k'.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* PCA Visualization */}
+                      <div className="cluster-card centered-card pca-card full-width-card">
+                        <h3>2D Projection (PCA) Scatter Plot</h3>
+                        <p>Compressing multi-dimensional stats into a 2D space to visualize the clusters.</p>
+                        
+                        <div className="cluster-images-row" style={{ justifyContent: 'center' }}>
+                          <div className="cluster-img-container" style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+                            <h4>Cluster Scatter Plot</h4>
+                            <img src="/cluster_img_4.png" alt="PCA Scatter Plot" className="ml-img" style={{ maxWidth: '100%' }} />
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  
+                  {activeClusterTab === "hierarchical" && (
+                    <div className="cluster-card centered-card full-width-card">
+                      {/* Hierarchical Clustering */}
+                      <h3>Hierarchical Clustering</h3>
+                      <p>Building a tree of clusters to show the relationships and distances between different groupings.</p>
+                      
+                      <div className="cluster-images-row" style={{ justifyContent: 'center' }}>
+                        <div className="cluster-img-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
+                          <h4>Dendrogram</h4>
+                          <img src="/cluster_img_6.png" alt="Dendrogram Graph" className="ml-img" style={{ maxWidth: '100%' }} />
+                          <p className="caption">The height of the vertical lines represents the distance between merged clusters.</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              </section>
+            )}
+
             {/* --- CHARTS PAGE --- */}
             {activePage === "charts" && (
               <section className="charts-page">
@@ -961,72 +1195,7 @@ function App() {
         ) : null}
       </main>
 
-      {/* --- STICKY BOTTOM ARENA BAR --- */}
-      {activePage === "exploration" && (
-        <div className={`sticky-bottom-arena ${arenaExpanded ? 'expanded' : ''}`}>
-          <button
-            className="sticky-arena-toggle"
-            onClick={() => setArenaExpanded(!arenaExpanded)}
-          >
-            Battle Arena ⚔️ {fighters[0] && fighters[1] ? `(${fighters[0].Name} vs ${fighters[1].Name})` : ""}
-          </button>
-          {arenaExpanded && (
-            <div className="sticky-arena-content">
-              <div className="sticky-arena-slots">
-                <div className={`sticky-drop-zone ${fighters[0] ? 'filled' : ''}`} onDragOver={e => { e.preventDefault(); setDropTarget(0); setArenaExpanded(true); }} onDragLeave={() => setDropTarget(null)} onDrop={() => { if (draggedItem) { const n = [...fighters]; n[0] = draggedItem; setFighters(n); } setDropTarget(null); }}>
-                  {fighters[0] ? <><img src={getPokemonImageUrl(fighters[0])} alt={fighters[0].Name} /><span>{fighters[0].Name}</span></> : "Drop here"}
-                </div>
-                {isFighting && fighters[0] && fighters[1] && (
-                  <div className="battle-result-announcement">
-                    {/* Usamos a lógica que já funciona no teu código em vez de uma função inexistente */}
-                    {(() => {
-                      const p1 = fighters[0];
-                      const p2 = fighters[1];
-                      const p1Multi = getTypeMultiplier(p1["Type 1"], p2["Type 1"]);
-                      const p2Multi = getTypeMultiplier(p2["Type 1"], p1["Type 1"]);
-                      const p1Score = Number(p1.Total) * p1Multi;
-                      const p2Score = Number(p2.Total) * p2Multi;
-
-                      let title = "It's a Tie!";
-                      if (p1Score > p2Score) title = `${p1.Name} Wins!`;
-                      if (p2Score > p1Score) title = `${p2.Name} Wins!`;
-
-                      return (
-                        <>
-                          <strong>{title}</strong>
-                          <div className="narrative-text" style={{ fontSize: '0.8rem', marginTop: '5px' }}>
-                            {generateBattleNarrative(p1, p2, p1Score, p2Score, p1Multi, p2Multi)}
-                          </div>
-                        </>
-                      );
-                    })()}
-                    <button className="clear-arena-btn" style={{ marginTop: '10px' }} onClick={() => setIsFighting(false)}>Back to Arena</button>
-                  </div>
-
-                )}
-                <div className="arena-center-controls">
-                  {fighters[0] && fighters[1] && !isFighting ? (
-                    <button className="fight-button" onClick={() => setIsFighting(true)}>
-                      FIGHT!
-                    </button>
-                  ) : fighters[0] && fighters[1] && isFighting ? (
-                    <span style={{ fontSize: '1.5rem', fontWeight: '900', color: '#cbd5e1' }}></span>
-                  ) : (
-                    <span className="arena-vs">VS</span>
-                  )}
-                </div>
-                <div className={`sticky-drop-zone ${fighters[1] ? 'filled' : ''}`} onDragOver={e => { e.preventDefault(); setDropTarget(1); setArenaExpanded(true); }} onDragLeave={() => setDropTarget(null)} onDrop={() => { if (draggedItem) { const n = [...fighters]; n[1] = draggedItem; setFighters(n); } setDropTarget(null); }}>
-                  {fighters[1] ? <><img src={getPokemonImageUrl(fighters[1])} alt={fighters[1].Name} /><span>{fighters[1].Name}</span></> : "Drop here"}
-                </div>
-              </div>
-
-              <button className="clear-arena-btn" onClick={() => { setFighters([null, null]); setIsFighting(false); }}>
-                Clear Arena
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+      {/* --- STICKY BOTTOM ARENA BAR REMOVED --- */}
     </div>
   );
 }
