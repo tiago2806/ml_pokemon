@@ -167,15 +167,65 @@ function App() {
   const [quizAnswers, setQuizAnswers] = useState([]);
   const [spiritResult, setSpiritResult] = useState(null);
 
+  // Cluster personality profiles from K-Means analysis (modelling.ipynb branch)
+  const clusterProfiles = [
+    { id: 0, name: "Balanced", emoji: "⚖️", color: "#1982C4", desc: "Moderate stats across the board, slightly tilted toward a balanced offensive positioning. You're a well-rounded individual who adapts to any situation — not the strongest in any single area, but consistently reliable everywhere.", avgStats: [66, 84, 74, 77, 70, 96] },
+    { id: 1, name: "Physical Attacker", emoji: "⚔️", color: "#FF595E", desc: "High Attack with moderate Speed but lower defenses — a glass cannon with serious physical power. You believe in striking hard and fast, overwhelming opponents before they can respond.", avgStats: [63, 111, 66, 61, 64, 70] },
+    { id: 2, name: "Weak", emoji: "🌱", color: "#8AC926", desc: "Notably low HP, Defense, and Sp. Def — fragile but full of potential. Like every great journey, yours starts small. Your curiosity and eagerness to grow hint at greatness yet to come.", avgStats: [50, 54, 52, 47, 49, 49] },
+    { id: 3, name: "Special Attacker", emoji: "🔮", color: "#6A4C93", desc: "Very high Sp. Atk, high HP, Speed, and Defense — a balanced offensive special attacker. You fight with intellect and special powers, dominating through strategy and overwhelming force from a distance.", avgStats: [91, 121, 94, 122, 98, 99] },
+    { id: 4, name: "Wall / Tank", emoji: "🛡️", color: "#FFCA3A", desc: "Extremely high Defense and Sp. Def with low Speed — pure defensive focus. You are the immovable wall. Patient, resilient, and unbreakable, you outlast every challenge and absorb punishment that would fell others.", avgStats: [61, 91, 140, 61, 93, 44] },
+    { id: 5, name: "Tank / Defensive", emoji: "💪", color: "#FF6B6B", desc: "Very high HP with solid Defense and Sp. Def, moderate offenses, and low Speed. A classic tanky profile — you take every hit and keep standing, wearing down opponents through sheer endurance.", avgStats: [103, 98, 79, 70, 78, 55] }
+  ];
+
   const quizQuestions = [
-    { question: "How do you prefer to win battles?", options: ["Quick and powerful strikes", "Enduring and tanking hits", "Strategic and calculated", "Fast and slippery"] },
-    { question: "What's your approach to challenges?", options: ["Go all out with maximum force", "Stay solid and wait for the right moment", "Adapt and find creative solutions", "Be the first to act"] },
-    { question: "In a fight, you rather:", options: ["Deal massive damage", "Take hits and survive", "Use special abilities", "Strike before they can react"] },
-    { question: "Your ideal weekend activity:", options: ["Competitive sports", "Hiking and endurance activities", "Puzzle solving or games", "Racing or anything fast"] },
-    { question: "When playing games, you prefer:", options: ["Offensive builds", "Defensive/tank builds", "Balanced or magical builds", "Speed builds"] },
-    { question: "What's your strength?", options: ["Power", "Stamina", "Intelligence", "Agility"] },
-    { question: "How do you handle pressure?", options: ["Strike first and end it fast", "Stay calm and endure", "Think of a clever way out", "Act fast before it overwhelms"] },
-    { question: "Pick your weapon:", options: ["Heavy sword (high damage)", "Shield (high defense)", "Magic wand (special attacks)", "Daggers (fast attacks)"] }
+    { question: "How do you prefer to win battles?", options: [
+      { text: "Quick and powerful strikes", weights: [0, 3, 0, 1, 0, 3] },
+      { text: "Enduring and tanking hits", weights: [3, 1, 3, 0, 2, 0] },
+      { text: "Strategic and calculated", weights: [1, 0, 1, 3, 3, 0] },
+      { text: "Overwhelming raw force", weights: [2, 3, 1, 2, 1, 1] }
+    ]},
+    { question: "What's your approach to challenges?", options: [
+      { text: "Go all out with maximum force", weights: [1, 3, 0, 2, 0, 2] },
+      { text: "Stay solid and wait for the right moment", weights: [2, 0, 3, 0, 3, 0] },
+      { text: "Adapt and find creative solutions", weights: [1, 0, 1, 3, 3, 1] },
+      { text: "Be the first to act, always", weights: [0, 1, 0, 1, 0, 3] }
+    ]},
+    { question: "In a fight, you'd rather:", options: [
+      { text: "Deal massive damage", weights: [0, 3, 0, 3, 0, 1] },
+      { text: "Take hits and survive", weights: [3, 0, 3, 0, 3, 0] },
+      { text: "Use special abilities", weights: [0, 0, 1, 3, 3, 1] },
+      { text: "Strike before they can react", weights: [0, 2, 0, 1, 0, 3] }
+    ]},
+    { question: "Your ideal weekend activity:", options: [
+      { text: "Competitive sports", weights: [1, 3, 1, 0, 0, 3] },
+      { text: "Hiking and endurance activities", weights: [3, 1, 2, 0, 2, 0] },
+      { text: "Puzzle solving or strategy games", weights: [0, 0, 1, 3, 3, 0] },
+      { text: "Exploring new places at full speed", weights: [1, 1, 0, 1, 0, 3] }
+    ]},
+    { question: "When playing games, you prefer:", options: [
+      { text: "Offensive / DPS builds", weights: [0, 3, 0, 3, 0, 2] },
+      { text: "Defensive / tank builds", weights: [3, 1, 3, 0, 3, 0] },
+      { text: "Balanced or support builds", weights: [2, 1, 2, 2, 2, 1] },
+      { text: "Speed / assassin builds", weights: [0, 2, 0, 1, 0, 3] }
+    ]},
+    { question: "What's your greatest strength?", options: [
+      { text: "Power and intensity", weights: [1, 3, 0, 2, 0, 1] },
+      { text: "Stamina and resilience", weights: [3, 0, 3, 0, 2, 0] },
+      { text: "Intelligence and intuition", weights: [0, 0, 1, 3, 3, 1] },
+      { text: "Agility and reflexes", weights: [0, 1, 0, 1, 0, 3] }
+    ]},
+    { question: "How do you handle pressure?", options: [
+      { text: "Strike first and end it fast", weights: [0, 3, 0, 1, 0, 3] },
+      { text: "Stay calm and endure", weights: [3, 0, 3, 0, 3, 0] },
+      { text: "Think of a clever way out", weights: [1, 0, 1, 3, 3, 0] },
+      { text: "Channel it into explosive energy", weights: [2, 3, 0, 2, 0, 2] }
+    ]},
+    { question: "Pick your weapon:", options: [
+      { text: "Heavy sword (high damage)", weights: [1, 3, 0, 1, 0, 1] },
+      { text: "Shield and armor (high defense)", weights: [2, 0, 3, 0, 3, 0] },
+      { text: "Magic wand (special attacks)", weights: [0, 0, 0, 3, 3, 1] },
+      { text: "Twin daggers (fast attacks)", weights: [0, 2, 0, 1, 0, 3] }
+    ]}
   ];
 
   // Get unique types & gens
@@ -1016,7 +1066,7 @@ function App() {
                         const total=single+dual;
                         return (
                           <div>
-                            <div style={{ display:'flex', borderRadius:'12px', overflow:'hidden', height:'36px', marginBottom:'16px' }}>
+                            <div style={{ display:'flex', borderRadius:'12px', overflow:'hidden', height:'80px', marginBottom:'16px' }}>
                               <div style={{ width:`${(single/total)*100}%`, background:'#8AC926', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontWeight:700, fontSize:'0.85rem' }}>{((single/total)*100).toFixed(1)}%</div>
                               <div style={{ width:`${(dual/total)*100}%`, background:'#FFCA3A', display:'flex', alignItems:'center', justifyContent:'center', color:'#1e293b', fontWeight:700, fontSize:'0.85rem' }}>{((dual/total)*100).toFixed(1)}%</div>
                             </div>
@@ -1041,7 +1091,7 @@ function App() {
                     <div className="chart-card">
                       <h3>Average Total Stats per Generation</h3>
                       <p style={{ color:'#64748b', fontSize:'0.85rem', marginBottom:'12px' }}>Overall power across generations</p>
-                      <div style={{ display:'flex', alignItems:'flex-end', gap:'16px', height:'120px', padding:'0 4px' }}>
+                      <div style={{ display:'flex', alignItems:'flex-end', gap:'16px', height:'240px', padding:'0 4px' }}>
                         {(() => {
                           const gens = {};
                           pokemon.forEach(p => { const g=p["Generation"]; const t=Number(p["Total"])||0; if(!gens[g])gens[g]={sum:0,count:0}; gens[g].sum+=t; gens[g].count++; });
@@ -1052,7 +1102,7 @@ function App() {
                           return means.map(({ gen, mean }) => (
                             <div key={gen} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:'4px' }}>
                               <span style={{ fontSize:'0.7rem', color:'#64748b', fontWeight:600 }}>{mean.toFixed(0)}</span>
-                              <div style={{ width:'100%', background:'linear-gradient(180deg,#8b5cf6,#4338ca)', borderRadius:'6px 6px 0 0', height:`${((mean-minM+30)/(maxM-minM+30))*90}px`, minHeight:'16px' }}/>
+                              <div style={{ width:'100%', background:'linear-gradient(180deg,#8b5cf6,#4338ca)', borderRadius:'6px 6px 0 0', height:`${((mean-minM+5)/(maxM-minM+5))*220}px`, minHeight:'40px' }}/>
                               <span style={{ fontSize:'0.75rem', fontWeight:700, color:'#1e293b' }}>G{gen}</span>
                             </div>
                           ));
@@ -1414,26 +1464,100 @@ function App() {
                   <div className="quiz-result" style={{
                     background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                     borderRadius: "24px",
-                    padding: "40px",
-                    textAlign: "center",
+                    padding: "32px 36px",
                     color: "white",
                     marginBottom: "40px",
-                    boxShadow: "0 20px 60px rgba(102, 126, 234, 0.4)"
+                    boxShadow: "0 20px 60px rgba(102, 126, 234, 0.4)",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center"
                   }}>
-                    <h3 style={{ margin: "0 0 20px", fontSize: "1.4rem", color: "rgba(255,255,255,0.9)" }}>Your Spirit Pokémon</h3>
-                    <img src={spiritResult.img} alt={spiritResult.name} style={{ width: "180px", margin: "0 auto", display: "block", background: "white", borderRadius: "20px", padding: "15px" }} />
-                    <div className="spirit-name" style={{ fontSize: "2rem", fontWeight: 800, marginTop: "20px" }}>{spiritResult.name}</div>
-                    <div className="spirit-desc" style={{ marginBottom: "24px", opacity: 0.9 }}>{spiritResult.desc}</div>
+                    <h3 style={{ margin: "0 0 6px", fontSize: "1.3rem", color: "rgba(255,255,255,0.9)" }}>Your Spirit Pokémon</h3>
+                    
+                    {/* Cluster Badge */}
+                    {spiritResult.cluster && (
+                      <span style={{
+                        display:'inline-block', padding:'5px 16px', borderRadius:'16px', marginBottom:'20px',
+                        background: spiritResult.cluster.color, fontSize:'0.85rem', fontWeight:700,
+                        boxShadow:'0 4px 15px rgba(0,0,0,0.2)'
+                      }}>
+                        {spiritResult.cluster.emoji} Cluster {spiritResult.cluster.id} — {spiritResult.cluster.name}
+                      </span>
+                    )}
+
+                    {/* Main content: left (image+info) | right (radar+stats) */}
+                    <div style={{ display:'flex', gap:'32px', alignItems:'center', justifyContent:'center', flexWrap:'wrap', width:'100%' }}>
+                      
+                      {/* Left: image + name + desc */}
+                      <div style={{ textAlign:'center', flex:'0 0 auto' }}>
+                        <img src={spiritResult.img} alt={spiritResult.name} style={{ width: "140px", background: "white", borderRadius: "20px", padding: "12px" }} />
+                        <div style={{ fontSize: "1.6rem", fontWeight: 800, marginTop: "10px" }}>{spiritResult.name}</div>
+                        <div style={{ display:'flex', gap:'6px', justifyContent:'center', marginTop:'6px' }}>
+                          {spiritResult.type1 && <span style={{ padding:'3px 12px', borderRadius:'10px', background:'rgba(255,255,255,0.2)', fontSize:'0.8rem', fontWeight:600 }}>{spiritResult.type1}</span>}
+                          {spiritResult.type2 && <span style={{ padding:'3px 12px', borderRadius:'10px', background:'rgba(255,255,255,0.2)', fontSize:'0.8rem', fontWeight:600 }}>{spiritResult.type2}</span>}
+                        </div>
+                        <div style={{ padding:'12px 16px', background:'rgba(255,255,255,0.1)', borderRadius:'12px', marginTop:'12px', maxWidth:'260px' }}>
+                          <p style={{ margin:0, fontSize:'0.8rem', lineHeight:1.6, opacity:0.9 }}>{spiritResult.desc}</p>
+                        </div>
+                      </div>
+
+                      {/* Right: radar + stats */}
+                      {spiritResult.pokeStats && (
+                        <div style={{ flex:1, minWidth:'300px', display:'flex', flexDirection:'column', alignItems:'center', gap:'8px' }}>
+                          <svg viewBox="0 0 260 240" style={{ width:'240px' }}>
+                            {(() => {
+                              const labels = ["HP","Atk","Def","SpA","SpD","Spd"];
+                              const cx = 130, cy = 115, r = 82;
+                              const angles = labels.map((_, i) => (Math.PI * 2 * i / 6) - Math.PI / 2);
+                              const maxStat = 160;
+                              const pokePoints = spiritResult.pokeStats.map((s, i) => {
+                                const ratio = Math.min(s / maxStat, 1);
+                                return `${cx + r * ratio * Math.cos(angles[i])},${cy + r * ratio * Math.sin(angles[i])}`;
+                              }).join(' ');
+                              const userPoints = spiritResult.userProfile.map((s, i) => {
+                                const ratio = Math.min(s / maxStat, 1);
+                                return `${cx + r * ratio * Math.cos(angles[i])},${cy + r * ratio * Math.sin(angles[i])}`;
+                              }).join(' ');
+                              return (
+                                <>
+                                  {[0.25, 0.5, 0.75, 1].map(scale => (
+                                    <polygon key={scale} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1"
+                                      points={angles.map(a => `${cx + r * scale * Math.cos(a)},${cy + r * scale * Math.sin(a)}`).join(' ')} />
+                                  ))}
+                                  {angles.map((a, i) => (
+                                    <g key={i}>
+                                      <line x1={cx} y1={cy} x2={cx + r * Math.cos(a)} y2={cy + r * Math.sin(a)} stroke="rgba(255,255,255,0.15)" strokeWidth="1"/>
+                                      <text x={cx + (r + 16) * Math.cos(a)} y={cy + (r + 16) * Math.sin(a)} textAnchor="middle" dominantBaseline="middle" fontSize="11" fill="rgba(255,255,255,0.8)" fontWeight="600">{labels[i]}</text>
+                                    </g>
+                                  ))}
+                                  <polygon points={userPoints} fill="rgba(255,202,58,0.25)" stroke="#FFCA3A" strokeWidth="2"/>
+                                  <polygon points={pokePoints} fill="rgba(99,102,241,0.3)" stroke="white" strokeWidth="2.5"/>
+                                  <text x={130} y={232} textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.6)">
+                                    <tspan fill="#FFCA3A">■</tspan> You &nbsp; <tspan fill="white">■</tspan> {spiritResult.name}
+                                  </text>
+                                </>
+                              );
+                            })()}
+                          </svg>
+                          <div style={{ width:'100%', maxWidth:'340px' }}>
+                            {["HP","Attack","Defense","Sp. Atk","Sp. Def","Speed"].map((stat, i) => (
+                              <div key={stat} style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'5px' }}>
+                                <span style={{ width:'52px', fontSize:'0.75rem', textAlign:'right', opacity:0.8 }}>{stat}</span>
+                                <div style={{ flex:1, height:'8px', background:'rgba(255,255,255,0.15)', borderRadius:'4px', overflow:'hidden' }}>
+                                  <div style={{ width:`${(spiritResult.pokeStats[i]/160)*100}%`, height:'100%', background:'linear-gradient(90deg, rgba(255,255,255,0.5), white)', borderRadius:'4px' }}/>
+                                </div>
+                                <span style={{ width:'28px', fontSize:'0.75rem', fontWeight:700 }}>{spiritResult.pokeStats[i]}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     <button style={{
-                      padding: "14px 32px",
-                      borderRadius: "16px",
-                      border: "none",
-                      background: "white",
-                      color: "#667eea",
-                      fontSize: "1rem",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      transition: "transform 0.2s"
+                      marginTop:'20px', padding: "12px 32px", borderRadius: "14px", border: "none",
+                      background: "white", color: "#667eea", fontSize: "0.95rem",
+                      fontWeight: 700, cursor: "pointer", transition: "transform 0.2s"
                     }} onClick={() => { setQuizStep(1); setQuizAnswers([]); setSpiritResult(null); }}>Try Again</button>
                   </div>
                 )}
@@ -1522,24 +1646,62 @@ function App() {
                     <div className="quiz-content">
                       {quizStep <= quizQuestions.length ? (
                         <>
-                          <h3>Question {quizStep} of {quizQuestions.length}</h3>
-                          <p>{quizQuestions[quizStep - 1].question}</p>
+                          <div style={{ marginBottom:'8px', fontSize:'0.85rem', color:'#94a3b8' }}>Question {quizStep} of {quizQuestions.length}</div>
+                          <div style={{ width:'100%', height:'4px', background:'#e2e8f0', borderRadius:'2px', marginBottom:'20px' }}>
+                            <div style={{ width:`${(quizStep/quizQuestions.length)*100}%`, height:'100%', background:'linear-gradient(90deg,#6366f1,#818cf8)', borderRadius:'2px', transition:'width 0.3s ease' }}/>
+                          </div>
+                          <h3>{quizQuestions[quizStep - 1].question}</h3>
                           {quizQuestions[quizStep - 1].options.map((opt) => (
-                            <button key={opt} onClick={() => {
-                              const newAnswers = [...quizAnswers, opt];
+                            <button key={opt.text} onClick={() => {
+                              const newAnswers = [...quizAnswers, opt.weights];
                               if (quizStep === quizQuestions.length) {
-                                const match = pokemon[Math.floor(Math.random() * pokemon.length)];
+                                // Calculate user profile from accumulated weights
+                                const userProfile = [0,0,0,0,0,0];
+                                newAnswers.forEach(w => w.forEach((v, i) => userProfile[i] += v));
+                                // Normalize to 0-150 range to match stat scale
+                                const maxW = Math.max(...userProfile);
+                                const normalized = userProfile.map(v => (v / maxW) * 150);
+                                
+                                // Find closest cluster (euclidean distance to centroids)
+                                let bestCluster = 0;
+                                let bestDist = Infinity;
+                                clusterProfiles.forEach(cp => {
+                                  const dist = Math.sqrt(cp.avgStats.reduce((sum, s, i) => sum + Math.pow(s - normalized[i], 2), 0));
+                                  if (dist < bestDist) { bestDist = dist; bestCluster = cp.id; }
+                                });
+                                
+                                // Find best Pokémon in that cluster
+                                const clusterPokemon = mlData.pca.filter(p => p.cluster === bestCluster);
+                                let bestMatch = null;
+                                let bestPokeDist = Infinity;
+                                clusterPokemon.forEach(cp => {
+                                  const pData = pokemon.find(p => p.Name === cp.name);
+                                  if (!pData) return;
+                                  const pStats = [Number(pData.HP)||0, Number(pData.Attack)||0, Number(pData.Defense)||0, Number(pData["Sp. Atk"])||0, Number(pData["Sp. Def"])||0, Number(pData.Speed)||0];
+                                  const dist = Math.sqrt(pStats.reduce((sum, s, i) => sum + Math.pow(s - normalized[i], 2), 0));
+                                  if (dist < bestPokeDist) { bestPokeDist = dist; bestMatch = pData; }
+                                });
+                                
+                                if (!bestMatch) bestMatch = pokemon[Math.floor(Math.random() * pokemon.length)];
+                                const profile = clusterProfiles[bestCluster];
+                                const matchStats = [Number(bestMatch.HP)||0, Number(bestMatch.Attack)||0, Number(bestMatch.Defense)||0, Number(bestMatch["Sp. Atk"])||0, Number(bestMatch["Sp. Def"])||0, Number(bestMatch.Speed)||0];
+                                
                                 setSpiritResult({
-                                  name: match.Name,
-                                  img: getPokemonImageUrl(match),
-                                  desc: `Stats: Attack ${match.Attack}, Defense ${match.Defense}`
+                                  name: bestMatch.Name,
+                                  img: getPokemonImageUrl(bestMatch),
+                                  type1: bestMatch["Type 1"],
+                                  type2: bestMatch["Type 2"] && bestMatch["Type 2"] !== "nan" ? bestMatch["Type 2"] : null,
+                                  cluster: profile,
+                                  userProfile: normalized,
+                                  pokeStats: matchStats,
+                                  desc: profile.desc
                                 });
                                 setQuizStep(0);
                               } else {
                                 setQuizAnswers(newAnswers);
                                 setQuizStep(quizStep + 1);
                               }
-                            }}>{opt}</button>
+                            }}>{opt.text}</button>
                           ))}
                           <button className="close-quiz-btn" onClick={() => setQuizStep(0)}>Close</button>
                         </>
