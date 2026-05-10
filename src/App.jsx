@@ -168,64 +168,82 @@ function App() {
   const [spiritResult, setSpiritResult] = useState(null);
 
   // Cluster personality profiles from K-Means analysis (modelling.ipynb branch)
+  // Stats verified against real ml_data.json cluster averages
   const clusterProfiles = [
-    { id: 0, name: "Balanced", emoji: "⚖️", color: "#1982C4", desc: "Moderate stats across the board, slightly tilted toward a balanced offensive positioning. You're a well-rounded individual who adapts to any situation — not the strongest in any single area, but consistently reliable everywhere.", avgStats: [66, 84, 74, 77, 70, 96] },
-    { id: 1, name: "Physical Attacker", emoji: "⚔️", color: "#FF595E", desc: "High Attack with moderate Speed but lower defenses — a glass cannon with serious physical power. You believe in striking hard and fast, overwhelming opponents before they can respond.", avgStats: [63, 111, 66, 61, 64, 70] },
-    { id: 2, name: "Weak", emoji: "🌱", color: "#8AC926", desc: "Notably low HP, Defense, and Sp. Def — fragile but full of potential. Like every great journey, yours starts small. Your curiosity and eagerness to grow hint at greatness yet to come.", avgStats: [50, 54, 52, 47, 49, 49] },
-    { id: 3, name: "Special Attacker", emoji: "🔮", color: "#6A4C93", desc: "Very high Sp. Atk, high HP, Speed, and Defense — a balanced offensive special attacker. You fight with intellect and special powers, dominating through strategy and overwhelming force from a distance.", avgStats: [91, 121, 94, 122, 98, 99] },
-    { id: 4, name: "Wall / Tank", emoji: "🛡️", color: "#FFCA3A", desc: "Extremely high Defense and Sp. Def with low Speed — pure defensive focus. You are the immovable wall. Patient, resilient, and unbreakable, you outlast every challenge and absorb punishment that would fell others.", avgStats: [61, 91, 140, 61, 93, 44] },
-    { id: 5, name: "Tank / Defensive", emoji: "💪", color: "#FF6B6B", desc: "Very high HP with solid Defense and Sp. Def, moderate offenses, and low Speed. A classic tanky profile — you take every hit and keep standing, wearing down opponents through sheer endurance.", avgStats: [103, 98, 79, 70, 78, 55] }
+    { id: 0, name: "Balanced", emoji: "⚖️", color: "#1982C4", desc: "Moderate stats across the board with notably high Speed. You're a well-rounded individual who adapts to any situation — not the strongest in any single area, but consistently reliable and always the first to act.", avgStats: [67, 84, 66, 77, 70, 98] },
+    { id: 1, name: "Wall / Tank", emoji: "🛡️", color: "#FFCA3A", desc: "Extremely high Defense and Sp. Def with low Speed — pure defensive focus. You are the immovable wall. Patient, resilient, and unbreakable, you outlast every challenge and absorb punishment that would fell others.", avgStats: [63, 91, 140, 61, 93, 49] },
+    { id: 2, name: "Elite Powerhouse", emoji: "🔮", color: "#6A4C93", desc: "Very high stats across all categories — the elite tier of Pokémon including Megas and Legendaries. You dominate through sheer superiority, excelling at everything from physical attacks to special powers.", avgStats: [90, 121, 93, 122, 98, 100] },
+    { id: 3, name: "Weak / Unevolved", emoji: "🌱", color: "#8AC926", desc: "Notably low stats across the board — these are the first-stage, unevolved Pokémon full of potential. Like every great journey, yours starts small. Your curiosity and eagerness to grow hint at greatness yet to come.", avgStats: [50, 54, 52, 47, 48, 49] },
+    { id: 4, name: "Special Attacker", emoji: "✨", color: "#FF595E", desc: "High Sp. Atk and excellent Sp. Def with solid Defense — a strategic special attacker. You fight with intellect and special powers, dominating through strategy and overwhelming force from a distance.", avgStats: [73, 66, 82, 94, 99, 62] },
+    { id: 5, name: "Tank / HP", emoji: "💪", color: "#FF6B6B", desc: "Very high HP with solid Attack and decent bulk, but low Speed. A classic tanky profile — you take every hit and keep standing, wearing down opponents through sheer endurance and physical power.", avgStats: [101, 98, 79, 69, 73, 58] }
   ];
 
+  // Quiz weights format: [cluster0=Balanced, cluster1=Wall, cluster2=Elite, cluster3=Weak, cluster4=Special, cluster5=Tank]
   const quizQuestions = [
-    { question: "How do you prefer to win battles?", options: [
-      { text: "Quick and powerful strikes", weights: [0, 3, 0, 1, 0, 3] },
-      { text: "Enduring and tanking hits", weights: [3, 1, 3, 0, 2, 0] },
-      { text: "Strategic and calculated", weights: [1, 0, 1, 3, 3, 0] },
-      { text: "Overwhelming raw force", weights: [2, 3, 1, 2, 1, 1] }
-    ]},
-    { question: "What's your approach to challenges?", options: [
-      { text: "Go all out with maximum force", weights: [1, 3, 0, 2, 0, 2] },
-      { text: "Stay solid and wait for the right moment", weights: [2, 0, 3, 0, 3, 0] },
-      { text: "Adapt and find creative solutions", weights: [1, 0, 1, 3, 3, 1] },
-      { text: "Be the first to act, always", weights: [0, 1, 0, 1, 0, 3] }
-    ]},
-    { question: "In a fight, you'd rather:", options: [
-      { text: "Deal massive damage", weights: [0, 3, 0, 3, 0, 1] },
-      { text: "Take hits and survive", weights: [3, 0, 3, 0, 3, 0] },
-      { text: "Use special abilities", weights: [0, 0, 1, 3, 3, 1] },
-      { text: "Strike before they can react", weights: [0, 2, 0, 1, 0, 3] }
-    ]},
-    { question: "Your ideal weekend activity:", options: [
-      { text: "Competitive sports", weights: [1, 3, 1, 0, 0, 3] },
-      { text: "Hiking and endurance activities", weights: [3, 1, 2, 0, 2, 0] },
-      { text: "Puzzle solving or strategy games", weights: [0, 0, 1, 3, 3, 0] },
-      { text: "Exploring new places at full speed", weights: [1, 1, 0, 1, 0, 3] }
-    ]},
-    { question: "When playing games, you prefer:", options: [
-      { text: "Offensive / DPS builds", weights: [0, 3, 0, 3, 0, 2] },
-      { text: "Defensive / tank builds", weights: [3, 1, 3, 0, 3, 0] },
-      { text: "Balanced or support builds", weights: [2, 1, 2, 2, 2, 1] },
-      { text: "Speed / assassin builds", weights: [0, 2, 0, 1, 0, 3] }
-    ]},
-    { question: "What's your greatest strength?", options: [
-      { text: "Power and intensity", weights: [1, 3, 0, 2, 0, 1] },
-      { text: "Stamina and resilience", weights: [3, 0, 3, 0, 2, 0] },
-      { text: "Intelligence and intuition", weights: [0, 0, 1, 3, 3, 1] },
-      { text: "Agility and reflexes", weights: [0, 1, 0, 1, 0, 3] }
-    ]},
-    { question: "How do you handle pressure?", options: [
-      { text: "Strike first and end it fast", weights: [0, 3, 0, 1, 0, 3] },
-      { text: "Stay calm and endure", weights: [3, 0, 3, 0, 3, 0] },
-      { text: "Think of a clever way out", weights: [1, 0, 1, 3, 3, 0] },
-      { text: "Channel it into explosive energy", weights: [2, 3, 0, 2, 0, 2] }
-    ]},
-    { question: "Pick your weapon:", options: [
-      { text: "Heavy sword (high damage)", weights: [1, 3, 0, 1, 0, 1] },
-      { text: "Shield and armor (high defense)", weights: [2, 0, 3, 0, 3, 0] },
-      { text: "Magic wand (special attacks)", weights: [0, 0, 0, 3, 3, 1] },
-      { text: "Twin daggers (fast attacks)", weights: [0, 2, 0, 1, 0, 3] }
-    ]}
+    {
+      question: "How do you prefer to win battles?", options: [
+        { text: "Quick and powerful strikes", weights: [3, 0, 1, 0, 0, 1] },
+        { text: "Enduring and tanking hits", weights: [0, 3, 0, 0, 1, 2] },
+        { text: "Strategic and calculated", weights: [1, 1, 0, 0, 3, 0] },
+        { text: "Overwhelming raw force", weights: [0, 0, 3, 0, 1, 2] }
+      ]
+    },
+    {
+      question: "What's your approach to challenges?", options: [
+        { text: "Go all out with maximum force", weights: [1, 0, 3, 0, 0, 2] },
+        { text: "Stay solid and wait for the right moment", weights: [0, 3, 0, 0, 2, 1] },
+        { text: "Adapt and find creative solutions", weights: [2, 0, 0, 0, 3, 0] },
+        { text: "Be the first to act, always", weights: [3, 0, 1, 0, 0, 1] }
+      ]
+    },
+    {
+      question: "In a fight, you'd rather:", options: [
+        { text: "Deal massive damage", weights: [0, 0, 3, 0, 1, 2] },
+        { text: "Take hits and survive", weights: [0, 3, 0, 0, 1, 2] },
+        { text: "Use special abilities", weights: [0, 0, 1, 0, 3, 1] },
+        { text: "Strike before they can react", weights: [3, 0, 2, 0, 0, 0] }
+      ]
+    },
+    {
+      question: "Your ideal weekend activity:", options: [
+        { text: "Competitive sports", weights: [2, 0, 2, 0, 0, 2] },
+        { text: "Hiking and endurance activities", weights: [0, 2, 0, 0, 0, 3] },
+        { text: "Puzzle solving or strategy games", weights: [1, 0, 0, 0, 3, 0] },
+        { text: "Exploring new places at full speed", weights: [3, 0, 1, 0, 0, 1] }
+      ]
+    },
+    {
+      question: "When playing games, you prefer:", options: [
+        { text: "Offensive / DPS builds", weights: [0, 0, 3, 0, 2, 1] },
+        { text: "Defensive / tank builds", weights: [0, 3, 0, 0, 1, 2] },
+        { text: "Balanced or support builds", weights: [2, 1, 1, 0, 2, 1] },
+        { text: "Speed / assassin builds", weights: [3, 0, 1, 0, 0, 0] }
+      ]
+    },
+    {
+      question: "What's your greatest strength?", options: [
+        { text: "Power and intensity", weights: [0, 0, 3, 0, 0, 2] },
+        { text: "Stamina and resilience", weights: [0, 3, 0, 0, 1, 2] },
+        { text: "Intelligence and intuition", weights: [1, 0, 0, 0, 3, 1] },
+        { text: "Agility and reflexes", weights: [3, 0, 1, 0, 0, 0] }
+      ]
+    },
+    {
+      question: "How do you handle pressure?", options: [
+        { text: "Strike first and end it fast", weights: [3, 0, 1, 0, 0, 1] },
+        { text: "Stay calm and endure", weights: [0, 3, 0, 0, 2, 2] },
+        { text: "Think of a clever way out", weights: [1, 0, 0, 0, 3, 0] },
+        { text: "Channel it into explosive energy", weights: [0, 0, 3, 0, 1, 2] }
+      ]
+    },
+    {
+      question: "Pick your weapon:", options: [
+        { text: "Heavy sword (high damage)", weights: [0, 0, 2, 0, 0, 3] },
+        { text: "Shield and armor (high defense)", weights: [0, 3, 0, 0, 2, 1] },
+        { text: "Magic wand (special attacks)", weights: [0, 0, 1, 0, 3, 0] },
+        { text: "Twin daggers (fast attacks)", weights: [3, 0, 1, 0, 0, 0] }
+      ]
+    }
   ];
 
   // Get unique types & gens
@@ -555,10 +573,10 @@ function App() {
                           <h3>Battle Stadium ⚔️</h3>
                           <p>Drop two Pokémon here!</p>
                         </div>
-                        
+
                         <div className="stadium-arena">
                           {/* Slot 1 */}
-                          <div 
+                          <div
                             className={`stadium-slot ${fighters[0] ? 'filled' : ''} ${dropTarget === 0 ? 'drag-over' : ''}`}
                             onDragOver={e => { e.preventDefault(); setDropTarget(0); }}
                             onDragLeave={() => setDropTarget(null)}
@@ -617,7 +635,7 @@ function App() {
                           </div>
 
                           {/* Slot 2 */}
-                          <div 
+                          <div
                             className={`stadium-slot ${fighters[1] ? 'filled' : ''} ${dropTarget === 1 ? 'drag-over' : ''}`}
                             onDragOver={e => { e.preventDefault(); setDropTarget(1); }}
                             onDragLeave={() => setDropTarget(null)}
@@ -638,13 +656,13 @@ function App() {
                             )}
                           </div>
                         </div>
-                        
+
                         {(fighters[0] || fighters[1]) && !isFighting && (
-                           <div style={{textAlign: "center", marginTop: "16px"}}>
-                              <button className="clear-arena-btn" onClick={() => { setFighters([null, null]); setIsFighting(false); }}>
-                                Clear Arena
-                              </button>
-                           </div>
+                          <div style={{ textAlign: "center", marginTop: "16px" }}>
+                            <button className="clear-arena-btn" onClick={() => { setFighters([null, null]); setIsFighting(false); }}>
+                              Clear Arena
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -656,7 +674,7 @@ function App() {
                             <h3 style={{ fontSize: '1.6rem', margin: '0 0 5px', color: '#1e293b' }}>Explore & Select</h3>
                             <p style={{ color: '#64748b', margin: 0 }}>Discover Pokémon by filtering through the dataset</p>
                           </div>
-                          
+
                           <div className="premium-search-container" style={{ margin: 0, flex: '1', minWidth: '400px', maxWidth: '650px' }}>
                             <span className="search-icon">🔍</span>
                             <input value={searchName} onChange={(e) => setSearchName(e.target.value)} placeholder="Search by name (e.g. Pikachu)" className="premium-search-input" />
@@ -672,7 +690,7 @@ function App() {
                               </select>
                             </div>
                           </div>
-                          
+
                           <div className="filter-group">
                             <label className="filter-label">Generation</label>
                             <div className="select-wrapper">
@@ -681,7 +699,7 @@ function App() {
                               </select>
                             </div>
                           </div>
-                          
+
                           <div className="filter-group">
                             <label className="filter-label">Legendary Status</label>
                             <div className="select-wrapper">
@@ -690,7 +708,7 @@ function App() {
                               </select>
                             </div>
                           </div>
-                          
+
                           <div className="filter-group highlight-filter">
                             <label className="filter-label">Combat Role (ML Cluster)</label>
                             <div className="select-wrapper">
@@ -946,16 +964,16 @@ function App() {
                   <h2 className="clusters-title">Unsupervised Learning: Pokémon Clusters</h2>
                   <p>Grouping Pokémon purely by their base stats (HP, Attack, Defense, etc.)</p>
                 </div>
-                
+
                 <div className="cluster-tabs-nav">
-                  <button 
-                    className={activeClusterTab === "kmeans" ? "active" : ""} 
+                  <button
+                    className={activeClusterTab === "kmeans" ? "active" : ""}
                     onClick={() => setActiveClusterTab("kmeans")}
                   >
                     K-Means
                   </button>
-                  <button 
-                    className={activeClusterTab === "hierarchical" ? "active" : ""} 
+                  <button
+                    className={activeClusterTab === "hierarchical" ? "active" : ""}
                     onClick={() => setActiveClusterTab("hierarchical")}
                   >
                     Hierarchical
@@ -963,9 +981,152 @@ function App() {
                 </div>
 
                 <div className="clusters-content-grid">
-                  
+
                   {activeClusterTab === "kmeans" && (
                     <>
+                      {/* === CLUSTER PROFILE CARDS === */}
+                      <div className="cluster-card centered-card full-width-card">
+                        <h3>The 6 Combat Roles (K-Means Clusters)</h3>
+                        <p>Our K-Means algorithm identified 6 distinct combat archetypes based on base stats.</p>
+                        <div className="cluster-profiles-grid">
+                          {clusterProfiles.map(cp => {
+                            const clusterPokemon = mlData.pca.filter(p => p.cluster === cp.id);
+                            const count = clusterPokemon.length;
+                            // Get top 3 representative Pokémon (closest to centroid)
+                            const topPokes = clusterPokemon.slice(0, 3).map(cpk => {
+                              const pData = pokemon.find(p => p.Name === cpk.name);
+                              return pData;
+                            }).filter(Boolean);
+                            const statLabels = ["HP", "Atk", "Def", "SpA", "SpD", "Spd"];
+                            const maxStat = Math.max(...cp.avgStats);
+                            return (
+                              <div key={cp.id} className="cluster-profile-card" style={{ borderTop: `4px solid ${cp.color}` }}>
+                                <div className="cp-header">
+                                  <span className="cp-emoji">{cp.emoji}</span>
+                                  <div>
+                                    <div className="cp-name" style={{ color: cp.color }}>{cp.name}</div>
+                                    <div className="cp-count">{count} Pokémon · Cluster {cp.id}</div>
+                                  </div>
+                                </div>
+                                <div className="cp-stats">
+                                  {statLabels.map((label, i) => (
+                                    <div key={label} className="cp-stat-row">
+                                      <span className="cp-stat-label">{label}</span>
+                                      <div className="cp-stat-bar-bg">
+                                        <div className="cp-stat-bar-fill" style={{ width: `${(cp.avgStats[i] / 160) * 100}%`, background: cp.color }} />
+                                      </div>
+                                      <span className="cp-stat-val">{cp.avgStats[i]}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                                <div className="cp-pokemon-row">
+                                  {topPokes.map(tp => (
+                                    <div key={tp.Name} className="cp-pokemon-mini">
+                                      <img src={getPokemonImageUrl(tp)} alt={tp.Name} />
+                                      <span>{tp.Name}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* === CLUSTER DISTRIBUTION DONUT === */}
+                      <div className="cluster-card centered-card full-width-card">
+                        <h3>Cluster Size Distribution</h3>
+                        <p>How many Pokémon belong to each combat archetype.</p>
+                        <div className="cluster-dist-layout">
+                          {(() => {
+                            const counts = clusterProfiles.map(cp => ({
+                              ...cp,
+                              count: mlData.pca.filter(p => p.cluster === cp.id).length
+                            }));
+                            const total = counts.reduce((a, c) => a + c.count, 0);
+                            const svgSize = 200, cx = 100, cy = 100, r = 80, innerR = 50;
+                            let cumulAngle = -Math.PI / 2;
+                            return (
+                              <>
+                                <svg viewBox={`0 0 ${svgSize} ${svgSize}`} className="cluster-donut-svg">
+                                  {counts.map(c => {
+                                    const angle = (c.count / total) * 2 * Math.PI;
+                                    const startAngle = cumulAngle;
+                                    cumulAngle += angle;
+                                    const endAngle = cumulAngle;
+                                    const largeArc = angle > Math.PI ? 1 : 0;
+                                    const x1 = cx + r * Math.cos(startAngle), y1 = cy + r * Math.sin(startAngle);
+                                    const x2 = cx + r * Math.cos(endAngle), y2 = cy + r * Math.sin(endAngle);
+                                    const ix1 = cx + innerR * Math.cos(endAngle), iy1 = cy + innerR * Math.sin(endAngle);
+                                    const ix2 = cx + innerR * Math.cos(startAngle), iy2 = cy + innerR * Math.sin(startAngle);
+                                    return (
+                                      <path key={c.id}
+                                        d={`M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} L ${ix1} ${iy1} A ${innerR} ${innerR} 0 ${largeArc} 0 ${ix2} ${iy2} Z`}
+                                        fill={c.color} stroke="white" strokeWidth="2" opacity="0.85"
+                                      />
+                                    );
+                                  })}
+                                  <text x={cx} y={cy - 6} textAnchor="middle" fontSize="22" fontWeight="900" fill="#1e293b">{total}</text>
+                                  <text x={cx} y={cy + 12} textAnchor="middle" fontSize="9" fill="#94a3b8">Pokémon</text>
+                                </svg>
+                                <div className="cluster-dist-legend">
+                                  {counts.map(c => (
+                                    <div key={c.id} className="cluster-dist-item">
+                                      <span className="dist-dot" style={{ background: c.color }}></span>
+                                      <span className="dist-label">{c.emoji} {c.name}</span>
+                                      <span className="dist-count">{c.count}</span>
+                                      <span className="dist-pct">{((c.count / total) * 100).toFixed(1)}%</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+
+                      {/* === TYPE BREAKDOWN PER CLUSTER === */}
+                      <div className="cluster-card centered-card full-width-card">
+                        <h3>Type Distribution by Cluster</h3>
+                        <p>Which Pokémon types dominate each cluster.</p>
+                        <div className="type-breakdown-grid">
+                          {clusterProfiles.map(cp => {
+                            const clusterPokes = mlData.pca.filter(p => p.cluster === cp.id);
+                            const typeCounts = {};
+                            clusterPokes.forEach(p => {
+                              const pData = pokemon.find(pk => pk.Name === p.name);
+                              if (pData) {
+                                const t1 = pData["Type 1"];
+                                const t2 = pData["Type 2"];
+                                if (t1) typeCounts[t1] = (typeCounts[t1] || 0) + 1;
+                                if (t2 && t2 !== "nan" && t2 !== "") typeCounts[t2] = (typeCounts[t2] || 0) + 1;
+                              }
+                            });
+                            const sorted = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                            const maxCount = sorted[0]?.[1] || 1;
+                            return (
+                              <div key={cp.id} className="type-breakdown-card" style={{ borderLeft: `4px solid ${cp.color}` }}>
+                                <div className="tb-header">
+                                  <span>{cp.emoji}</span>
+                                  <span style={{ fontWeight: 700, color: cp.color }}>{cp.name}</span>
+                                </div>
+                                <div className="tb-bars">
+                                  {sorted.map(([type, count]) => (
+                                    <div key={type} className="tb-row">
+                                      <span className="tb-type">{type}</span>
+                                      <div className="tb-bar-bg">
+                                        <div className="tb-bar-fill" style={{ width: `${(count / maxCount) * 100}%`, background: cp.color }} />
+                                      </div>
+                                      <span className="tb-val">{count}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
                       {/* Elbow & Silhouette */}
                       <div className="cluster-card centered-card">
                         <h3>Determining the Best K</h3>
@@ -984,35 +1145,187 @@ function App() {
                         </div>
                       </div>
 
-                      {/* PCA Visualization */}
+                      {/* === INTERACTIVE PCA SCATTER PLOT === */}
                       <div className="cluster-card centered-card pca-card full-width-card">
-                        <h3>2D Projection (PCA) Scatter Plot</h3>
-                        <p>Compressing multi-dimensional stats into a 2D space to visualize the clusters.</p>
-                        
-                        <div className="cluster-images-row" style={{ justifyContent: 'center' }}>
-                          <div className="cluster-img-container" style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
-                            <h4>Cluster Scatter Plot</h4>
-                            <img src="/cluster_img_4.png" alt="PCA Scatter Plot" className="ml-img" style={{ maxWidth: '100%' }} />
-                          </div>
+                        <h3>Interactive 2D Projection (PCA)</h3>
+                        <p>Hover over any point to see the Pokémon it represents. Each color is a combat cluster.</p>
+
+                        <div style={{ position: 'relative', width: '100%', maxWidth: '900px', margin: '0 auto' }}>
+                          {(() => {
+                            const pcaData = mlData.pca;
+                            const svgW = 800, svgH = 500, padL = 50, padR = 20, padT = 20, padB = 40;
+                            const chartW = svgW - padL - padR, chartH = svgH - padT - padB;
+                            const xs = pcaData.map(p => p.x), ys = pcaData.map(p => p.y);
+                            const minX = Math.min(...xs), maxX = Math.max(...xs);
+                            const minY = Math.min(...ys), maxY = Math.max(...ys);
+                            const toSvgX = (x) => padL + ((x - minX) / (maxX - minX)) * chartW;
+                            const toSvgY = (y) => padT + chartH - ((y - minY) / (maxY - minY)) * chartH;
+                            const colors = clusterProfiles.map(c => c.color);
+
+                            return (
+                              <svg viewBox={`0 0 ${svgW} ${svgH}`} style={{ width: '100%' }} className="pca-interactive-svg"
+                                onMouseMove={(e) => {
+                                  const svg = e.currentTarget;
+                                  const rect = svg.getBoundingClientRect();
+                                  const mouseX = ((e.clientX - rect.left) / rect.width) * svgW;
+                                  const mouseY = ((e.clientY - rect.top) / rect.height) * svgH;
+                                  // Find nearest point
+                                  let bestIdx = -1, bestD = Infinity;
+                                  pcaData.forEach((p, i) => {
+                                    const px = toSvgX(p.x), py = toSvgY(p.y);
+                                    const d = Math.sqrt((px - mouseX) ** 2 + (py - mouseY) ** 2);
+                                    if (d < bestD && d < 20) { bestD = d; bestIdx = i; }
+                                  });
+                                  const tooltip = svg.parentElement.querySelector('.pca-tooltip');
+                                  const highlight = svg.querySelector('.pca-highlight');
+                                  if (bestIdx >= 0 && tooltip && highlight) {
+                                    const p = pcaData[bestIdx];
+                                    const pData = pokemon.find(pk => pk.Name === p.name);
+                                    const pctX = ((e.clientX - rect.left) / rect.width) * 100;
+                                    const flipLeft = pctX > 70;
+                                    tooltip.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">` +
+                                      (pData ? `<img src="${getPokemonImageUrl(pData)}" style="width:36px;height:36px;object-fit:contain;border-radius:6px;background:white;padding:2px" />` : '') +
+                                      `<div><div style="font-weight:700;font-size:0.9rem">${p.name}</div>` +
+                                      `<div style="font-size:0.75rem;opacity:0.8">${p.type1} · ${clusterProfiles[p.cluster]?.emoji || ''} ${clusterProfiles[p.cluster]?.name || 'Cluster ' + p.cluster}</div></div></div>` +
+                                      (pData ? `<div style="font-size:0.72rem;opacity:0.7;margin-top:2px">Total: ${pData.Total} | HP: ${pData.HP} | Atk: ${pData.Attack} | Def: ${pData.Defense}</div>` : '');
+                                    tooltip.setAttribute('style', `display:block;position:absolute;top:${((e.clientY - rect.top) / rect.height) * 100 - 2}%;${flipLeft ? 'right' : 'left'}:${flipLeft ? (100 - pctX + 2) : (pctX + 2)}%;background:rgba(15,23,42,0.95);color:white;padding:10px 14px;border-radius:12px;font-size:0.8rem;pointer-events:none;z-index:10;line-height:1.5;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.1);min-width:180px`);
+                                    highlight.setAttribute('cx', toSvgX(p.x));
+                                    highlight.setAttribute('cy', toSvgY(p.y));
+                                    highlight.setAttribute('style', `display:block`);
+                                  } else {
+                                    if (tooltip) tooltip.setAttribute('style', 'display:none');
+                                    if (highlight) highlight.setAttribute('style', 'display:none');
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.parentElement.querySelector('.pca-tooltip')?.setAttribute('style', 'display:none');
+                                  e.currentTarget.querySelector('.pca-highlight')?.setAttribute('style', 'display:none');
+                                }}
+                              >
+                                {/* Grid */}
+                                {[0, 0.25, 0.5, 0.75, 1].map(f => (
+                                  <line key={`h${f}`} x1={padL} y1={padT + f * chartH} x2={svgW - padR} y2={padT + f * chartH} stroke="#e2e8f0" strokeWidth="0.5" />
+                                ))}
+                                {[0, 0.25, 0.5, 0.75, 1].map(f => (
+                                  <line key={`v${f}`} x1={padL + f * chartW} y1={padT} x2={padL + f * chartW} y2={svgH - padB} stroke="#e2e8f0" strokeWidth="0.5" />
+                                ))}
+                                {/* Data points */}
+                                {pcaData.map((p, i) => (
+                                  <circle key={i} cx={toSvgX(p.x)} cy={toSvgY(p.y)} r="3.5" fill={colors[p.cluster] || '#999'} opacity="0.7" />
+                                ))}
+                                {/* Highlight circle */}
+                                <circle className="pca-highlight" cx={0} cy={0} r="8" fill="none" stroke="white" strokeWidth="2.5" style={{ display: 'none' }} />
+                                {/* Axis labels */}
+                                <text x={svgW / 2} y={svgH - 5} textAnchor="middle" fontSize="12" fill="#64748b">PCA Component 1</text>
+                                <text x={15} y={svgH / 2} textAnchor="middle" fontSize="12" fill="#64748b" transform={`rotate(-90,15,${svgH / 2})`}>PCA Component 2</text>
+                              </svg>
+                            );
+                          })()}
+                          <div className="pca-tooltip" style={{ display: 'none' }}></div>
+                        </div>
+
+                        {/* Legend */}
+                        <div className="pca-legend">
+                          {clusterProfiles.map(cp => (
+                            <span key={cp.id} className="pca-legend-item">
+                              <span className="pca-legend-dot" style={{ background: cp.color }}></span>
+                              {cp.emoji} {cp.name}
+                            </span>
+                          ))}
                         </div>
                       </div>
                     </>
                   )}
-                  
+
                   {activeClusterTab === "hierarchical" && (
-                    <div className="cluster-card centered-card full-width-card">
-                      {/* Hierarchical Clustering */}
-                      <h3>Hierarchical Clustering</h3>
-                      <p>Building a tree of clusters to show the relationships and distances between different groupings.</p>
-                      
-                      <div className="cluster-images-row" style={{ justifyContent: 'center' }}>
-                        <div className="cluster-img-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
-                          <h4>Dendrogram</h4>
-                          <img src="/cluster_img_6.png" alt="Dendrogram Graph" className="ml-img" style={{ maxWidth: '100%' }} />
-                          <p className="caption">The height of the vertical lines represents the distance between merged clusters.</p>
+                    <>
+                      <div className="cluster-card centered-card full-width-card">
+                        {/* Hierarchical Clustering */}
+                        <h3>Hierarchical Clustering</h3>
+                        <p>Building a tree of clusters to show the relationships and distances between different groupings.</p>
+
+                        <div className="cluster-images-row" style={{ justifyContent: 'center' }}>
+                          <div className="cluster-img-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
+                            <h4>Dendrogram</h4>
+                            <img src="/cluster_img_6.png" alt="Dendrogram Graph" className="ml-img" style={{ maxWidth: '100%' }} />
+                            <p className="caption">The height of the vertical lines represents the distance between merged clusters.</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
+
+                      {/* === K-MEANS VS HIERARCHICAL COMPARISON === */}
+                      <div className="cluster-card centered-card full-width-card">
+                        <h3>K-Means vs Hierarchical: How Do They Compare?</h3>
+                        <p>Both methods group Pokémon by stats, but they work very differently under the hood.</p>
+
+                        <div className="comparison-table-wrapper">
+                          <table className="comparison-table">
+                            <thead>
+                              <tr>
+                                <th></th>
+                                <th><span className="comp-badge kmeans">K-Means</span></th>
+                                <th><span className="comp-badge hier">Hierarchical</span></th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td className="comp-label">Algorithm</td>
+                                <td>Iterative centroid-based. Assigns each point to the nearest cluster center, then updates centers repeatedly until convergence.</td>
+                                <td>Agglomerative (bottom-up). Starts with each Pokémon as its own cluster and progressively merges the closest pairs.</td>
+                              </tr>
+                              <tr>
+                                <td className="comp-label">Needs K upfront?</td>
+                                <td><span className="comp-yes">Yes</span> — must specify number of clusters before running (we used Elbow + Silhouette to find K=6).</td>
+                                <td><span className="comp-no">No</span> — the dendrogram shows all possible K values. You cut at the desired height.</td>
+                              </tr>
+                              <tr>
+                                <td className="comp-label">Cluster shape</td>
+                                <td>Tends to produce spherical, similarly-sized clusters.</td>
+                                <td>Can find clusters of any shape and varying sizes.</td>
+                              </tr>
+                              <tr>
+                                <td className="comp-label">Reproducibility</td>
+                                <td><span className="comp-yes">Variable</span> — results can change slightly depending on random seed initialization.</td>
+                                <td><span className="comp-no">Deterministic</span> — always produces the exact same dendrogram.</td>
+                              </tr>
+                              <tr>
+                                <td className="comp-label">Scalability</td>
+                                <td>✅ Very fast, even on large datasets (O(nk) per iteration).</td>
+                                <td>⚠️ Slower on large datasets (O(n²) or O(n³) depending on linkage).</td>
+                              </tr>
+                              <tr>
+                                <td className="comp-label">Visual output</td>
+                                <td>Scatter plot (PCA) with colored clusters.</td>
+                                <td>Dendrogram showing merge hierarchy.</td>
+                              </tr>
+                              <tr>
+                                <td className="comp-label">Same clusters?</td>
+                                <td colSpan="2" style={{ textAlign: 'center', fontStyle: 'italic', color: '#6366f1' }}>
+                                  Not necessarily — they often produce different groupings because the algorithms optimize different objectives.
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div className="comparison-summary">
+                          <div className="comp-summary-card">
+                            <div className="comp-summary-icon">🎯</div>
+                            <div>
+                              <strong>Our choice: K-Means (K=6)</strong>
+                              <p>We chose K-Means for the Spirit Pokémon quiz because it produces clean, well-defined clusters that map directly to personality archetypes. The Elbow and Silhouette methods confirmed K=6 as optimal.</p>
+                            </div>
+                          </div>
+                          <div className="comp-summary-card">
+                            <div className="comp-summary-icon">🌳</div>
+                            <div>
+                              <strong>Why show Hierarchical too?</strong>
+                              <p>The dendrogram reveals the natural hierarchy — which clusters are most similar to each other. For example, "Balanced" and "Physical Attacker" may merge first, suggesting they share traits.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
                   )}
 
                 </div>
@@ -1029,27 +1342,27 @@ function App() {
                 {!loading && !error && pokemon.length > 0 && (
                   <div className="charts-container">
                     {/* === SECTION: Overview === */}
-                    <div className="charts-section-title" style={{ gridColumn:'1 / -1' }}>
-                      <h3 style={{ margin:0, fontSize:'1.4rem', fontWeight:700, color:'#1e293b', display:'flex', alignItems:'center', gap:'10px' }}>
-                        <span style={{ width:4, height:22, background:'linear-gradient(180deg,#6366f1,#818cf8)', borderRadius:2, display:'inline-block' }}></span>
+                    <div className="charts-section-title" style={{ gridColumn: '1 / -1' }}>
+                      <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ width: 4, height: 22, background: 'linear-gradient(180deg,#6366f1,#818cf8)', borderRadius: 2, display: 'inline-block' }}></span>
                         Overview
                       </h3>
-                      <p style={{ margin:'4px 0 0 14px', color:'#94a3b8', fontSize:'0.82rem' }}>General dataset statistics at a glance</p>
+                      <p style={{ margin: '4px 0 0 14px', color: '#94a3b8', fontSize: '0.82rem' }}>General dataset statistics at a glance</p>
                     </div>
 
                     <div className="chart-card">
                       <h3>Which Stat Dominates?</h3>
-                      <p style={{ color:'#64748b', fontSize:'0.85rem', marginBottom:'12px' }}>Average base stat across all Pokémon</p>
+                      <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '12px' }}>Average base stat across all Pokémon</p>
                       <div className="bar-chart">
                         {(() => {
-                          const stats = ["HP","Attack","Defense","Sp. Atk","Sp. Def","Speed"];
+                          const stats = ["HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed"];
                           const avgs = stats.map(s => ({ stat: s, avg: pokemon.reduce((a, p) => a + (Number(p[s]) || 0), 0) / pokemon.length }));
                           avgs.sort((a, b) => b.avg - a.avg);
                           const maxAvg = avgs[0].avg;
                           return avgs.map(({ stat, avg }) => (
                             <div key={stat} className="bar-row">
                               <span className="bar-label">{stat}</span>
-                              <div className="bar-container"><div className="bar" style={{ width:`${(avg/maxAvg)*100}%` }}></div></div>
+                              <div className="bar-container"><div className="bar" style={{ width: `${(avg / maxAvg) * 100}%` }}></div></div>
                               <span className="bar-value">{avg.toFixed(1)}</span>
                             </div>
                           ));
@@ -1059,20 +1372,20 @@ function App() {
 
                     <div className="chart-card">
                       <h3>Typing Complexity</h3>
-                      <p style={{ color:'#64748b', fontSize:'0.85rem', marginBottom:'12px' }}>Single-type vs Dual-type Pokémon</p>
+                      <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '12px' }}>Single-type vs Dual-type Pokémon</p>
                       {(() => {
-                        let single=0, dual=0;
-                        pokemon.forEach(p => { if (p["Type 2"]&&p["Type 2"]!=="nan"&&p["Type 2"]!=="") dual++; else single++; });
-                        const total=single+dual;
+                        let single = 0, dual = 0;
+                        pokemon.forEach(p => { if (p["Type 2"] && p["Type 2"] !== "nan" && p["Type 2"] !== "") dual++; else single++; });
+                        const total = single + dual;
                         return (
                           <div>
-                            <div style={{ display:'flex', borderRadius:'12px', overflow:'hidden', height:'80px', marginBottom:'16px' }}>
-                              <div style={{ width:`${(single/total)*100}%`, background:'#8AC926', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontWeight:700, fontSize:'0.85rem' }}>{((single/total)*100).toFixed(1)}%</div>
-                              <div style={{ width:`${(dual/total)*100}%`, background:'#FFCA3A', display:'flex', alignItems:'center', justifyContent:'center', color:'#1e293b', fontWeight:700, fontSize:'0.85rem' }}>{((dual/total)*100).toFixed(1)}%</div>
+                            <div style={{ display: 'flex', borderRadius: '12px', overflow: 'hidden', height: '80px', marginBottom: '16px' }}>
+                              <div style={{ width: `${(single / total) * 100}%`, background: '#8AC926', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '0.85rem' }}>{((single / total) * 100).toFixed(1)}%</div>
+                              <div style={{ width: `${(dual / total) * 100}%`, background: '#FFCA3A', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1e293b', fontWeight: 700, fontSize: '0.85rem' }}>{((dual / total) * 100).toFixed(1)}%</div>
                             </div>
-                            <div style={{ display:'flex', gap:'20px', fontSize:'0.85rem' }}>
-                              <span style={{ display:'flex', alignItems:'center', gap:'8px' }}><span style={{ width:14, height:14, borderRadius:4, background:'#8AC926', display:'inline-block' }}></span>Single Type ({single})</span>
-                              <span style={{ display:'flex', alignItems:'center', gap:'8px' }}><span style={{ width:14, height:14, borderRadius:4, background:'#FFCA3A', display:'inline-block' }}></span>Dual Type ({dual})</span>
+                            <div style={{ display: 'flex', gap: '20px', fontSize: '0.85rem' }}>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><span style={{ width: 14, height: 14, borderRadius: 4, background: '#8AC926', display: 'inline-block' }}></span>Single Type ({single})</span>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><span style={{ width: 14, height: 14, borderRadius: 4, background: '#FFCA3A', display: 'inline-block' }}></span>Dual Type ({dual})</span>
                             </div>
                           </div>
                         );
@@ -1080,30 +1393,30 @@ function App() {
                     </div>
 
                     {/* === SECTION: Generation Analysis === */}
-                    <div className="charts-section-title" style={{ gridColumn:'1 / -1' }}>
-                      <h3 style={{ margin:0, fontSize:'1.4rem', fontWeight:700, color:'#1e293b', display:'flex', alignItems:'center', gap:'10px' }}>
-                        <span style={{ width:4, height:22, background:'linear-gradient(180deg,#6366f1,#818cf8)', borderRadius:2, display:'inline-block' }}></span>
+                    <div className="charts-section-title" style={{ gridColumn: '1 / -1' }}>
+                      <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ width: 4, height: 22, background: 'linear-gradient(180deg,#6366f1,#818cf8)', borderRadius: 2, display: 'inline-block' }}></span>
                         Generation Analysis
                       </h3>
-                      <p style={{ margin:'4px 0 0 14px', color:'#94a3b8', fontSize:'0.82rem' }}>How Pokémon evolve across generations</p>
+                      <p style={{ margin: '4px 0 0 14px', color: '#94a3b8', fontSize: '0.82rem' }}>How Pokémon evolve across generations</p>
                     </div>
 
                     <div className="chart-card">
                       <h3>Average Total Stats per Generation</h3>
-                      <p style={{ color:'#64748b', fontSize:'0.85rem', marginBottom:'12px' }}>Overall power across generations</p>
-                      <div style={{ display:'flex', alignItems:'flex-end', gap:'16px', height:'240px', padding:'0 4px' }}>
+                      <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '12px' }}>Overall power across generations</p>
+                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '16px', height: '240px', padding: '0 4px' }}>
                         {(() => {
                           const gens = {};
-                          pokemon.forEach(p => { const g=p["Generation"]; const t=Number(p["Total"])||0; if(!gens[g])gens[g]={sum:0,count:0}; gens[g].sum+=t; gens[g].count++; });
-                          const entries = Object.entries(gens).sort((a,b)=>Number(a[0])-Number(b[0]));
-                          const means = entries.map(([g,d])=>({ gen:g, mean:d.sum/d.count }));
-                          const maxM = Math.max(...means.map(m=>m.mean));
-                          const minM = Math.min(...means.map(m=>m.mean));
+                          pokemon.forEach(p => { const g = p["Generation"]; const t = Number(p["Total"]) || 0; if (!gens[g]) gens[g] = { sum: 0, count: 0 }; gens[g].sum += t; gens[g].count++; });
+                          const entries = Object.entries(gens).sort((a, b) => Number(a[0]) - Number(b[0]));
+                          const means = entries.map(([g, d]) => ({ gen: g, mean: d.sum / d.count }));
+                          const maxM = Math.max(...means.map(m => m.mean));
+                          const minM = Math.min(...means.map(m => m.mean));
                           return means.map(({ gen, mean }) => (
-                            <div key={gen} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:'4px' }}>
-                              <span style={{ fontSize:'0.7rem', color:'#64748b', fontWeight:600 }}>{mean.toFixed(0)}</span>
-                              <div style={{ width:'100%', background:'linear-gradient(180deg,#8b5cf6,#4338ca)', borderRadius:'6px 6px 0 0', height:`${((mean-minM+5)/(maxM-minM+5))*220}px`, minHeight:'40px' }}/>
-                              <span style={{ fontSize:'0.75rem', fontWeight:700, color:'#1e293b' }}>G{gen}</span>
+                            <div key={gen} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                              <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>{mean.toFixed(0)}</span>
+                              <div style={{ width: '100%', background: 'linear-gradient(180deg,#8b5cf6,#4338ca)', borderRadius: '6px 6px 0 0', height: `${((mean - minM + 5) / (maxM - minM + 5)) * 220}px`, minHeight: '40px' }} />
+                              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1e293b' }}>G{gen}</span>
                             </div>
                           ));
                         })()}
@@ -1112,49 +1425,49 @@ function App() {
 
                     <div className="chart-card">
                       <h3>Legendary vs Normal per Generation</h3>
-                      <div style={{ display:'flex', flexDirection:'column', gap:'10px', marginTop:'8px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
                         {(() => {
                           const gens = {};
-                          pokemon.forEach(p => { const g = p["Generation"]; if (!g) return; if (!gens[g]) gens[g]={normal:0,legendary:0}; if (p["Legendary"]==="True") gens[g].legendary++; else gens[g].normal++; });
-                          return Object.entries(gens).sort((a,b)=>Number(a[0])-Number(b[0])).map(([gen,data]) => {
-                            const total = data.normal+data.legendary;
-                            const lPct = (data.legendary/total)*100;
+                          pokemon.forEach(p => { const g = p["Generation"]; if (!g) return; if (!gens[g]) gens[g] = { normal: 0, legendary: 0 }; if (p["Legendary"] === "True") gens[g].legendary++; else gens[g].normal++; });
+                          return Object.entries(gens).sort((a, b) => Number(a[0]) - Number(b[0])).map(([gen, data]) => {
+                            const total = data.normal + data.legendary;
+                            const lPct = (data.legendary / total) * 100;
                             return (
                               <div key={gen}>
-                                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'3px', fontSize:'0.8rem', color:'#475569' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px', fontSize: '0.8rem', color: '#475569' }}>
                                   <span><strong>Gen {gen}</strong></span><span>{data.legendary} Leg. / {data.normal} Normal</span>
                                 </div>
-                                <div style={{ display:'flex', borderRadius:'8px', overflow:'hidden', height:'16px' }}>
-                                  <div style={{ width:`${100-lPct}%`, background:'#4D96FF' }}/>
-                                  <div style={{ width:`${lPct}%`, background:'#FF595E' }}/>
+                                <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden', height: '16px' }}>
+                                  <div style={{ width: `${100 - lPct}%`, background: '#4D96FF' }} />
+                                  <div style={{ width: `${lPct}%`, background: '#FF595E' }} />
                                 </div>
                               </div>
                             );
                           });
                         })()}
-                        <div style={{ display:'flex', gap:'16px', marginTop:'2px', fontSize:'0.78rem' }}>
-                          <span style={{ display:'flex', alignItems:'center', gap:'5px' }}><span style={{ width:10, height:10, borderRadius:3, background:'#4D96FF', display:'inline-block' }}></span>Normal</span>
-                          <span style={{ display:'flex', alignItems:'center', gap:'5px' }}><span style={{ width:10, height:10, borderRadius:3, background:'#FF595E', display:'inline-block' }}></span>Legendary</span>
+                        <div style={{ display: 'flex', gap: '16px', marginTop: '2px', fontSize: '0.78rem' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><span style={{ width: 10, height: 10, borderRadius: 3, background: '#4D96FF', display: 'inline-block' }}></span>Normal</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><span style={{ width: 10, height: 10, borderRadius: 3, background: '#FF595E', display: 'inline-block' }}></span>Legendary</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Attack vs Defense per Generation */}
-                    <div className="chart-card" style={{ gridColumn:'1 / -1' }}>
+                    <div className="chart-card" style={{ gridColumn: '1 / -1' }}>
                       <h3>Attack vs Defense per Generation</h3>
-                      <p style={{ color:'#64748b', fontSize:'0.85rem', marginBottom:'16px' }}>Average offensive vs defensive stats comparison</p>
-                      <div style={{ display:'flex', alignItems:'flex-end', gap:'20px', padding:'0 8px' }}>
+                      <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '16px' }}>Average offensive vs defensive stats comparison</p>
+                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '20px', padding: '0 8px' }}>
                         {(() => {
                           const gens = {};
                           pokemon.forEach(p => {
                             const g = p["Generation"]; if (!g) return;
-                            if (!gens[g]) gens[g] = { atkSum:0, defSum:0, count:0 };
+                            if (!gens[g]) gens[g] = { atkSum: 0, defSum: 0, count: 0 };
                             gens[g].atkSum += Number(p["Attack"]) || 0;
                             gens[g].defSum += Number(p["Defense"]) || 0;
                             gens[g].count++;
                           });
-                          const entries = Object.entries(gens).sort((a,b) => Number(a[0]) - Number(b[0]));
-                          const maxVal = Math.max(...entries.map(([,d]) => (d.atkSum + d.defSum) / d.count));
+                          const entries = Object.entries(gens).sort((a, b) => Number(a[0]) - Number(b[0]));
+                          const maxVal = Math.max(...entries.map(([, d]) => (d.atkSum + d.defSum) / d.count));
                           return entries.map(([gen, data]) => {
                             const avgAtk = data.atkSum / data.count;
                             const avgDef = data.defSum / data.count;
@@ -1162,46 +1475,46 @@ function App() {
                             const atkH = (avgAtk / maxVal) * totalH;
                             const defH = (avgDef / maxVal) * totalH;
                             return (
-                              <div key={gen} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:'4px' }}>
-                                <span style={{ fontSize:'0.68rem', color:'#64748b' }}>{avgAtk.toFixed(0)}+{avgDef.toFixed(0)}</span>
-                                <div style={{ width:'100%', display:'flex', flexDirection:'column' }}>
-                                  <div style={{ width:'100%', background:'#FF595E', borderRadius:'6px 6px 0 0', height:`${atkH}px` }} title={`Attack: ${avgAtk.toFixed(1)}`}/>
-                                  <div style={{ width:'100%', background:'#6A4C93', borderRadius:'0 0 6px 6px', height:`${defH}px` }} title={`Defense: ${avgDef.toFixed(1)}`}/>
+                              <div key={gen} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                                <span style={{ fontSize: '0.68rem', color: '#64748b' }}>{avgAtk.toFixed(0)}+{avgDef.toFixed(0)}</span>
+                                <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+                                  <div style={{ width: '100%', background: '#FF595E', borderRadius: '6px 6px 0 0', height: `${atkH}px` }} title={`Attack: ${avgAtk.toFixed(1)}`} />
+                                  <div style={{ width: '100%', background: '#6A4C93', borderRadius: '0 0 6px 6px', height: `${defH}px` }} title={`Defense: ${avgDef.toFixed(1)}`} />
                                 </div>
-                                <span style={{ fontSize:'0.75rem', fontWeight:700, color:'#1e293b' }}>Gen {gen}</span>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1e293b' }}>Gen {gen}</span>
                               </div>
                             );
                           });
                         })()}
                       </div>
-                      <div style={{ display:'flex', justifyContent:'center', gap:'20px', marginTop:'12px', fontSize:'0.8rem' }}>
-                        <span style={{ display:'flex', alignItems:'center', gap:'6px' }}><span style={{ width:12, height:12, borderRadius:3, background:'#FF595E', display:'inline-block' }}></span>Attack</span>
-                        <span style={{ display:'flex', alignItems:'center', gap:'6px' }}><span style={{ width:12, height:12, borderRadius:3, background:'#6A4C93', display:'inline-block' }}></span>Defense</span>
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '12px', fontSize: '0.8rem' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: 12, height: 12, borderRadius: 3, background: '#FF595E', display: 'inline-block' }}></span>Attack</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: 12, height: 12, borderRadius: 3, background: '#6A4C93', display: 'inline-block' }}></span>Defense</span>
                       </div>
                     </div>
 
                     {/* === SECTION: Type Analysis === */}
-                    <div className="charts-section-title" style={{ gridColumn:'1 / -1' }}>
-                      <h3 style={{ margin:0, fontSize:'1.4rem', fontWeight:700, color:'#1e293b', display:'flex', alignItems:'center', gap:'10px' }}>
-                        <span style={{ width:4, height:22, background:'linear-gradient(180deg,#6366f1,#818cf8)', borderRadius:2, display:'inline-block' }}></span>
+                    <div className="charts-section-title" style={{ gridColumn: '1 / -1' }}>
+                      <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ width: 4, height: 22, background: 'linear-gradient(180deg,#6366f1,#818cf8)', borderRadius: 2, display: 'inline-block' }}></span>
                         Type Analysis
                       </h3>
-                      <p style={{ margin:'4px 0 0 14px', color:'#94a3b8', fontSize:'0.82rem' }}>Breakdown by Pokémon primary type</p>
+                      <p style={{ margin: '4px 0 0 14px', color: '#94a3b8', fontSize: '0.82rem' }}>Breakdown by Pokémon primary type</p>
                     </div>
 
                     <div className="chart-card">
                       <h3>Average Strength by Primary Type</h3>
-                      <p style={{ color:'#64748b', fontSize:'0.85rem', marginBottom:'12px' }}>Mean Total base stats per type</p>
+                      <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '12px' }}>Mean Total base stats per type</p>
                       <div className="bar-chart">
                         {(() => {
                           const totals = {}; const counts = {};
-                          pokemon.forEach(p => { const t = p["Type 1"]; totals[t] = (totals[t]||0) + (Number(p["Total"])||0); counts[t] = (counts[t]||0) + 1; });
-                          const sorted = Object.entries(totals).map(([t,s]) => ({ type:t, mean:s/counts[t] })).sort((a,b) => b.mean - a.mean);
+                          pokemon.forEach(p => { const t = p["Type 1"]; totals[t] = (totals[t] || 0) + (Number(p["Total"]) || 0); counts[t] = (counts[t] || 0) + 1; });
+                          const sorted = Object.entries(totals).map(([t, s]) => ({ type: t, mean: s / counts[t] })).sort((a, b) => b.mean - a.mean);
                           const maxMean = sorted[0]?.mean || 1;
                           return sorted.map(({ type, mean }) => (
                             <div key={type} className="bar-row">
                               <span className="bar-label">{type}</span>
-                              <div className="bar-container"><div className="bar" style={{ width:`${(mean/maxMean)*100}%` }}></div></div>
+                              <div className="bar-container"><div className="bar" style={{ width: `${(mean / maxMean) * 100}%` }}></div></div>
                               <span className="bar-value">{mean.toFixed(0)}</span>
                             </div>
                           ));
@@ -1211,17 +1524,17 @@ function App() {
 
                     <div className="chart-card">
                       <h3>Pokémon Count by Primary Type</h3>
-                      <p style={{ color:'#64748b', fontSize:'0.85rem', marginBottom:'12px' }}>Distribution of primary types</p>
+                      <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '12px' }}>Distribution of primary types</p>
                       <div className="bar-chart">
                         {(() => {
                           const counts = {};
-                          pokemon.forEach(p => { const t = p["Type 1"]; counts[t] = (counts[t]||0)+1; });
-                          const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+                          pokemon.forEach(p => { const t = p["Type 1"]; counts[t] = (counts[t] || 0) + 1; });
+                          const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
                           const maxCount = sorted[0]?.[1] || 1;
                           return sorted.map(([type, count]) => (
                             <div key={type} className="bar-row">
                               <span className="bar-label">{type}</span>
-                              <div className="bar-container"><div className="bar" style={{ width:`${(count/maxCount)*100}%` }}></div></div>
+                              <div className="bar-container"><div className="bar" style={{ width: `${(count / maxCount) * 100}%` }}></div></div>
                               <span className="bar-value">{count}</span>
                             </div>
                           ));
@@ -1230,24 +1543,24 @@ function App() {
                     </div>
 
                     {/* === SECTION: Deep Analysis === */}
-                    <div className="charts-section-title" style={{ gridColumn:'1 / -1' }}>
-                      <h3 style={{ margin:0, fontSize:'1.4rem', fontWeight:700, color:'#1e293b', display:'flex', alignItems:'center', gap:'10px' }}>
-                        <span style={{ width:4, height:22, background:'linear-gradient(180deg,#6366f1,#818cf8)', borderRadius:2, display:'inline-block' }}></span>
+                    <div className="charts-section-title" style={{ gridColumn: '1 / -1' }}>
+                      <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ width: 4, height: 22, background: 'linear-gradient(180deg,#6366f1,#818cf8)', borderRadius: 2, display: 'inline-block' }}></span>
                         Deep Analysis
                       </h3>
-                      <p style={{ margin:'4px 0 0 14px', color:'#94a3b8', fontSize:'0.82rem' }}>Advanced statistical visualizations</p>
+                      <p style={{ margin: '4px 0 0 14px', color: '#94a3b8', fontSize: '0.82rem' }}>Advanced statistical visualizations</p>
                     </div>
 
                     {/* Stat Distribution Histograms */}
-                    <div className="chart-card" style={{ gridColumn:'1 / -1' }}>
+                    <div className="chart-card" style={{ gridColumn: '1 / -1' }}>
                       <h3>Pokémon Stat Distributions</h3>
-                      <p style={{ color:'#64748b', fontSize:'0.9rem', marginBottom:'20px' }}>Frequency distribution of each base stat</p>
-                      <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:'20px' }}>
+                      <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '20px' }}>Frequency distribution of each base stat</p>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
                         {(() => {
                           const statsInfo = [
-                            { key:"HP", color:"#8AC926" }, { key:"Attack", color:"#FF595E" },
-                            { key:"Defense", color:"#6A4C93" }, { key:"Sp. Atk", color:"#FFCA3A" },
-                            { key:"Sp. Def", color:"#4D96FF" }, { key:"Speed", color:"#1982C4" }
+                            { key: "HP", color: "#8AC926" }, { key: "Attack", color: "#FF595E" },
+                            { key: "Defense", color: "#6A4C93" }, { key: "Sp. Atk", color: "#FFCA3A" },
+                            { key: "Sp. Def", color: "#4D96FF" }, { key: "Speed", color: "#1982C4" }
                           ];
                           return statsInfo.map(({ key, color }) => {
                             const vals = pokemon.map(p => Number(p[key]) || 0);
@@ -1259,17 +1572,17 @@ function App() {
                             const svgW = 320; const svgH = 160; const pad = 40; const chartW = svgW - pad - 10; const chartH = svgH - pad - 10;
                             return (
                               <div key={key}>
-                                <h4 style={{ textAlign:'center', margin:'0 0 8px', fontSize:'0.95rem', color:'#1e293b' }}>{key} Distribution</h4>
-                                <svg viewBox={`0 0 ${svgW} ${svgH}`} style={{ width:'100%', maxWidth:'400px', display:'block', margin:'0 auto' }}>
+                                <h4 style={{ textAlign: 'center', margin: '0 0 8px', fontSize: '0.95rem', color: '#1e293b' }}>{key} Distribution</h4>
+                                <svg viewBox={`0 0 ${svgW} ${svgH}`} style={{ width: '100%', maxWidth: '400px', display: 'block', margin: '0 auto' }}>
                                   {/* Y axis */}
-                                  <line x1={pad} y1={5} x2={pad} y2={svgH - pad} stroke="#cbd5e1" strokeWidth="1"/>
+                                  <line x1={pad} y1={5} x2={pad} y2={svgH - pad} stroke="#cbd5e1" strokeWidth="1" />
                                   {/* X axis */}
-                                  <line x1={pad} y1={svgH - pad} x2={svgW - 5} y2={svgH - pad} stroke="#cbd5e1" strokeWidth="1"/>
+                                  <line x1={pad} y1={svgH - pad} x2={svgW - 5} y2={svgH - pad} stroke="#cbd5e1" strokeWidth="1" />
                                   {/* Y labels */}
                                   {[0, 0.25, 0.5, 0.75, 1].map(f => (
                                     <g key={f}>
                                       <text x={pad - 5} y={svgH - pad - f * chartH + 4} textAnchor="end" fontSize="9" fill="#94a3b8">{Math.round(maxCount * f)}</text>
-                                      <line x1={pad} y1={svgH - pad - f * chartH} x2={svgW - 5} y2={svgH - pad - f * chartH} stroke="#e2e8f0" strokeWidth="0.5"/>
+                                      <line x1={pad} y1={svgH - pad - f * chartH} x2={svgW - 5} y2={svgH - pad - f * chartH} stroke="#e2e8f0" strokeWidth="0.5" />
                                     </g>
                                   ))}
                                   {/* X labels */}
@@ -1280,7 +1593,7 @@ function App() {
                                   {bins.map((count, i) => {
                                     const barW = chartW / nBins;
                                     const barH = maxCount > 0 ? (count / maxCount) * chartH : 0;
-                                    return <rect key={i} x={pad + i * barW} y={svgH - pad - barH} width={barW - 1} height={barH} fill={color} opacity="0.85" rx="1"/>;
+                                    return <rect key={i} x={pad + i * barW} y={svgH - pad - barH} width={barW - 1} height={barH} fill={color} opacity="0.85" rx="1" />;
                                   })}
                                   <text x={svgW / 2} y={svgH - 2} textAnchor="middle" fontSize="9" fill="#64748b">{key}</text>
                                   <text x={12} y={svgH / 2 - pad / 2} textAnchor="middle" fontSize="9" fill="#64748b" transform={`rotate(-90, 12, ${svgH / 2 - pad / 2})`}>Count</text>
@@ -1293,14 +1606,14 @@ function App() {
                     </div>
 
                     {/* 8. Rolling Mean Line Chart with Tooltip */}
-                    <div className="chart-card" style={{ gridColumn:'1 / -1' }}>
+                    <div className="chart-card" style={{ gridColumn: '1 / -1' }}>
                       <h3>How Pokémon Power Evolves Along the Pokédex</h3>
-                      <p style={{ color:'#64748b', fontSize:'0.9rem', marginBottom:'16px' }}>Rolling mean (window = 30) of battle stats ordered by Pokédex index. Hover to inspect values.</p>
+                      <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '16px' }}>Rolling mean (window = 30) of battle stats ordered by Pokédex index. Hover to inspect values.</p>
                       {(() => {
                         const sorted = [...pokemon].sort((a, b) => (Number(a["#"]) || 0) - (Number(b["#"]) || 0));
                         const statsLine = [
-                          { key:"Attack", color:"#FF595E" }, { key:"Defense", color:"#6A4C93" },
-                          { key:"Sp. Atk", color:"#FFCA3A" }, { key:"Speed", color:"#1982C4" }
+                          { key: "Attack", color: "#FF595E" }, { key: "Defense", color: "#6A4C93" },
+                          { key: "Sp. Atk", color: "#FFCA3A" }, { key: "Speed", color: "#1982C4" }
                         ];
                         const win = 30;
                         const rollingData = {};
@@ -1324,34 +1637,34 @@ function App() {
                         const toY = (v) => padT + chartH - ((v - minY) / (maxY - minY)) * chartH;
                         return (
                           <div>
-                            <div style={{ position:'relative' }}>
-                              <svg viewBox={`0 0 ${svgW} ${svgH}`} style={{ width:'100%' }} preserveAspectRatio="xMidYMid meet"
+                            <div style={{ position: 'relative' }}>
+                              <svg viewBox={`0 0 ${svgW} ${svgH}`} style={{ width: '100%' }} preserveAspectRatio="xMidYMid meet"
                                 onMouseMove={(e) => {
                                   const svg = e.currentTarget;
                                   const rect = svg.getBoundingClientRect();
                                   const mouseX = ((e.clientX - rect.left) / rect.width) * svgW;
                                   const idx = Math.round(((mouseX - padL) / chartW) * (n - 1));
-                                  if (idx < 0 || idx >= n) { svg.dataset.tooltipIdx = ''; svg.parentElement.querySelector('.line-tooltip')?.setAttribute('style','display:none'); return; }
+                                  if (idx < 0 || idx >= n) { svg.dataset.tooltipIdx = ''; svg.parentElement.querySelector('.line-tooltip')?.setAttribute('style', 'display:none'); return; }
                                   const tip = svg.parentElement.querySelector('.line-tooltip');
                                   const crosshair = svg.querySelector('.crosshair-line');
-                                  if (crosshair) { crosshair.setAttribute('x1', toX(idx)); crosshair.setAttribute('x2', toX(idx)); crosshair.setAttribute('style',''); }
+                                  if (crosshair) { crosshair.setAttribute('x1', toX(idx)); crosshair.setAttribute('x2', toX(idx)); crosshair.setAttribute('style', ''); }
                                   if (tip) {
                                     const pctX = ((e.clientX - rect.left) / rect.width) * 100;
                                     const flipLeft = pctX > 75;
                                     tip.innerHTML = `<div style="font-weight:700;margin-bottom:4px">Pokédex #${sorted[idx]?.["#"] || idx}</div>` +
                                       statsLine.map(({ key, color }) => `<div style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block"></span>${key}: <strong>${rollingData[key][idx].toFixed(1)}</strong></div>`).join('');
-                                    tip.setAttribute('style', `display:block;position:absolute;top:10px;${flipLeft ? 'right' : 'left'}:${flipLeft ? (100-pctX+2) : (pctX+2)}%;background:rgba(15,23,42,0.9);color:white;padding:10px 14px;border-radius:10px;font-size:0.78rem;pointer-events:none;z-index:10;line-height:1.6;backdrop-filter:blur(8px)`);
+                                    tip.setAttribute('style', `display:block;position:absolute;top:10px;${flipLeft ? 'right' : 'left'}:${flipLeft ? (100 - pctX + 2) : (pctX + 2)}%;background:rgba(15,23,42,0.9);color:white;padding:10px 14px;border-radius:10px;font-size:0.78rem;pointer-events:none;z-index:10;line-height:1.6;backdrop-filter:blur(8px)`);
                                   }
                                   statsLine.forEach(({ key }) => {
-                                    const dot = svg.querySelector(`.dot-${key.replace(/\.\s/g,'')}`);
-                                    if (dot) { dot.setAttribute('cx', toX(idx)); dot.setAttribute('cy', toY(rollingData[key][idx])); dot.setAttribute('style',''); }
+                                    const dot = svg.querySelector(`.dot-${key.replace(/\.\s/g, '')}`);
+                                    if (dot) { dot.setAttribute('cx', toX(idx)); dot.setAttribute('cy', toY(rollingData[key][idx])); dot.setAttribute('style', ''); }
                                   });
                                 }}
                                 onMouseLeave={(e) => {
                                   const svg = e.currentTarget;
-                                  svg.querySelector('.crosshair-line')?.setAttribute('style','display:none');
-                                  svg.parentElement.querySelector('.line-tooltip')?.setAttribute('style','display:none');
-                                  statsLine.forEach(({ key }) => { svg.querySelector(`.dot-${key.replace(/\.\s/g,'')}`)?.setAttribute('style','display:none'); });
+                                  svg.querySelector('.crosshair-line')?.setAttribute('style', 'display:none');
+                                  svg.parentElement.querySelector('.line-tooltip')?.setAttribute('style', 'display:none');
+                                  statsLine.forEach(({ key }) => { svg.querySelector(`.dot-${key.replace(/\.\s/g, '')}`)?.setAttribute('style', 'display:none'); });
                                 }}
                               >
                                 {/* Grid lines */}
@@ -1359,7 +1672,7 @@ function App() {
                                   const v = minY + (i / 5) * (maxY - minY);
                                   return (
                                     <g key={i}>
-                                      <line x1={padL} y1={toY(v)} x2={svgW - padR} y2={toY(v)} stroke="#e2e8f0" strokeWidth="0.5"/>
+                                      <line x1={padL} y1={toY(v)} x2={svgW - padR} y2={toY(v)} stroke="#e2e8f0" strokeWidth="0.5" />
                                       <text x={padL - 5} y={toY(v) + 3} textAnchor="end" fontSize="10" fill="#94a3b8">{Math.round(v)}</text>
                                     </g>
                                   );
@@ -1370,22 +1683,22 @@ function App() {
                                     points={rollingData[key].map((v, i) => `${toX(i)},${toY(v)}`).join(' ')} />
                                 ))}
                                 {/* Crosshair */}
-                                <line className="crosshair-line" x1={0} y1={padT} x2={0} y2={svgH - padB} stroke="#6366f1" strokeWidth="1" strokeDasharray="4,3" style={{ display:'none' }}/>
+                                <line className="crosshair-line" x1={0} y1={padT} x2={0} y2={svgH - padB} stroke="#6366f1" strokeWidth="1" strokeDasharray="4,3" style={{ display: 'none' }} />
                                 {/* Hover dots */}
                                 {statsLine.map(({ key, color }) => (
-                                  <circle key={`dot-${key}`} className={`dot-${key.replace(/\.\s/g,'')}`} cx={0} cy={0} r="4" fill={color} stroke="white" strokeWidth="2" style={{ display:'none' }}/>
+                                  <circle key={`dot-${key}`} className={`dot-${key.replace(/\.\s/g, '')}`} cx={0} cy={0} r="4" fill={color} stroke="white" strokeWidth="2" style={{ display: 'none' }} />
                                 ))}
                                 {/* Axis labels */}
                                 <text x={svgW / 2} y={svgH - 3} textAnchor="middle" fontSize="11" fill="#64748b">Pokédex Index</text>
                                 <text x={15} y={svgH / 2} textAnchor="middle" fontSize="11" fill="#64748b" transform={`rotate(-90,15,${svgH / 2})`}>Rolling Mean</text>
                               </svg>
-                              <div className="line-tooltip" style={{ display:'none' }}></div>
+                              <div className="line-tooltip" style={{ display: 'none' }}></div>
                             </div>
                             {/* Legend */}
-                            <div style={{ display:'flex', justifyContent:'center', gap:'24px', marginTop:'12px', flexWrap:'wrap' }}>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '12px', flexWrap: 'wrap' }}>
                               {statsLine.map(({ key, color }) => (
-                                <span key={key} style={{ display:'flex', alignItems:'center', gap:'6px', fontSize:'0.85rem' }}>
-                                  <span style={{ width:20, height:3, background:color, display:'inline-block', borderRadius:2 }}></span>{key}
+                                <span key={key} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}>
+                                  <span style={{ width: 20, height: 3, background: color, display: 'inline-block', borderRadius: 2 }}></span>{key}
                                 </span>
                               ))}
                             </div>
@@ -1395,13 +1708,13 @@ function App() {
                     </div>
 
                     {/* 9. Radar Charts per Type */}
-                    <div className="chart-card" style={{ gridColumn:'1 / -1' }}>
+                    <div className="chart-card" style={{ gridColumn: '1 / -1' }}>
                       <h3>Average Pokémon Stats per Type</h3>
-                      <p style={{ color:'#64748b', fontSize:'0.9rem', marginBottom:'20px' }}>Radar chart showing the stat profile of each primary type</p>
-                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:'16px' }}>
+                      <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '20px' }}>Radar chart showing the stat profile of each primary type</p>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
                         {(() => {
-                          const typeColors = {"Grass":"#78C850","Fire":"#F08030","Water":"#6890F0","Electric":"#F8D030","Psychic":"#F85888","Ice":"#98D8D8","Dragon":"#7038F8","Dark":"#705848","Fairy":"#EE99AC","Normal":"#A8A878","Fighting":"#C03028","Flying":"#A890F0","Poison":"#A040A0","Ground":"#E0C068","Rock":"#B8A038","Bug":"#A8B820","Ghost":"#705898","Steel":"#B8B8D0"};
-                          const stats = ["HP","Attack","Defense","Sp. Atk","Sp. Def","Speed"];
+                          const typeColors = { "Grass": "#78C850", "Fire": "#F08030", "Water": "#6890F0", "Electric": "#F8D030", "Psychic": "#F85888", "Ice": "#98D8D8", "Dragon": "#7038F8", "Dark": "#705848", "Fairy": "#EE99AC", "Normal": "#A8A878", "Fighting": "#C03028", "Flying": "#A890F0", "Poison": "#A040A0", "Ground": "#E0C068", "Rock": "#B8A038", "Bug": "#A8B820", "Ghost": "#705898", "Steel": "#B8B8D0" };
+                          const stats = ["HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed"];
                           const typeSums = {}; const typeCounts = {};
                           pokemon.forEach(p => {
                             const t = p["Type 1"]; if (!typeSums[t]) { typeSums[t] = {}; stats.forEach(s => typeSums[t][s] = 0); typeCounts[t] = 0; }
@@ -1421,18 +1734,18 @@ function App() {
                             const polyStr = pts.map(p => p.join(',')).join(' ');
                             const color = typeColors[type] || '#999';
                             return (
-                              <div key={type} style={{ textAlign:'center' }}>
-                                <div style={{ color, fontWeight:700, fontSize:'0.9rem', marginBottom:'4px' }}>{type}</div>
-                                <svg viewBox="0 0 200 200" style={{ width:'100%', maxWidth:'200px' }}>
+                              <div key={type} style={{ textAlign: 'center' }}>
+                                <div style={{ color, fontWeight: 700, fontSize: '0.9rem', marginBottom: '4px' }}>{type}</div>
+                                <svg viewBox="0 0 200 200" style={{ width: '100%', maxWidth: '200px' }}>
                                   {/* Guide rings */}
                                   {[0.25, 0.5, 0.75, 1].map(f => (
                                     <polygon key={f} fill="none" stroke="#e2e8f0" strokeWidth="0.5"
                                       points={stats.map((_, i) => { const a = i * angleStep - Math.PI / 2; return `${cx + f * r * Math.cos(a)},${cy + f * r * Math.sin(a)}`; }).join(' ')} />
                                   ))}
                                   {/* Axis lines */}
-                                  {stats.map((_, i) => { const a = i * angleStep - Math.PI / 2; return <line key={i} x1={cx} y1={cy} x2={cx + r * Math.cos(a)} y2={cy + r * Math.sin(a)} stroke="#e2e8f0" strokeWidth="0.5"/>; })}
+                                  {stats.map((_, i) => { const a = i * angleStep - Math.PI / 2; return <line key={i} x1={cx} y1={cy} x2={cx + r * Math.cos(a)} y2={cy + r * Math.sin(a)} stroke="#e2e8f0" strokeWidth="0.5" />; })}
                                   {/* Data polygon */}
-                                  <polygon points={polyStr} fill={color} fillOpacity="0.3" stroke={color} strokeWidth="2"/>
+                                  <polygon points={polyStr} fill={color} fillOpacity="0.3" stroke={color} strokeWidth="2" />
                                   {/* Labels */}
                                   {stats.map((s, i) => {
                                     const a = i * angleStep - Math.PI / 2;
@@ -1454,10 +1767,12 @@ function App() {
             {/* --- SPIRIT QUIZ PAGE --- */}
             {activePage === "spirit" && (
               <section className="spirit-quiz">
+                {!spiritResult && (
                 <div className="page-header">
-                  <h2>Spirit Pokémon</h2>
+                  <h2 style={{ color: "#4338ca" }}>Spirit Pokémon</h2>
                   <p>Discover your own match or meet the team behind this project!</p>
                 </div>
+                )}
 
                 {/* RESULT SHOWS FIRST - ABOVE EVERYTHING */}
                 {spiritResult && (
@@ -1473,40 +1788,40 @@ function App() {
                     alignItems: "center"
                   }}>
                     <h3 style={{ margin: "0 0 6px", fontSize: "1.3rem", color: "rgba(255,255,255,0.9)" }}>Your Spirit Pokémon</h3>
-                    
+
                     {/* Cluster Badge */}
                     {spiritResult.cluster && (
                       <span style={{
-                        display:'inline-block', padding:'5px 16px', borderRadius:'16px', marginBottom:'20px',
-                        background: spiritResult.cluster.color, fontSize:'0.85rem', fontWeight:700,
-                        boxShadow:'0 4px 15px rgba(0,0,0,0.2)'
+                        display: 'inline-block', padding: '5px 16px', borderRadius: '16px', marginBottom: '20px',
+                        background: spiritResult.cluster.color, fontSize: '0.85rem', fontWeight: 700,
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
                       }}>
                         {spiritResult.cluster.emoji} Cluster {spiritResult.cluster.id} — {spiritResult.cluster.name}
                       </span>
                     )}
 
                     {/* Main content: left (image+info) | right (radar+stats) */}
-                    <div style={{ display:'flex', gap:'32px', alignItems:'center', justifyContent:'center', flexWrap:'wrap', width:'100%' }}>
-                      
+                    <div style={{ display: 'flex', gap: '32px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', width: '100%' }}>
+
                       {/* Left: image + name + desc */}
-                      <div style={{ textAlign:'center', flex:'0 0 auto' }}>
+                      <div style={{ textAlign: 'center', flex: '0 0 auto' }}>
                         <img src={spiritResult.img} alt={spiritResult.name} style={{ width: "140px", background: "white", borderRadius: "20px", padding: "12px" }} />
                         <div style={{ fontSize: "1.6rem", fontWeight: 800, marginTop: "10px" }}>{spiritResult.name}</div>
-                        <div style={{ display:'flex', gap:'6px', justifyContent:'center', marginTop:'6px' }}>
-                          {spiritResult.type1 && <span style={{ padding:'3px 12px', borderRadius:'10px', background:'rgba(255,255,255,0.2)', fontSize:'0.8rem', fontWeight:600 }}>{spiritResult.type1}</span>}
-                          {spiritResult.type2 && <span style={{ padding:'3px 12px', borderRadius:'10px', background:'rgba(255,255,255,0.2)', fontSize:'0.8rem', fontWeight:600 }}>{spiritResult.type2}</span>}
+                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', marginTop: '6px' }}>
+                          {spiritResult.type1 && <span style={{ padding: '3px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.2)', fontSize: '0.8rem', fontWeight: 600 }}>{spiritResult.type1}</span>}
+                          {spiritResult.type2 && <span style={{ padding: '3px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.2)', fontSize: '0.8rem', fontWeight: 600 }}>{spiritResult.type2}</span>}
                         </div>
-                        <div style={{ padding:'12px 16px', background:'rgba(255,255,255,0.1)', borderRadius:'12px', marginTop:'12px', maxWidth:'260px' }}>
-                          <p style={{ margin:0, fontSize:'0.8rem', lineHeight:1.6, opacity:0.9 }}>{spiritResult.desc}</p>
+                        <div style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.1)', borderRadius: '12px', marginTop: '12px', maxWidth: '260px' }}>
+                          <p style={{ margin: 0, fontSize: '0.8rem', lineHeight: 1.6, opacity: 0.9 }}>{spiritResult.desc}</p>
                         </div>
                       </div>
 
                       {/* Right: radar + stats */}
                       {spiritResult.pokeStats && (
-                        <div style={{ flex:1, minWidth:'300px', display:'flex', flexDirection:'column', alignItems:'center', gap:'8px' }}>
-                          <svg viewBox="0 0 260 240" style={{ width:'240px' }}>
+                        <div style={{ flex: 1, minWidth: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                          <svg viewBox="0 0 260 240" style={{ width: '240px' }}>
                             {(() => {
-                              const labels = ["HP","Atk","Def","SpA","SpD","Spd"];
+                              const labels = ["HP", "Atk", "Def", "SpA", "SpD", "Spd"];
                               const cx = 130, cy = 115, r = 82;
                               const angles = labels.map((_, i) => (Math.PI * 2 * i / 6) - Math.PI / 2);
                               const maxStat = 160;
@@ -1526,12 +1841,12 @@ function App() {
                                   ))}
                                   {angles.map((a, i) => (
                                     <g key={i}>
-                                      <line x1={cx} y1={cy} x2={cx + r * Math.cos(a)} y2={cy + r * Math.sin(a)} stroke="rgba(255,255,255,0.15)" strokeWidth="1"/>
+                                      <line x1={cx} y1={cy} x2={cx + r * Math.cos(a)} y2={cy + r * Math.sin(a)} stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
                                       <text x={cx + (r + 16) * Math.cos(a)} y={cy + (r + 16) * Math.sin(a)} textAnchor="middle" dominantBaseline="middle" fontSize="11" fill="rgba(255,255,255,0.8)" fontWeight="600">{labels[i]}</text>
                                     </g>
                                   ))}
-                                  <polygon points={userPoints} fill="rgba(255,202,58,0.25)" stroke="#FFCA3A" strokeWidth="2"/>
-                                  <polygon points={pokePoints} fill="rgba(99,102,241,0.3)" stroke="white" strokeWidth="2.5"/>
+                                  <polygon points={userPoints} fill="rgba(255,202,58,0.25)" stroke="#FFCA3A" strokeWidth="2" />
+                                  <polygon points={pokePoints} fill="rgba(99,102,241,0.3)" stroke="white" strokeWidth="2.5" />
                                   <text x={130} y={232} textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.6)">
                                     <tspan fill="#FFCA3A">■</tspan> You &nbsp; <tspan fill="white">■</tspan> {spiritResult.name}
                                   </text>
@@ -1539,14 +1854,14 @@ function App() {
                               );
                             })()}
                           </svg>
-                          <div style={{ width:'100%', maxWidth:'340px' }}>
-                            {["HP","Attack","Defense","Sp. Atk","Sp. Def","Speed"].map((stat, i) => (
-                              <div key={stat} style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'5px' }}>
-                                <span style={{ width:'52px', fontSize:'0.75rem', textAlign:'right', opacity:0.8 }}>{stat}</span>
-                                <div style={{ flex:1, height:'8px', background:'rgba(255,255,255,0.15)', borderRadius:'4px', overflow:'hidden' }}>
-                                  <div style={{ width:`${(spiritResult.pokeStats[i]/160)*100}%`, height:'100%', background:'linear-gradient(90deg, rgba(255,255,255,0.5), white)', borderRadius:'4px' }}/>
+                          <div style={{ width: '100%', maxWidth: '340px' }}>
+                            {["HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed"].map((stat, i) => (
+                              <div key={stat} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
+                                <span style={{ width: '52px', fontSize: '0.75rem', textAlign: 'right', opacity: 0.8 }}>{stat}</span>
+                                <div style={{ flex: 1, height: '8px', background: 'rgba(255,255,255,0.15)', borderRadius: '4px', overflow: 'hidden' }}>
+                                  <div style={{ width: `${(spiritResult.pokeStats[i] / 160) * 100}%`, height: '100%', background: 'linear-gradient(90deg, rgba(255,255,255,0.5), white)', borderRadius: '4px' }} />
                                 </div>
-                                <span style={{ width:'28px', fontSize:'0.75rem', fontWeight:700 }}>{spiritResult.pokeStats[i]}</span>
+                                <span style={{ width: '28px', fontSize: '0.75rem', fontWeight: 700 }}>{spiritResult.pokeStats[i]}</span>
                               </div>
                             ))}
                           </div>
@@ -1555,31 +1870,33 @@ function App() {
                     </div>
 
                     <button style={{
-                      marginTop:'20px', padding: "12px 32px", borderRadius: "14px", border: "none",
+                      marginTop: '20px', padding: "12px 32px", borderRadius: "14px", border: "none",
                       background: "white", color: "#667eea", fontSize: "0.95rem",
                       fontWeight: 700, cursor: "pointer", transition: "transform 0.2s"
                     }} onClick={() => { setQuizStep(1); setQuizAnswers([]); setSpiritResult(null); }}>Try Again</button>
                   </div>
                 )}
 
-                {/* QUIZ SECTION - BEAUTIFUL HEADER */}
+                {/* QUIZ SECTION - BEAUTIFUL HEADER (hidden when result is showing) */}
+                {!spiritResult && (
                 <div style={{
-                  background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                  background: "linear-gradient(135deg, #1e1b4b 0%, #4338ca 50%, #6366f1 100%)",
                   borderRadius: "24px",
                   padding: "40px",
                   textAlign: "center",
                   color: "white",
                   marginBottom: "40px",
-                  boxShadow: "0 20px 60px rgba(245, 87, 108, 0.3)"
+                  boxShadow: "0 20px 60px rgba(99, 102, 241, 0.3)",
+                  border: "1px solid rgba(255,255,255,0.1)"
                 }}>
-                  <h3 style={{ margin: "0 0 12px", fontSize: "1.6rem" }}>Find Your Spirit Pokémon</h3>
-                  <p style={{ margin: "0 0 24px", opacity: 0.9, textAlign: "center" }}>Analyze your personality traits against our dataset to find your match.</p>
+                  <h3 style={{ margin: "0 0 12px", fontSize: "1.6rem" }}>Find Your Spirit Pokémon ⚔️</h3>
+                  <div style={{ margin: "0 0 24px", color: "white", textAlign: "center", width: "100%" }}>Analyze your personality traits against our dataset to find your match.</div>
                   <button style={{
                     padding: "18px 48px",
                     borderRadius: "20px",
                     border: "none",
                     background: "white",
-                    color: "#f5576c",
+                    color: "#4338ca",
                     fontSize: "1.2rem",
                     fontWeight: 800,
                     cursor: "pointer",
@@ -1589,6 +1906,7 @@ function App() {
                     Start Quiz
                   </button>
                 </div>
+                )}
 
                 {/* TEAM INDIVIDUAL CARDS SECTION */}
                 <div className="group-spirit-section">
@@ -1646,9 +1964,9 @@ function App() {
                     <div className="quiz-content">
                       {quizStep <= quizQuestions.length ? (
                         <>
-                          <div style={{ marginBottom:'8px', fontSize:'0.85rem', color:'#94a3b8' }}>Question {quizStep} of {quizQuestions.length}</div>
-                          <div style={{ width:'100%', height:'4px', background:'#e2e8f0', borderRadius:'2px', marginBottom:'20px' }}>
-                            <div style={{ width:`${(quizStep/quizQuestions.length)*100}%`, height:'100%', background:'linear-gradient(90deg,#6366f1,#818cf8)', borderRadius:'2px', transition:'width 0.3s ease' }}/>
+                          <div style={{ marginBottom: '8px', fontSize: '0.85rem', color: '#94a3b8' }}>Question {quizStep} of {quizQuestions.length}</div>
+                          <div style={{ width: '100%', height: '4px', background: '#e2e8f0', borderRadius: '2px', marginBottom: '20px' }}>
+                            <div style={{ width: `${(quizStep / quizQuestions.length) * 100}%`, height: '100%', background: 'linear-gradient(90deg,#6366f1,#818cf8)', borderRadius: '2px', transition: 'width 0.3s ease' }} />
                           </div>
                           <h3>{quizQuestions[quizStep - 1].question}</h3>
                           {quizQuestions[quizStep - 1].options.map((opt) => (
@@ -1656,20 +1974,16 @@ function App() {
                               const newAnswers = [...quizAnswers, opt.weights];
                               if (quizStep === quizQuestions.length) {
                                 // Calculate user profile from accumulated weights
-                                const userProfile = [0,0,0,0,0,0];
+                                const userProfile = [0, 0, 0, 0, 0, 0];
                                 newAnswers.forEach(w => w.forEach((v, i) => userProfile[i] += v));
                                 // Normalize to 0-150 range to match stat scale
                                 const maxW = Math.max(...userProfile);
                                 const normalized = userProfile.map(v => (v / maxW) * 150);
-                                
-                                // Find closest cluster (euclidean distance to centroids)
-                                let bestCluster = 0;
-                                let bestDist = Infinity;
-                                clusterProfiles.forEach(cp => {
-                                  const dist = Math.sqrt(cp.avgStats.reduce((sum, s, i) => sum + Math.pow(s - normalized[i], 2), 0));
-                                  if (dist < bestDist) { bestDist = dist; bestCluster = cp.id; }
-                                });
-                                
+
+                                // Best cluster = argmax of accumulated quiz votes
+                                // Each quiz option directly votes for each cluster — most votes wins
+                                const bestCluster = userProfile.indexOf(Math.max(...userProfile));
+
                                 // Find best Pokémon in that cluster
                                 const clusterPokemon = mlData.pca.filter(p => p.cluster === bestCluster);
                                 let bestMatch = null;
@@ -1677,15 +1991,15 @@ function App() {
                                 clusterPokemon.forEach(cp => {
                                   const pData = pokemon.find(p => p.Name === cp.name);
                                   if (!pData) return;
-                                  const pStats = [Number(pData.HP)||0, Number(pData.Attack)||0, Number(pData.Defense)||0, Number(pData["Sp. Atk"])||0, Number(pData["Sp. Def"])||0, Number(pData.Speed)||0];
+                                  const pStats = [Number(pData.HP) || 0, Number(pData.Attack) || 0, Number(pData.Defense) || 0, Number(pData["Sp. Atk"]) || 0, Number(pData["Sp. Def"]) || 0, Number(pData.Speed) || 0];
                                   const dist = Math.sqrt(pStats.reduce((sum, s, i) => sum + Math.pow(s - normalized[i], 2), 0));
                                   if (dist < bestPokeDist) { bestPokeDist = dist; bestMatch = pData; }
                                 });
-                                
+
                                 if (!bestMatch) bestMatch = pokemon[Math.floor(Math.random() * pokemon.length)];
                                 const profile = clusterProfiles[bestCluster];
-                                const matchStats = [Number(bestMatch.HP)||0, Number(bestMatch.Attack)||0, Number(bestMatch.Defense)||0, Number(bestMatch["Sp. Atk"])||0, Number(bestMatch["Sp. Def"])||0, Number(bestMatch.Speed)||0];
-                                
+                                const matchStats = [Number(bestMatch.HP) || 0, Number(bestMatch.Attack) || 0, Number(bestMatch.Defense) || 0, Number(bestMatch["Sp. Atk"]) || 0, Number(bestMatch["Sp. Def"]) || 0, Number(bestMatch.Speed) || 0];
+
                                 setSpiritResult({
                                   name: bestMatch.Name,
                                   img: getPokemonImageUrl(bestMatch),

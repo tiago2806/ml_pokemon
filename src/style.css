@@ -2803,3 +2803,450 @@ main {
     flex-direction: column;
   }
 }
+
+/* =========================================
+   CLUSTER PROFILE CARDS
+========================================= */
+.cluster-profiles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+@media (max-width: 900px) {
+  .cluster-profiles-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .cluster-profiles-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cluster-profile-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  text-align: left;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.cluster-profile-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+}
+
+.cp-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cp-emoji {
+  font-size: 2rem;
+}
+
+.cp-name {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.cp-count {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.cp-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.cp-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cp-stat-label {
+  width: 32px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-align: right;
+}
+
+.cp-stat-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.cp-stat-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.cp-stat-val {
+  width: 28px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #475569;
+  text-align: right;
+}
+
+.cp-pokemon-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.cp-pokemon-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.cp-pokemon-mini img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #f8fafc;
+  padding: 3px;
+  transition: transform 0.2s;
+}
+
+.cp-pokemon-mini img:hover {
+  transform: scale(1.2);
+}
+
+.cp-pokemon-mini span {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  font-weight: 600;
+  max-width: 60px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* =========================================
+   INTERACTIVE PCA SCATTER PLOT
+========================================= */
+.pca-interactive-svg {
+  background: #fafbfc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  cursor: crosshair;
+}
+
+.pca-interactive-svg circle {
+  transition: opacity 0.15s;
+}
+
+.pca-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.pca-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.pca-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* =========================================
+   CLUSTER DISTRIBUTION DONUT
+========================================= */
+.cluster-dist-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.cluster-donut-svg {
+  width: 200px;
+  height: 200px;
+  flex-shrink: 0;
+}
+
+.cluster-dist-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cluster-dist-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+}
+
+.dist-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dist-label {
+  min-width: 140px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.dist-count {
+  font-weight: 800;
+  color: #1e293b;
+  min-width: 30px;
+  text-align: right;
+}
+
+.dist-pct {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  min-width: 45px;
+  text-align: right;
+}
+
+/* =========================================
+   TYPE BREAKDOWN PER CLUSTER
+========================================= */
+.type-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .type-breakdown-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .type-breakdown-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.type-breakdown-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: left;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.tb-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+
+.tb-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tb-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tb-type {
+  width: 55px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #64748b;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.tb-bar-bg {
+  flex: 1;
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tb-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.tb-val {
+  width: 22px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #475569;
+  text-align: right;
+}
+
+/* =========================================
+   K-MEANS VS HIERARCHICAL COMPARISON
+========================================= */
+.comparison-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.88rem;
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: top;
+}
+
+.comparison-table th {
+  background: #f8fafc;
+  font-weight: 600;
+}
+
+.comparison-table tbody tr:hover {
+  background: #fafbfe;
+}
+
+.comparison-table tbody tr:last-child td {
+  border-bottom: none;
+  background: #f8fafc;
+  border-radius: 0 0 12px 12px;
+}
+
+.comp-label {
+  font-weight: 700;
+  color: #6366f1;
+  white-space: nowrap;
+  width: 120px;
+}
+
+.comp-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.comp-badge.kmeans {
+  background: #ede9fe;
+  color: #6366f1;
+}
+
+.comp-badge.hier {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.comp-yes {
+  display: inline-block;
+  background: #dcfce7;
+  color: #16a34a;
+  padding: 2px 10px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.comp-no {
+  display: inline-block;
+  background: #fef3c7;
+  color: #d97706;
+  padding: 2px 10px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.comparison-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+@media (max-width: 700px) {
+  .comparison-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+.comp-summary-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px;
+  text-align: left;
+}
+
+.comp-summary-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+.comp-summary-card strong {
+  font-size: 0.95rem;
+  color: #1e293b;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.comp-summary-card p {
+  font-size: 0.82rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+}
