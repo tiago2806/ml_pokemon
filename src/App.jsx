@@ -128,21 +128,16 @@ function App() {
   const [heroPokemons, setHeroPokemons] = useState([]); // Para as imagens aleatórias
   const [isFighting, setIsFighting] = useState(false);
 
-  const [currentTip, setCurrentTip] = useState(""); // Guarda a dica do dia
+  const [helperType, setHelperType] = useState("Fire"); // State para o Guia Rápido
 
-  // Lista de dicas (podes adicionar mais sobre ML e Clustering)
-  const mlTips = [
-    "Clustering insight: Pokémon with similar total stats often inhabit the same 'islands'.",
-    "Type Advantage: Double types (like Water/Flying) often have unique placement in our ML clusters.",
-    "Data Tip: Speed is often the deciding factor in our matchup predictor algorithm.",
-    "ML Concept: We used K-Means to group Pokémon by their combat DNA (Base Stats)."
-  ];
-
-  // Escolhe uma dica aleatória ao carregar
-  useEffect(() => {
-    const randomTip = mlTips[Math.floor(Math.random() * mlTips.length)];
-    setCurrentTip(randomTip);
-  }, []);
+  const typeAdvantages = {
+    Water: ["Fire", "Ground", "Rock"], Fire: ["Grass", "Bug", "Ice", "Steel"], Grass: ["Water", "Ground", "Rock"],
+    Electric: ["Water", "Flying"], Psychic: ["Fighting", "Poison"], Fighting: ["Normal", "Rock", "Steel", "Ice", "Dark"],
+    Ground: ["Fire", "Electric", "Poison", "Rock", "Steel"], Rock: ["Fire", "Ice", "Flying", "Bug"],
+    Ice: ["Grass", "Ground", "Flying", "Dragon"], Dragon: ["Dragon"], Fairy: ["Fighting", "Dragon", "Dark"],
+    Normal: [], Poison: ["Grass", "Fairy"], Flying: ["Grass", "Fighting", "Bug"], Bug: ["Grass", "Psychic", "Dark"], 
+    Ghost: ["Psychic", "Ghost"], Steel: ["Ice", "Rock", "Fairy"], Dark: ["Psychic", "Ghost"]
+  };
 
   // Filter states
   const [filterType, setFilterType] = useState("");
@@ -504,6 +499,10 @@ function App() {
             <button className="start-button" onClick={() => setShowHero(false)}>
               Get Started
             </button>
+            <div className="hero-credits" style={{ marginTop: '2.5rem', fontSize: '0.85rem', opacity: 0.7, textAlign: 'center', fontWeight: 300 }}>
+              <p style={{ margin: '4px 0' }}>Project made by Laura (20241783), Tiago (20241728) & Henrique (20241752)</p>
+              <p style={{ margin: '0' }}>Machine Learning II — Prof. Ivo Bernardo</p>
+            </div>
           </div>
         </div>
       )}
@@ -523,17 +522,42 @@ function App() {
                   <>
                     {/* Top Row: About Section Only - Arena moved to sticky bottom */}
                     {/* TOP DASHBOARD WIDGETS */}
-                    <div className="dashboard-widgets-container">
+                    <div className="dashboard-widgets-container" style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 35%) 1fr', gap: '24px', marginBottom: '30px', alignItems: 'stretch' }}>
                       {/* Left Column: Insights & Recent */}
-                      <div className="left-widgets">
-                        {/* Card 1: Tip of the Day */}
-                        <div className="info-card tip-card">
-                          <div className="card-icon">💡</div>
-                          <div className="card-content">
-                            <div className="tip-card-header">
-                              <h4>ML Insight</h4>
+                      <div className="left-widgets" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                        {/* Card 1: Type Matchup Helper */}
+                        <div className="info-card matchup-card" style={{ padding: '20px', background: 'linear-gradient(145deg, #ffffff, #f8fafc)', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', borderRadius: '16px' }}>
+                          <div className="card-content" style={{ width: '100%' }}>
+                            
+                            <div className="tip-card-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                              <div style={{ fontSize: '1.4rem', background: '#eff6ff', padding: '10px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.5)' }}>⚔️</div>
+                              <h4 style={{ fontSize: '1.25rem', color: '#1e293b', margin: 0, fontWeight: '700', letterSpacing: '-0.5px' }}>Type Matchups</h4>
                             </div>
-                            <p>{currentTip}</p>
+                            
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', background: '#f1f5f9', padding: '12px 14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                              <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Attack</span>
+                              <select 
+                                value={helperType} 
+                                onChange={(e) => setHelperType(e.target.value)}
+                                style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', fontWeight: '600', outline: 'none', backgroundColor: '#ffffff', cursor: 'pointer', color: '#1e293b', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+                              >
+                                {Object.keys(typeAdvantages).sort().map(t => <option key={t} value={t}>{t}</option>)}
+                              </select>
+                            </div>
+
+                            <div style={{ padding: '16px', borderRadius: '12px', background: '#ffffff', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+                              <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: '700', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ color: '#ef4444' }}>🔥</span> Super Effective Vs:
+                              </div>
+                              <div className="type-badges" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                {typeAdvantages[helperType]?.length > 0 
+                                  ? typeAdvantages[helperType].map(t => (
+                                      <span key={t} className={`type-badge ${t.toLowerCase()}`} style={{ margin: 0, padding: '6px 12px', fontSize: '0.85rem', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>{t}</span>
+                                    ))
+                                  : <span style={{ fontSize: '0.9rem', color: '#94a3b8', fontStyle: 'italic', padding: '4px 0' }}>None (Neutral Damage)</span>}
+                              </div>
+                            </div>
+
                           </div>
                         </div>
 
@@ -542,7 +566,7 @@ function App() {
                           <div className="card-icon">🔍</div>
                           <div className="card-content">
                             <div className="recent-card-header">
-                              <h4>Recent Explorations</h4>
+                              <h4 style={{ fontSize: '1.3rem', color: '#1e293b', margin: '0 0 10px 0' }}>Recent Explorations</h4>
                             </div>
                             <div className="recent-list">
                               {recentSearches.length > 0 ? (
@@ -560,7 +584,9 @@ function App() {
                                   </div>
                                 ))
                               ) : (
-                                <p className="no-recent">No recent searches yet.</p>
+                                <p className="no-recent" style={{ fontSize: '1.05rem', color: '#64748b', fontStyle: 'italic', padding: '15px 0', margin: 0 }}>
+                                  No recent searches yet.<br/><span style={{ fontSize: '0.9rem' }}>Search below to add Pokémon here!</span>
+                                </p>
                               )}
                             </div>
                           </div>
@@ -568,7 +594,7 @@ function App() {
                       </div>
 
                       {/* Right Column: BATTLE STADIUM WIDGET */}
-                      <div className="right-widget battle-stadium-section widget-mode">
+                      <div className="right-widget battle-stadium-section widget-mode" style={{ margin: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         <div className="stadium-header">
                           <h3>Battle Stadium ⚔️</h3>
                           <p>Drop two Pokémon here!</p>
@@ -877,7 +903,7 @@ function App() {
                     <div className="table-wrapper">
                       <table>
                         <thead>
-                          <tr><th>Image</th><th>#</th><th>Name</th><th>Type 1</th><th>Type 2</th><th>Total</th><th>HP</th><th>Attack</th><th>Defense</th><th>Speed</th></tr>
+                          <tr><th>Image</th><th>Name</th><th>Type 1</th><th>Type 2</th><th>Total</th><th>HP</th><th>Attack</th><th>Defense</th><th>Speed</th></tr>
                         </thead>
                         <tbody>
                           {pokemon.map((row, index) => {
@@ -891,7 +917,7 @@ function App() {
                                 style={{ cursor: 'grab' }}
                               >
                                 <td>{imgUrl && <img src={imgUrl} alt={row.Name} style={{ width: "40px", height: "40px", objectFit: "contain" }} />}</td>
-                                <td>{row["#"] || index + 1}</td><td>{row.Name}</td><td>{row["Type 1"]}</td><td>{row["Type 2"] || "—"}</td><td>{row.Total}</td><td>{row.HP}</td><td>{row.Attack}</td><td>{row.Defense}</td><td>{row.Speed}</td>
+                                <td>{row.Name}</td><td>{row["Type 1"]}</td><td>{row["Type 2"] || "—"}</td><td>{row.Total}</td><td>{row.HP}</td><td>{row.Attack}</td><td>{row.Defense}</td><td>{row.Speed}</td>
                               </tr>
                             );
                           })}
