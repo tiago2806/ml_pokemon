@@ -978,6 +978,12 @@ function App() {
                   >
                     Hierarchical
                   </button>
+                  <button
+                    className={activeClusterTab === "theory" ? "active" : ""}
+                    onClick={() => setActiveClusterTab("theory")}
+                  >
+                    Theory
+                  </button>
                 </div>
 
                 <div className="clusters-content-grid">
@@ -1239,21 +1245,109 @@ function App() {
 
                   {activeClusterTab === "hierarchical" && (
                     <>
+                      {/* === DENDROGRAM WITH GUIDE === */}
                       <div className="cluster-card centered-card full-width-card">
-                        {/* Hierarchical Clustering */}
-                        <h3>Hierarchical Clustering</h3>
-                        <p>Building a tree of clusters to show the relationships and distances between different groupings.</p>
+                        <h3>Hierarchical Clustering Dendrogram</h3>
+                        <p>Agglomerative clustering builds a tree of merges from the bottom up. The dendrogram below visualizes the entire merge history.</p>
 
-                        <div className="cluster-images-row" style={{ justifyContent: 'center' }}>
-                          <div className="cluster-img-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
-                            <h4>Dendrogram</h4>
-                            <img src="/cluster_img_6.png" alt="Dendrogram Graph" className="ml-img" style={{ maxWidth: '100%' }} />
-                            <p className="caption">The height of the vertical lines represents the distance between merged clusters.</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '24px', alignItems: 'start', width: '100%', maxWidth: '1000px' }}>
+                          <div className="cluster-img-container" style={{ margin: 0 }}>
+                            <img src="/cluster_img_6.png" alt="Dendrogram" className="ml-img" style={{ maxWidth: '100%', borderRadius: '16px', border: '1px solid #e2e8f0' }} />
+                          </div>
+                          <div style={{ background: 'linear-gradient(135deg, #f8fafc, #eef2ff)', borderRadius: '16px', padding: '20px', textAlign: 'left', border: '1px solid #e2e8f0' }}>
+                            <h4 style={{ margin: '0 0 14px', fontSize: '1rem', color: '#4338ca' }}>📖 How to Read It</h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.82rem', color: '#475569', lineHeight: 1.6 }}>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <span style={{ fontSize: '1rem' }}>📏</span>
+                                <span><strong>Y-axis (height)</strong> = distance between merged groups. Higher merges = more dissimilar clusters.</span>
+                              </div>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <span style={{ fontSize: '1rem' }}>🎨</span>
+                                <span><strong>Colors</strong> represent distinct subtrees. Each color is a major branch of similar Pokémon.</span>
+                              </div>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <span style={{ fontSize: '1rem' }}>✂️</span>
+                                <span><strong>Cutting horizontally</strong> at any height gives you a different number of clusters. Cut low = many clusters, cut high = few.</span>
+                              </div>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <span style={{ fontSize: '1rem' }}>🔍</span>
+                                <span><strong>Long vertical lines</strong> before a merge indicate well-separated clusters — natural groupings.</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
 
-                      {/* === K-MEANS VS HIERARCHICAL COMPARISON === */}
+                      {/* === SILHOUETTE FOR HIERARCHICAL === */}
+                      <div className="cluster-card centered-card full-width-card">
+                        <h3>Optimal K for Hierarchical Clustering</h3>
+                        <p>We use the Silhouette method to evaluate how well-separated the hierarchical clusters are at different values of K.</p>
+                        <div className="cluster-images-row" style={{ justifyContent: 'center' }}>
+                          <div className="cluster-img-container" style={{ maxWidth: '500px' }}>
+                            <h4>Silhouette Score (Hierarchical)</h4>
+                            <img src="/cluster_img_13.png" alt="Hierarchical Silhouette" className="ml-img" style={{ maxWidth: '100%', borderRadius: '16px', border: '1px solid #e2e8f0' }} />
+                            <p className="caption">The silhouette score decreases as K increases, suggesting simpler groupings (K=2 or K=3) work best for hierarchical.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                    </>
+                  )}
+
+                  {/* === THEORY TAB === */}
+                  {activeClusterTab === "theory" && (
+                    <>
+                      {/* === HOW THE ALGORITHMS WORK === */}
+                      <div className="cluster-card centered-card full-width-card">
+                        <h3>How Do Clustering Algorithms Work?</h3>
+                        <p>A visual walkthrough of the two unsupervised learning methods we applied to the Pokémon dataset.</p>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', width: '100%', maxWidth: '900px', marginTop: '10px' }}>
+                          {/* K-Means Steps */}
+                          <div style={{ background: 'linear-gradient(135deg, #eef2ff, #f5f3ff)', borderRadius: '20px', padding: '24px', textAlign: 'left', border: '1px solid #c4b5fd' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                              <span style={{ background: '#6366f1', color: 'white', borderRadius: '10px', padding: '6px 14px', fontWeight: 800, fontSize: '0.85rem' }}>K-Means</span>
+                            </div>
+                            {[
+                              { step: "1", icon: "🎲", title: "Initialize", desc: "Place K random centroids in the feature space." },
+                              { step: "2", icon: "📐", title: "Assign", desc: "Each Pokémon is assigned to its nearest centroid." },
+                              { step: "3", icon: "📊", title: "Update", desc: "Recalculate centroids as the mean of all assigned points." },
+                              { step: "4", icon: "🔁", title: "Repeat", desc: "Steps 2-3 repeat until centroids stabilize (convergence)." },
+                            ].map(s => (
+                              <div key={s.step} style={{ display: 'flex', gap: '12px', marginBottom: '12px', alignItems: 'flex-start' }}>
+                                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#6366f1', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800, flexShrink: 0 }}>{s.step}</div>
+                                <div>
+                                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#1e293b' }}>{s.icon} {s.title}</div>
+                                  <div style={{ fontSize: '0.8rem', color: '#64748b', lineHeight: 1.5 }}>{s.desc}</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Hierarchical Steps */}
+                          <div style={{ background: 'linear-gradient(135deg, #ecfdf5, #f0fdf4)', borderRadius: '20px', padding: '24px', textAlign: 'left', border: '1px solid #6ee7b7' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                              <span style={{ background: '#059669', color: 'white', borderRadius: '10px', padding: '6px 14px', fontWeight: 800, fontSize: '0.85rem' }}>Hierarchical</span>
+                            </div>
+                            {[
+                              { step: "1", icon: "👤", title: "Start Alone", desc: "Each Pokémon begins as its own individual cluster." },
+                              { step: "2", icon: "🤝", title: "Find Nearest", desc: "Find the two most similar clusters (smallest distance)." },
+                              { step: "3", icon: "🔗", title: "Merge", desc: "Combine them into a single cluster, record the merge height." },
+                              { step: "4", icon: "🌳", title: "Build Tree", desc: "Repeat until all points are in one cluster — forming the dendrogram." },
+                            ].map(s => (
+                              <div key={s.step} style={{ display: 'flex', gap: '12px', marginBottom: '12px', alignItems: 'flex-start' }}>
+                                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#059669', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800, flexShrink: 0 }}>{s.step}</div>
+                                <div>
+                                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#1e293b' }}>{s.icon} {s.title}</div>
+                                  <div style={{ fontSize: '0.8rem', color: '#64748b', lineHeight: 1.5 }}>{s.desc}</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* === COMPARISON TABLE === */}
                       <div className="cluster-card centered-card full-width-card">
                         <h3>K-Means vs Hierarchical: How Do They Compare?</h3>
                         <p>Both methods group Pokémon by stats, but they work very differently under the hood.</p>
@@ -1325,6 +1419,7 @@ function App() {
                           </div>
                         </div>
                       </div>
+
                     </>
                   )}
 
@@ -1916,7 +2011,7 @@ function App() {
                     {/* Team Member 1 */}
                     <div className="member-card">
                       <div className="member-photo-container">
-                        <img src="foto.jpg" alt="Member 1" className="individual-photo" />
+                        <img src="/henrique.jpg" alt="Henrique Santos" className="individual-photo" />
                       </div>
                       <div className="member-info">
                         <span className="member-name">Henrique Santos</span>
@@ -1944,7 +2039,7 @@ function App() {
                     {/* Team Member 3 */}
                     <div className="member-card">
                       <div className="member-photo-container">
-                        <img src="/teu-caminho/foto3.jpg" alt="Member 3" className="individual-photo" />
+                        <img src="/tiago.jpg" alt="Tiago Carvalho" className="individual-photo" />
                       </div>
                       <div className="member-info">
                         <span className="member-name">Tiago Carvalho</span>
