@@ -1,40 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { MapContainer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
+
 import mlData from './ml_data.json';
 
 
-// Função para criar os ícones das 18 ilhas
-const createIslandIcon = (typeName) => {
-  return new L.Icon({
-    iconUrl: `/islands/island_${typeName.toLowerCase()}.png`, // Caminho para as tuas imagens cortadas
-    iconSize: [160, 160], // Tamanho da ilha no mapa
-    iconAnchor: [80, 80], // Ponto central
-    popupAnchor: [0, -80] // Onde o popup aparece
-  });
-};
 
-// Coordenadas [Y, X] das 18 Ilhas no oceano infinito
-const islandClusters = [
-  { type: "Fire", coords: [900, 100] },
-  { type: "Water", coords: [800, 500] },
-  { type: "Grass", coords: [950, 900] },
-  { type: "Electric", coords: [680, 300] },
-  { type: "Ice", coords: [600, 650] },
-  { type: "Fighting", coords: [350, 0] },
-  { type: "Poison", coords: [400, 500] },
-  { type: "Ground", coords: [180, 950] },
-  { type: "Flying", coords: [50, 350] },
-  { type: "Psychic", coords: [0, 670] },
-  { type: "Bug", coords: [1000, 350] },
-  { type: "Rock", coords: [1100, 650] },
-  { type: "Ghost", coords: [700, -20] },
-  { type: "Dragon", coords: [700, 880] },
-  { type: "Dark", coords: [500, 200] },
-  { type: "Steel", coords: [450, 850] },
-  { type: "Fairy", coords: [250, 300] },
-  { type: "Normal", coords: [250, 650] }
-];
 function parseCsv(text) {
   const lines = text.trim().split(/\r?\n/).filter(Boolean);
   if (!lines.length) return [];
@@ -256,78 +225,11 @@ function App() {
 
   const menuItems = [
     { id: "exploration", label: "Dashboard & Analysis" },
-    { id: "pokemonWorld", label: "Pokémon World" },
     { id: "charts", label: "Charts & Stats" },
     { id: "spirit", label: "Spirit Pokémon" },
     { id: "clusters", label: "Clusters (ML)" },
   ];
 
-  /// --- POKEMON WORLD LIVING SPRITES LOGIC (STAGGERED + SMALL RADIUS) ---
-  const [mapSprites, setMapSprites] = useState([]);
-
-  useEffect(() => {
-    if (!pokemon || pokemon.length === 0 || activePage !== "pokemonWorld") return;
-
-    // 1. Initial setup: 5 Pokemon per island, tight radius, staggered timers
-    const initialSprites = [];
-    islandClusters.forEach(island => {
-      const typeMons = pokemon.filter(p => p["Type 1"] === island.type || p["Type 2"] === island.type);
-      if (typeMons.length === 0) return;
-
-      const shuffled = [...typeMons].sort(() => 0.5 - Math.random());
-      const selected = shuffled.slice(0, 5); // 5 is the sweet spot for the island size
-
-      selected.forEach((p, index) => {
-        const offsetY = (Math.random() - 0.5) * 80;  // Keeps them out of the water
-        const offsetX = (Math.random() - 0.5) * 100;
-
-        initialSprites.push({
-          id: `${island.type}-${index}`,
-          pokemon: p,
-          islandType: island.type,
-          islandCoords: island.coords,
-          coords: [island.coords[0] + offsetY, island.coords[1] + offsetX],
-          animDelay: `${(Math.random() * 2).toFixed(2)}s`,
-          // Stagger expiration so they don't refresh all at once!
-          expireAt: Date.now() + ((index + 1) * 4000) + (Math.random() * 2000)
-        });
-      });
-    });
-
-    setMapSprites(initialSprites);
-
-    // 2. The "Heartbeat": Check every 1 second to see if ONE pokemon needs swapping
-    const interval = setInterval(() => {
-      setMapSprites(currentSprites => {
-        const now = Date.now();
-        let needsUpdate = false;
-
-        const updatedSprites = currentSprites.map(sprite => {
-          if (now >= sprite.expireAt) {
-            needsUpdate = true;
-            const typeMons = pokemon.filter(p => p["Type 1"] === sprite.islandType || p["Type 2"] === sprite.islandType);
-            const randomNewMon = typeMons[Math.floor(Math.random() * typeMons.length)];
-
-            const offsetY = (Math.random() - 0.5) * 80;
-            const offsetX = (Math.random() - 0.5) * 100;
-
-            return {
-              ...sprite,
-              pokemon: randomNewMon,
-              coords: [sprite.islandCoords[0] + offsetY, sprite.islandCoords[1] + offsetX],
-              expireAt: now + 15000 + (Math.random() * 5000), // Live for 15-20 seconds
-              updateKey: now // Forces a clean CSS fade-in
-            };
-          }
-          return sprite;
-        });
-
-        return needsUpdate ? updatedSprites : currentSprites;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [pokemon, activePage]);
 
   useEffect(() => {
     fetch("/Pokemon.csv")
@@ -929,59 +831,7 @@ function App() {
               </section>
             )}
 
-            {/* --- POKÉMON WORLD MAP V4 (INTERATIVO COM LEAFLET) --- */}
-            {activePage === "pokemonWorld" && (
-              <section className="pokemon-world-page">
-                <div className="page-header">
-                  <h2>Pokémon Archipelago</h2>
-                  <p>Explore as 18 ilhas de clusters. Arrastar para mover, scroll para fazer zoom.</p>
-                </div>
 
-                {!loading && !error && pokemon.length > 0 && (
-                  <div className="pokemon-world-map">
-                    <MapContainer
-                      center={[550, 500]} // Ponto inicial da câmara
-                      zoom={0} // Zoom inicial
-                      minZoom={-1} // Permite afastar
-                      maxZoom={2} // Permite aproximar muito
-                      crs={L.CRS.Simple} // Crucial: Diz ao mapa que não é o planeta Terra, é um plano infinito
-                      style={{ height: '100%', width: '100%' }}
-                    >
-                      {/* 1. Loop to render the 18 Islands */}
-                      {islandClusters.map((island) => (
-                        <Marker key={island.type} position={island.coords} icon={createIslandIcon(island.type)}>
-                          <Popup className="custom-popup">
-                            <b>{island.type} Island</b><br />
-                            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>ML Cluster Data Here</span>
-                          </Popup>
-                        </Marker>
-                      ))}
-
-                      {/* Loop to render the randomly changing, floating Pokémon */}
-                      {mapSprites.map(sprite => (
-                        <Marker
-                          key={`${sprite.id}-${sprite.updateKey || 0}`}
-                          position={sprite.coords}
-                          icon={L.divIcon({
-                            className: 'pokemon-sprite-marker',
-                            html: `<img src="${getPokemonImageUrl(sprite.pokemon)}" class="pokemon-sprite-img" style="animation-delay: ${sprite.animDelay};" alt="${sprite.pokemon.Name}" />`,
-                            iconSize: [45, 45],
-                            iconAnchor: [22, 22]
-                          })}
-                        >
-                          <Popup className="custom-popup">
-                            <b>{sprite.pokemon.Name}</b><br />
-                            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                              Total Stats: {sprite.pokemon.Total}
-                            </span>
-                          </Popup>
-                        </Marker>
-                      ))}
-                    </MapContainer>
-                  </div>
-                )}
-              </section>
-            )}
 
             {/* --- CLUSTERS (ML) PAGE --- */}
             {activePage === "clusters" && (
